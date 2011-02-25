@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="miner" default="compile" basedir=".">
+
+	<!-- LOCATIONS OF VARIOUS DIRECTORIES -->
+	<property name="projectroot" value="."/>
+	<property name="classdir" value="${projectroot}/bin"/>
+	<property name="docdir" value="${projectroot}/doc"/>
+	<property name="releasedir" value="${projectroot}/release"/>
+	<property name="sourcedir" value="${projectroot}/src"/>
+
+	<property name="sourcereleasedir" value="${projectroot}/releasesrc"/>
+
+	<property name="docpackagenames" value="*"/>
+
+	<!-- SOURCE PATH -->
+	<path id="sourcepath">
+		<pathelement path="${sourcedir}"/>
+	</path>
+
+	<!-- CLASS PATH -->
+	<path id="classpath">
+		<fileset dir="/Volumes/Dev/rdf/sesame-2.3.2/lib/">
+			<include name="**/*.jar"/>
+		</fileset>
+        <pathelement path="${projectroot}/lib/ng4j-0.9.3.jar"/>
+        <pathelement path="${projectroot}/lib/jena-2.6.2.jar"/>
+        <pathelement path="${projectroot}/lib/arq-2.8.2.jar"/>
+        <pathelement path="${projectroot}/lib/xercesImpl-2.7.1.jar"/>
+        <pathelement path="${projectroot}/lib/iri-0.7.jar"/>
+        <pathelement path="${projectroot}/lib/icu4j-3.4.4.jar"/>
+        <pathelement path="${projectroot}/lib/nekohtml-0.9.5.jar"/>
+        <pathelement path="${projectroot}/lib/commons-logging.jar"/>
+        <pathelement path="${projectroot}/lib/slf4j-api-1.5.10.jar"/>
+        <pathelement path="${projectroot}/lib/slf4j-jdk14-1.5.10.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-jena.jar"/>
+        <pathelement path="${projectroot}/lib/aterm-java-1.6.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-core.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-rules.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-datatypes.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-el.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-query.jar"/>
+        <pathelement path="${projectroot}/lib/xsdlib.jar"/>
+        <pathelement path="${projectroot}/lib/owlapi-bin.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-owlapiv3.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-owlapiv.jar"/>
+        <pathelement path="${projectroot}/lib/pellet-explanation.jar"/>
+        <pathelement path="${projectroot}/lib/mysql-connector-java-5.0.7-bin.jar"/>
+		<pathelement path="${projectroot}/lib/openrdf-sesame-2.3.2-onejar.jar"/>
+        <pathelement path="${classdir}"/>
+	</path>
+
+	<!-- BUILD TARGETS  -->
+	<target name="compile">
+		<mkdir dir="${classdir}"/>
+		<javac destdir="${classdir}" deprecation="yes" source="1.5" debug="true">
+			<src refid="sourcepath"/>
+			<classpath refid="classpath"/>
+		</javac>
+	</target>
+    
+    <target name="run-html" depends="compile">
+		<java classname="miner.sparql.HTMLQueryEngine" fork="true">
+			<classpath refid="classpath"/>
+			<jvmarg value="-Xmx3000M"/> 
+        </java>
+	</target>
+    
+     <target name="run-setup" depends="compile">
+		<java classname="miner.database.Setup" fork="true">
+			<classpath refid="classpath"/>
+			<jvmarg value="-Xmx3000M"/> 
+        </java>
+	</target>
+    
+    <target name="run-printer" depends="compile">
+		<java classname="miner.database.TablePrinter" fork="true">
+			<classpath refid="classpath"/>
+			<jvmarg value="-Xmx3000M"/>
+            <arg line="${start}"/> 
+        </java>
+	</target>
+    
+    <target name="run-gold" depends="compile">
+		<java classname="miner.ontology.GoldSetup" fork="true">
+			<classpath refid="classpath"/>
+			<jvmarg value="-Xmx3000M"/> 
+        </java>
+	</target>
+    
+    <target name="run-sesame" depends="compile">
+		<java classname="miner.ontology.SesameStore" fork="true">
+			<classpath refid="classpath"/>
+			<jvmarg value="-Xmx3000M"/>
+            <arg line="/Volumes/Data/dbpedia/todo/${arg}"/>
+        </java>
+	</target>
+    
+    <target name="run-writer" depends="compile">
+		<java classname="miner.ontology.GreedyWriter" fork="true">
+			<classpath refid="classpath"/>
+			<jvmarg value="-Xmx3000M"/> 
+        </java>
+	</target>
+
+	<target name="clean">
+		<delete file="${releasedir}"/>
+		<delete dir="${classdir}"/>
+	</target>
+
+	<target name="doc">
+		<mkdir dir="${docdir}"/>
+		<javadoc source="1.5" packagenames="miner.*" sourcepath="${sourcedir}" destdir="${docdir}">
+			<classpath refid="classpath"/>
+		</javadoc>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar jarfile="miner.jar">
+			<fileset dir="${classdir}"/>
+		</jar>
+	</target>
+
+	<target name="release" depends="jar, doc">
+		<mkdir dir="${releasedir}"/>
+		<copy todir="${releasedir}" file="miner.jar"/>
+		<zip zipfile="miner.zip" basedir="${releasedir}"/>
+		<mkdir dir="${sourcereleasedir}"/>
+		<mkdir dir="${sourcereleasedir}/src"/>
+		<mkdir dir="${sourcereleasedir}/doc"/>
+		<copy todir="${sourcereleasedir}/src">
+			<fileset dir="${sourcedir}"/>
+		</copy>
+		<copy todir="${sourcereleasedir}/doc">
+			<fileset dir="${docdir}"/>
+		</copy>
+		<copy todir="${sourcereleasedir}" file="build.xml"/>
+		<zip zipfile="miner-src.zip" basedir="${sourcereleasedir}"/>
+	</target>
+
+</project>
