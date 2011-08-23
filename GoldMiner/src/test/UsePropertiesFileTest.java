@@ -29,7 +29,7 @@ public class UsePropertiesFileTest {
 			assertTrue(this.goldMiner.selectAxioms(true, true, true, true, true, true, true, true, false));
 			assertTrue(this.goldMiner.setupDatabase());
 			assertTrue(this.goldMiner.terminologyAcquisition());
-			this.goldMiner.createTransactionTables("C:/Users/Jakob/Desktop");
+			this.goldMiner.createTransactionTables();
 		} catch (SQLException e) {
 			assertTrue(false);
 			e.printStackTrace();

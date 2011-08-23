@@ -1,8 +1,13 @@
 package miner;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -12,9 +17,11 @@ import miner.database.IndividualsExtractor;
 import miner.database.Setup;
 import miner.database.TablePrinter;
 import miner.database.TerminologyExtractor;
+import miner.ontology.AssociationRulesMiner;
 import miner.ontology.Ontology;
 import miner.sparql.Filter;
 import miner.util.Settings;
+import miner.util.TextFileFilter;
 
 public class IGoldMinerImpl implements IGoldMiner {
 	
@@ -195,31 +202,89 @@ public class IGoldMinerImpl implements IGoldMiner {
 	}
 
 	@Override
-	public void createTransactionTables(String file) throws IOException,
+	public void createTransactionTables() throws IOException,
 			SQLException {
 		if(this.c_sub_c || this.c_and_c_sub_c){
-			this.tablePrinter.printClassMembers(file + "/t1.txt");
+			this.tablePrinter.printClassMembers(Settings.getString("transaction_tables") + "t1.txt");
 		}
 		if(this.c_sub_exists_p_c || this.exists_p_c_sub_c) {
-			this.tablePrinter.printExistsPropertyMembers(file + "/t2.txt", 0);
+			this.tablePrinter.printExistsPropertyMembers(Settings.getString("transaction_tables") + "/t2.txt", 0);
 		}
 		if(this.exists_p_T_sub_c) {
-			this.tablePrinter.printPropertyRestrictions(file + "/t3.txt", 0);
+			this.tablePrinter.printPropertyRestrictions(Settings.getString("transaction_tables") + "/t3.txt", 0);
 		}
 		if(this.exists_pi_T_sub_c) {
-			this.tablePrinter.printPropertyRestrictions(file + "/t4.txt", 1);
+			this.tablePrinter.printPropertyRestrictions(Settings.getString("transaction_tables") + "/t4.txt", 1);
 		}
 		if(this.p_sub_p) {
-			this.tablePrinter.printPropertyMembers(file + "/t5.txt");
+			this.tablePrinter.printPropertyMembers(Settings.getString("transaction_tables") + "/t5.txt");
 		}
 		if(this.p_chain_p_sub_p){
-			this.tablePrinter.printPropertyChainMembersTrans(file + "/t6.txt");
+			this.tablePrinter.printPropertyChainMembersTrans(Settings.getString("transaction_tables") + "/t6.txt");
 		}
+	}
+	
+	@Override
+	public void mineAssociationRules() throws IOException {
+		File file = new File(Settings.getString("transaction_tables"));
+		File[] files = file.listFiles(new TextFileFilter());
+		for(File f : files) {
+			int index = f.getName().lastIndexOf(".");
+			String exec = Settings.getString("apriori") + 
+			"apriori" + 
+			" -tr " + 
+			f.getPath() + 
+			" " +
+			Settings.getString("association_rules") + 
+			f.getName().substring(0, index) +
+			"AR.txt";
+			Process process = Runtime.getRuntime().exec(exec);
+			InputStream in = process.getInputStream();
+			int numLine=0;
+			int c;
+			StringBuffer sb = new StringBuffer();
+			while( ( c = in.read() ) != -1 ) {
+				if ((char)c == '\n' ) {
+					numLine++;
+				}
+				sb.append( (char)c );
+			}
+			in.close();		
+			System.out.println("Stream: " + sb.toString());
+		}
+	}
+	
+	@Override
+	public void mineAssociationRules(AssociationRulesMiner miner) {
+		miner.execute();
+	}
+	
+	@Override
+	public List<String> getAssociationRules() throws IOException {
+		List<String> rules = new ArrayList<String>();
+		File[] files = new File[0];
+		while(files.length == 0) {
+			File file = new File(Settings.getString("association_rules"));
+			files = file.listFiles(new TextFileFilter());
+		}
+		for(File f : files) {
+			BufferedReader in = new BufferedReader(new FileReader(f));
+			String line;
+			String fileText = new String();
+			while((line = in.readLine()) != null) {
+				fileText = fileText + line;
+			}
+			rules.add(fileText);
+		}
+		System.out.println("Groesse: " + rules.size());
+		return rules;
 	}
 
 	@Override
 	public List<OWLAxiom> parseAssociationRules(List<String> associationRules) {
-		// TODO Auto-generated method stub
+		for(int i = 0; i < associationRules.size(); i++) {
+			System.out.println(i + ": " + associationRules.get(i));
+		}
 		return null;
 	}
 

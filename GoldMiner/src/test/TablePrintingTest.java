@@ -20,13 +20,13 @@ public class TablePrintingTest {
 	@Before
 	public void init() throws FileNotFoundException, IOException, SQLException {
 		this.goldMiner = new IGoldMinerImpl();
-		this.goldMiner.selectAxioms(false, false, true, false, false, false, false, false, false);
+		this.goldMiner.selectAxioms(false, false, false, false, false, false, true, true, false);
 	}
 	
 	@Test
 	public void test() {
 		try {
-			this.goldMiner.createTransactionTables("C:/Users/Jakob/Desktop");
+			this.goldMiner.createTransactionTables();
 		} catch (IOException e) {
 			e.printStackTrace();
 			assertTrue(false);
