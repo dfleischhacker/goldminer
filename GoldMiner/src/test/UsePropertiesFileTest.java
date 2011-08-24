@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import miner.IGoldMiner;
 import miner.IGoldMinerImpl;
@@ -19,7 +20,7 @@ public class UsePropertiesFileTest {
 	private IGoldMiner goldMiner;
 	
 	@Before
-	public void connect() throws FileNotFoundException, IOException, SQLException {
+	public void connect() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException {
 			this.goldMiner = new IGoldMinerImpl();
 	}
 	

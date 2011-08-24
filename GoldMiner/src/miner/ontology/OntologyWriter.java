@@ -2,6 +2,7 @@ package miner.ontology;
 
 import java.io.File;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,7 +49,7 @@ public class OntologyWriter {
 	
 	private List<OWLAxiom> getAxioms() throws Exception {
 		HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-		hmAxioms.putAll( get_c_sub_c_Axioms() );
+		//hmAxioms.putAll( get_c_sub_c_Axioms() );
 		hmAxioms.putAll( get_c_and_c_sub_c_Axioms() );
 		hmAxioms.putAll( get_c_dis_c_Axioms() );
 		hmAxioms.putAll( get_exists_p_c_sub_c_Axioms() );
@@ -61,21 +62,11 @@ public class OntologyWriter {
 		return sort( hmAxioms );
 	}
 	
-	private HashMap<OWLAxiom,Double> get_c_sub_c_Axioms() throws Exception {
+	public OWLAxiom get_c_sub_c_Axioms(int iCons, int iAnte, double dSupp) throws SQLException {
 		// assumption: only one confidence value per axiom
 		HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-		String sQuery = m_sqlFactory.select_c_sub_c_AxiomQuery();
-		ResultSet results = m_database.query( sQuery );
-		while( results.next() )
-		{
-			int iCons = results.getInt( "cons" );
-			int iAnte = results.getInt( "ante" );
-			double dSupp = results.getDouble( "supp" );
-			double dConf = results.getDouble( "conf" )/100.0;//normalize
-			OWLAxiom axiom = m_ontology.get_c_sub_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ) );
-			hmAxioms.put( axiom, dConf );
-		}
-		return hmAxioms;
+		OWLAxiom axiom = m_ontology.get_c_sub_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ) );
+		return axiom;
 	}
 	 
 	 private HashMap<OWLAxiom,Double> get_c_dis_c_Axioms() throws Exception {
@@ -218,7 +209,7 @@ public class OntologyWriter {
 		}
 	}
 	
-	public String getClassURI( int iClassID ) throws Exception {
+	public String getClassURI( int iClassID ) throws SQLException {
 		String sQuery = m_sqlFactory.selectClassURIQuery( iClassID );
 		ResultSet results = m_database.query( sQuery );
 		if( results.next() ){
@@ -227,7 +218,7 @@ public class OntologyWriter {
 		return null;
 	}
 	
-	public String getPropertyURI( int iPropertyID ) throws Exception {
+	public String getPropertyURI( int iPropertyID ) throws SQLException {
 		String sQuery = m_sqlFactory.selectPropertyURIQuery( iPropertyID );
 		ResultSet results = m_database.query( sQuery );
 		if( results.next() ){
@@ -237,7 +228,7 @@ public class OntologyWriter {
 	}
 
 	//retrieves the property ID form the property_exists table
-	public String getPropertyURIFromExistsProperty( int iExistsPropertyID ) throws Exception {
+	public String getPropertyURIFromExistsProperty( int iExistsPropertyID ) throws SQLException {
 		String sQuery = m_sqlFactory.selectURIsFromExistsQuery( iExistsPropertyID );
 		ResultSet results = m_database.query( sQuery );
 		if( results.next() ){
@@ -247,7 +238,7 @@ public class OntologyWriter {
 	}
 	
 	//retrieves the property ID form the property_exists table
-	public String getClassURIFromExistsProperty( int iExistsPropertyID ) throws Exception {
+	public String getClassURIFromExistsProperty( int iExistsPropertyID ) throws SQLException {
 		String sQuery = m_sqlFactory.selectURIsFromExistsQuery( iExistsPropertyID );
 		ResultSet results = m_database.query( sQuery );
 		if( results.next() ){
@@ -257,7 +248,7 @@ public class OntologyWriter {
 	}
 	
 	//retrieves the property ID form the property_exists_top table
-	public String getPropertyURIFromExistsPropertyTop( int iExistsPropertyID ) throws Exception {
+	public String getPropertyURIFromExistsPropertyTop( int iExistsPropertyID ) throws SQLException {
 		String sQuery = m_sqlFactory.selectURIsFromExistsTopQuery( iExistsPropertyID );
 		ResultSet results = m_database.query( sQuery );
 		if( results.next() ){

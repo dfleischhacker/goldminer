@@ -11,6 +11,7 @@ import miner.IGoldMinerImpl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 
 public class AprioriTest {
@@ -18,10 +19,10 @@ public class AprioriTest {
 private IGoldMinerImpl goldMiner;
 	
 	@Before
-	public void init() throws FileNotFoundException, IOException, SQLException {
+	public void init() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException {
 		this.goldMiner = new IGoldMinerImpl();
 		System.out.println("Done!");
-		this.goldMiner.selectAxioms(true, false, false, false, false, false, false, false, false);
+		this.goldMiner.selectAxioms(true, true, true, true, true, true, true, true, false);
 	}
 	
 	@Test

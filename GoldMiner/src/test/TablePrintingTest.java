@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import miner.IGoldMinerImpl;
 
@@ -18,9 +19,9 @@ public class TablePrintingTest {
 	private IGoldMinerImpl goldMiner;
 	
 	@Before
-	public void init() throws FileNotFoundException, IOException, SQLException {
+	public void init() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException {
 		this.goldMiner = new IGoldMinerImpl();
-		this.goldMiner.selectAxioms(false, false, false, false, false, false, true, true, false);
+		this.goldMiner.selectAxioms(true, true, true, true, true, true, true, true, false);
 	}
 	
 	@Test

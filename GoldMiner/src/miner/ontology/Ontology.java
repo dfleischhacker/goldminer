@@ -29,7 +29,7 @@ public class Ontology {
 	PelletReasoner m_reasoner;
 	
 	
-    public Ontology() throws Exception {
+    public Ontology() {
 		PelletOptions.USE_COMPLETION_QUEUE = true;
 		PelletOptions.USE_INCREMENTAL_CONSISTENCY = true;
 		PelletOptions.USE_SMART_RESTORE = false;
@@ -37,7 +37,7 @@ public class Ontology {
 		m_factory = m_manager.getOWLDataFactory();
 	}
 	
-	public void create( File file ) throws Exception {
+	public void create( File file ) throws OWLOntologyCreationException {
 		m_logicalIRI = IRI.create( "http://uni-mannheim.de/ontologies/ontology" );
 		m_physicalIRI = IRI.create( file.toURI().toString() );
 		//OWLOntologyIRIMapper mapper = new OWLOntologyIRIMapper( m_logicalIRI, m_physicalIRI );

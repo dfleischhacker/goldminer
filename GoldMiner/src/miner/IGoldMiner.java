@@ -2,6 +2,7 @@ package miner;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import org.semanticweb.owlapi.model.OWLAxiom;
 
@@ -132,7 +133,7 @@ public interface IGoldMiner {
 	 * @param associationRules the list of association rules files.
 	 * @return the list of generated axioms.
 	 */
-	List<OWLAxiom> parseAssociationRules(List<String> associationRules);
+	HashMap<OWLAxiom, Double> parseAssociationRules(List<String> associationRules) throws IOException, SQLException;
 	
 	/**
 	 * creates an ontology out of the provided OWL axioms. There is no optimization,

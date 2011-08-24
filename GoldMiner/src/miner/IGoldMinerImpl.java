@@ -5,12 +5,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 import miner.database.Database;
 import miner.database.IndividualsExtractor;
@@ -18,14 +19,23 @@ import miner.database.Setup;
 import miner.database.TablePrinter;
 import miner.database.TerminologyExtractor;
 import miner.ontology.AssociationRulesMiner;
+import miner.ontology.AssociationRulesParser;
 import miner.ontology.Ontology;
+import miner.ontology.OntologyWriter;
+import miner.ontology.ParsedAxiom;
 import miner.sparql.Filter;
 import miner.util.Settings;
 import miner.util.TextFileFilter;
 
 public class IGoldMinerImpl implements IGoldMiner {
 	
-	public IGoldMinerImpl() throws FileNotFoundException, IOException, SQLException {
+	private static final String[] transactionTableNames = {"t1", "t2", "t3", "t4", "t5", "t6"};
+	private static final String associationRulesSuffix = "AR";
+	private AssociationRulesParser parser;
+	private OntologyWriter writer;
+	private Ontology ontology;
+	
+	public IGoldMinerImpl() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException {
 		if(!Settings.loaded()) {
 			Settings.load();
 		}
@@ -34,6 +44,9 @@ public class IGoldMinerImpl implements IGoldMiner {
 		this.tablePrinter = new TablePrinter();
 		this.terminologyExtractor = new TerminologyExtractor();
 		this.individualsExtractor = new IndividualsExtractor();
+		this.parser = new AssociationRulesParser();
+		this.ontology = new Ontology();
+		this.ontology.create(new File(Settings.getString("ontology")));
 	}
 	
 	private Database database;
@@ -205,22 +218,22 @@ public class IGoldMinerImpl implements IGoldMiner {
 	public void createTransactionTables() throws IOException,
 			SQLException {
 		if(this.c_sub_c || this.c_and_c_sub_c){
-			this.tablePrinter.printClassMembers(Settings.getString("transaction_tables") + "t1.txt");
+			this.tablePrinter.printClassMembers(Settings.getString("transaction_tables") + transactionTableNames[0] + ".txt");
 		}
 		if(this.c_sub_exists_p_c || this.exists_p_c_sub_c) {
-			this.tablePrinter.printExistsPropertyMembers(Settings.getString("transaction_tables") + "/t2.txt", 0);
+			this.tablePrinter.printExistsPropertyMembers(Settings.getString("transaction_tables") + transactionTableNames[1] + ".txt", 0);
 		}
 		if(this.exists_p_T_sub_c) {
-			this.tablePrinter.printPropertyRestrictions(Settings.getString("transaction_tables") + "/t3.txt", 0);
+			this.tablePrinter.printPropertyRestrictions(Settings.getString("transaction_tables") + transactionTableNames[2] + ".txt", 0);
 		}
 		if(this.exists_pi_T_sub_c) {
-			this.tablePrinter.printPropertyRestrictions(Settings.getString("transaction_tables") + "/t4.txt", 1);
+			this.tablePrinter.printPropertyRestrictions(Settings.getString("transaction_tables") + transactionTableNames[3] + ".txt", 1);
 		}
 		if(this.p_sub_p) {
-			this.tablePrinter.printPropertyMembers(Settings.getString("transaction_tables") + "/t5.txt");
+			this.tablePrinter.printPropertyMembers(Settings.getString("transaction_tables") + transactionTableNames[4] + ".txt");
 		}
 		if(this.p_chain_p_sub_p){
-			this.tablePrinter.printPropertyChainMembersTrans(Settings.getString("transaction_tables") + "/t6.txt");
+			this.tablePrinter.printPropertyChainMembersTrans(Settings.getString("transaction_tables") + transactionTableNames[5] + ".txt");
 		}
 	}
 	
@@ -228,7 +241,13 @@ public class IGoldMinerImpl implements IGoldMiner {
 	public void mineAssociationRules() throws IOException {
 		File file = new File(Settings.getString("transaction_tables"));
 		File[] files = file.listFiles(new TextFileFilter());
+		File ruleFile = new File(Settings.getString("association_rules"));
+		File[] ruleFiles = ruleFile.listFiles(new TextFileFilter());
+		this.deleteFiles(ruleFiles);
+		files = file.listFiles(new TextFileFilter());
 		for(File f : files) {
+			ruleFiles = ruleFile.listFiles(new TextFileFilter());
+			int x = ruleFiles.length;
 			int index = f.getName().lastIndexOf(".");
 			String exec = Settings.getString("apriori") + 
 			"apriori" + 
@@ -237,20 +256,29 @@ public class IGoldMinerImpl implements IGoldMiner {
 			" " +
 			Settings.getString("association_rules") + 
 			f.getName().substring(0, index) +
-			"AR.txt";
-			Process process = Runtime.getRuntime().exec(exec);
-			InputStream in = process.getInputStream();
-			int numLine=0;
-			int c;
-			StringBuffer sb = new StringBuffer();
-			while( ( c = in.read() ) != -1 ) {
-				if ((char)c == '\n' ) {
-					numLine++;
-				}
-				sb.append( (char)c );
+			associationRulesSuffix +
+			".txt";
+			Runtime.getRuntime().exec(exec);
+			int y = x;
+			while(x == y) {
+				y = ruleFile.listFiles(new TextFileFilter()).length;
 			}
-			in.close();		
-			System.out.println("Stream: " + sb.toString());
+		}
+	}
+	
+	private void deleteFiles(File[] files) {
+		for(File f : files) {
+			int index = f.getName().lastIndexOf(".");
+			String fileName = f.getName().substring(0, index);
+			if(((this.c_sub_c || this.c_and_c_sub_c) && fileName.equals(transactionTableNames[0] + associationRulesSuffix)) ||
+					((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && fileName.equals(transactionTableNames[1] + associationRulesSuffix)) ||
+					(this.exists_p_T_sub_c && fileName.equals(transactionTableNames[2] + associationRulesSuffix)) ||
+					(this.exists_pi_T_sub_c && fileName.equals(transactionTableNames[3] + associationRulesSuffix)) ||
+					(this.p_sub_p && fileName.equals(transactionTableNames[4] + associationRulesSuffix)) ||
+					(this.p_chain_p_sub_p && fileName.equals(transactionTableNames[5] + associationRulesSuffix)) ||
+					(this.c_dis_c && fileName.equals(transactionTableNames[6] + associationRulesSuffix))) {
+				f.delete();
+			}
 		}
 	}
 	
@@ -262,11 +290,8 @@ public class IGoldMinerImpl implements IGoldMiner {
 	@Override
 	public List<String> getAssociationRules() throws IOException {
 		List<String> rules = new ArrayList<String>();
-		File[] files = new File[0];
-		while(files.length == 0) {
-			File file = new File(Settings.getString("association_rules"));
-			files = file.listFiles(new TextFileFilter());
-		}
+		File file = new File(Settings.getString("association_rules"));
+		File[] files = file.listFiles(new TextFileFilter());
 		for(File f : files) {
 			BufferedReader in = new BufferedReader(new FileReader(f));
 			String line;
@@ -276,16 +301,23 @@ public class IGoldMinerImpl implements IGoldMiner {
 			}
 			rules.add(fileText);
 		}
-		System.out.println("Groesse: " + rules.size());
 		return rules;
 	}
 
 	@Override
-	public List<OWLAxiom> parseAssociationRules(List<String> associationRules) {
+	public HashMap<OWLAxiom, Double> parseAssociationRules(List<String> associationRules) throws IOException, SQLException {
 		for(int i = 0; i < associationRules.size(); i++) {
 			System.out.println(i + ": " + associationRules.get(i));
 		}
-		return null;
+		HashMap<OWLAxiom, Double> hmAxioms = new HashMap<OWLAxiom, Double>();
+		if(this.c_sub_c){
+			File f = new File(Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				hmAxioms.put(this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp()), pa.getConf());
+			}
+		}
+		return hmAxioms;
 	}
 
 	@Override
