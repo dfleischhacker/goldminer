@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import miner.ontology.AssociationRulesMiner;
 import miner.ontology.Ontology;
@@ -133,7 +134,7 @@ public interface IGoldMiner {
 	 * @param associationRules the list of association rules files.
 	 * @return the list of generated axioms.
 	 */
-	HashMap<OWLAxiom, Double> parseAssociationRules(List<String> associationRules) throws IOException, SQLException;
+	HashMap<OWLAxiom, Double> parseAssociationRules() throws IOException, SQLException;
 	
 	/**
 	 * creates an ontology out of the provided OWL axioms. There is no optimization,
@@ -144,7 +145,7 @@ public interface IGoldMiner {
 	 * @param confidenceThreshold only add axioms with a confidence value equal or greater than this threshold.
 	 * @return the ontology generated out of axioms and thresholds.
 	 */
-	Ontology createOntology(List<OWLAxiom> axioms, double supportThreshold, double confidenceThreshold);
+	Ontology createOntology(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException;
 	
 	/**
 	 * enables debugging of an existing ontology. this method applies the

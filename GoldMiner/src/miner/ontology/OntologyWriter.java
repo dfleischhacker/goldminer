@@ -13,6 +13,7 @@ import miner.database.Database;
 import miner.database.SQLFactory;
 
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 public class OntologyWriter {
 	
@@ -22,41 +23,43 @@ public class OntologyWriter {
 	
 	private SQLFactory m_sqlFactory;
 	
-	public OntologyWriter(Database d, String file) throws Exception {
+	public OntologyWriter(Database d) {
 		m_ontology = new Ontology();
-		m_ontology.create( new File( file ) );
 		m_sqlFactory = new SQLFactory();
 		m_database = d;
 	}
 	
-	public void write() throws Exception {
-		List<OWLAxiom> axioms = getAxioms();
-		System.out.println( "axioms: "+ axioms.size() );
+	public Ontology write(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) {
+		//List<OWLAxiom> axioms = getAxioms();
+		//System.out.println( "axioms: "+ axioms.size() );
 		int i=0;
-		for( OWLAxiom axiom: axioms )
+		for( OWLAxiom axiom: axioms.keySet() )
 		{
 			System.out.println( "add ("+ i +"): "+ axiom );
-			m_ontology.addAxiom( axiom );
+			if(axioms.get(axiom) > confidenceThreshold) {
+				m_ontology.addAxiom( axiom );
+			}
+			//TODO support threshold!
 			//if( !m_ontology.isCoherent() )
 			//{
 				//System.out.println( "remove ("+ i +"): "+ axiom );
 				//m_ontology.removeAxiom( axiom );
 			//}
 			i++;
-		} 
-		m_ontology.save();
+		}
+		return this.m_ontology;
 	}
 	
 	private List<OWLAxiom> getAxioms() throws Exception {
 		HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
 		//hmAxioms.putAll( get_c_sub_c_Axioms() );
-		hmAxioms.putAll( get_c_and_c_sub_c_Axioms() );
-		hmAxioms.putAll( get_c_dis_c_Axioms() );
-		hmAxioms.putAll( get_exists_p_c_sub_c_Axioms() );
-		hmAxioms.putAll( get_c_sub_exists_p_c_Axioms() );
-		hmAxioms.putAll( get_p_sub_p_Axioms() );
-		hmAxioms.putAll( get_exists_p_T_sub_c_Axioms() );
-		hmAxioms.putAll( get_exists_pi_T_sub_c_Axioms() );
+		//hmAxioms.putAll( get_c_and_c_sub_c_Axioms() );
+		//hmAxioms.putAll( get_c_dis_c_Axioms() );
+		//hmAxioms.putAll( get_exists_p_c_sub_c_Axioms() );
+		//hmAxioms.putAll( get_c_sub_exists_p_c_Axioms() );
+		//hmAxioms.putAll( get_p_sub_p_Axioms() );
+		//hmAxioms.putAll( get_exists_p_T_sub_c_Axioms() );
+		//hmAxioms.putAll( get_exists_pi_T_sub_c_Axioms() );
 
 		//Collections.sort(hmAxioms);
 		return sort( hmAxioms );
@@ -64,125 +67,50 @@ public class OntologyWriter {
 	
 	public OWLAxiom get_c_sub_c_Axioms(int iCons, int iAnte, double dSupp) throws SQLException {
 		// assumption: only one confidence value per axiom
-		HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
 		OWLAxiom axiom = m_ontology.get_c_sub_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ) );
 		return axiom;
 	}
 	 
-	 private HashMap<OWLAxiom,Double> get_c_dis_c_Axioms() throws Exception {
+	 public OWLAxiom get_c_dis_c_Axioms(int iAnte, int iCons, double supp) throws SQLException {
 			// assumption: only one confidence value per axiom
-			HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-			String sQuery = m_sqlFactory.select_c_dis_c_AxiomQuery();
-			ResultSet results = m_database.query( sQuery );
-			while( results.next() )
-			{
-				int iCons = results.getInt( "cons" );
-				int iAnte = results.getInt( "ante" );
-				//double dSupp = results.getDouble( "supp" );
-				double dConf = results.getDouble( "conf" );
-				OWLAxiom axiom = m_ontology.get_c_dis_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ) );
-				hmAxioms.put( axiom, dConf );
-			}
-			return hmAxioms;
+			OWLAxiom axiom = m_ontology.get_c_dis_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ) );
+			return axiom;
 		}
 	 
-	 private HashMap<OWLAxiom,Double> get_p_sub_p_Axioms() throws Exception {
+	 public OWLAxiom get_p_sub_p_Axioms(int iAnte, int iCons, double supp) throws SQLException {
 			// assumption: only one confidence value per axiom
-			HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-			String sQuery = m_sqlFactory.select_p_sub_p_AxiomQuery();
-			ResultSet results = m_database.query( sQuery );
-			while( results.next() )
-			{
-				int iCons = results.getInt( "cons" );
-				int iAnte = results.getInt( "ante" );
-				double dSupp = results.getDouble( "supp" );
-				double dConf = results.getDouble( "conf" )/100.0;//normalize
-				OWLAxiom axiom = m_ontology.get_p_sub_p_Axiom( getPropertyURI( iAnte ), getPropertyURI( iCons ) );
-				hmAxioms.put( axiom, dConf );
-			}
-			return hmAxioms;
+			OWLAxiom axiom = m_ontology.get_p_sub_p_Axiom( getPropertyURI( iAnte ), getPropertyURI( iCons ) );
+			return axiom;
 		}
 	 
-	 private HashMap<OWLAxiom,Double> get_c_and_c_sub_c_Axioms() throws Exception {
+	 public OWLAxiom get_c_and_c_sub_c_Axioms(int iAnte1, int iAnte2, int iCons, double supp) throws SQLException {
 			// assumption: only one confidence value per axiom
-			HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-			String sQuery = m_sqlFactory.select_c_and_c_sub_c_AxiomQuery();
-			ResultSet results = m_database.query( sQuery );
-			while( results.next() )
-			{
-				int iCons = results.getInt( "cons" );
-				int iAnte1 = results.getInt( "ante1" );
-				int iAnte2 = results.getInt( "ante2" );
-				double dSupp = results.getDouble( "supp" );
-				double dConf = results.getDouble( "conf" )/100.0;//normalize
-				OWLAxiom axiom = m_ontology.get_c_and_c_sub_c_Axiom( getClassURI( iAnte1 ), getClassURI(iAnte2), getClassURI( iCons ) );
-				hmAxioms.put( axiom, dConf );
-			}
-			return hmAxioms;
+			OWLAxiom axiom = m_ontology.get_c_and_c_sub_c_Axiom( getClassURI( iAnte1 ), getClassURI(iAnte2), getClassURI( iCons ) );
+			return axiom;
 	}
 	 
-	 private HashMap<OWLAxiom,Double> get_exists_p_c_sub_c_Axioms() throws Exception {
+	 public OWLAxiom get_exists_p_c_sub_c_Axioms(int iPropExists, int iCons, double supp) throws SQLException {
 			// assumption: only one confidence value per axiom
-			HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-			String sQuery = m_sqlFactory.select_exists_p_c_sub_c_AxiomQuery();
-			ResultSet results = m_database.query( sQuery );
-			while( results.next() )
-			{
-				int iPropExists = results.getInt( "ante" );
-				int iCons = results.getInt( "cons" );
-				double dConf = results.getDouble( "conf" )/100.0;//normalize
-				OWLAxiom axiom = m_ontology.get_exists_p_c_sub_c_Axiom( getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), getClassURI( iCons ) );
-				hmAxioms.put( axiom, dConf );
-			}
-			return hmAxioms;
+			OWLAxiom axiom = m_ontology.get_exists_p_c_sub_c_Axiom( getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), getClassURI( iCons ) );
+			return axiom;
 	}
 	 
-	 private HashMap<OWLAxiom,Double> get_exists_p_T_sub_c_Axioms() throws Exception {
+	 public OWLAxiom get_exists_p_T_sub_c_Axioms(int iPropExists, int iCons, double supp) throws SQLException {
 			// assumption: only one confidence value per axiom
-			HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-			String sQuery = m_sqlFactory.select_exists_p_T_sub_c_AxiomQuery();
-			ResultSet results = m_database.query( sQuery );
-			while( results.next() )
-			{
-				int iPropExists = results.getInt( "ante" );
-				int iCons = results.getInt( "cons" );
-				double dConf = results.getDouble( "conf" )/100.0;//normalize
-				OWLAxiom axiom = m_ontology.get_exists_p_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ) );
-				hmAxioms.put( axiom, dConf );
-			}
-			return hmAxioms;
+			OWLAxiom axiom = m_ontology.get_exists_p_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ) );
+			return axiom;
 	}
 	 
-	 private HashMap<OWLAxiom,Double> get_exists_pi_T_sub_c_Axioms() throws Exception {
+	 public OWLAxiom get_exists_pi_T_sub_c_Axioms(int iPropExists, int iCons, double supp) throws SQLException {
 			// assumption: only one confidence value per axiom
-			HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-			String sQuery = m_sqlFactory.select_exists_pi_T_sub_c_AxiomQuery();
-			ResultSet results = m_database.query( sQuery );
-			while( results.next() )
-			{
-				int iPropExists = results.getInt( "ante" );
-				int iCons = results.getInt( "cons" );
-				double dConf = results.getDouble( "conf" )/100.0;//normalize
-				OWLAxiom axiom = m_ontology.get_exists_pi_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ) );
-				hmAxioms.put( axiom, dConf );
-			}
-			return hmAxioms;
+			OWLAxiom axiom = m_ontology.get_exists_pi_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ) );
+			return axiom;
 	}
 	 
-	 private HashMap<OWLAxiom,Double> get_c_sub_exists_p_c_Axioms() throws Exception {
+	 public OWLAxiom get_c_sub_exists_p_c_Axioms(int iAnte, int iPropExists, double supp) throws SQLException {
 			// assumption: only one confidence value per axiom
-			HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();
-			String sQuery = m_sqlFactory.select_c_sub_exists_p_c_AxiomQuery();
-			ResultSet results = m_database.query( sQuery );
-			while( results.next() )
-			{
-				int iPropExists = results.getInt( "cons" );
-				int iAnte = results.getInt( "ante" );
-				double dConf = results.getDouble( "conf" )/100.0;//normalize
-				OWLAxiom axiom = m_ontology.get_c_sub_exists_p_c_Axiom(getClassURI( iAnte ), getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists));
-				hmAxioms.put( axiom, dConf );
-			}
-			return hmAxioms;
+			OWLAxiom axiom = m_ontology.get_c_sub_exists_p_c_Axiom(getClassURI( iAnte ), getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists));
+			return axiom;
 	}
 	
 	private List<OWLAxiom> sort( HashMap<OWLAxiom,Double> hmAxioms ){

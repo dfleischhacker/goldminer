@@ -47,7 +47,7 @@ public class Ontology {
 		m_manager.addOntologyChangeListener( m_reasoner );
 	}
 	
-	public void save() throws Exception {
+	public void save() throws OWLOntologyStorageException {
 		m_manager.saveOntology( m_ontology );
 	}
 	
@@ -142,12 +142,12 @@ public class Ontology {
 		return m_reasoner.isEntailed( axiom );
 	}
 	
-	public void addAxiom( OWLAxiom axiom ) throws Exception {
+	public void addAxiom( OWLAxiom axiom ) {
 		AddAxiom addAxiom = new AddAxiom( m_ontology, axiom );
 		m_manager.applyChange( addAxiom );
     }
 	
-	public void removeAxiom( OWLAxiom axiom ) throws Exception {
+	public void removeAxiom( OWLAxiom axiom ) {
 		RemoveAxiom removeAxiom = new RemoveAxiom( m_ontology, axiom );
 		m_manager.applyChange( removeAxiom );
 	}

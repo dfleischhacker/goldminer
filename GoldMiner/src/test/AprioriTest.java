@@ -5,12 +5,14 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 
 import miner.IGoldMinerImpl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 
 
@@ -29,8 +31,8 @@ private IGoldMinerImpl goldMiner;
 	public void test() {
 		try {
 			this.goldMiner.mineAssociationRules();
-			List<String> rules = this.goldMiner.getAssociationRules();
-			this.goldMiner.parseAssociationRules(rules);
+			HashMap<OWLAxiom, Double> axioms = this.goldMiner.parseAssociationRules();
+			System.out.println("Anzahl Axiome: " + axioms.size());
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertTrue(false);
