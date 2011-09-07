@@ -32,11 +32,11 @@ public class UsePropertiesFileTest {
 			assertTrue(this.goldMiner.terminologyAcquisition());
 			this.goldMiner.createTransactionTables();
 		} catch (SQLException e) {
-			assertTrue(false);
 			e.printStackTrace();
+			assertTrue(false);
 		} catch (IOException e) {
-			assertTrue(false);
 			e.printStackTrace();
+			assertTrue(false);
 		}
 	}
 	
