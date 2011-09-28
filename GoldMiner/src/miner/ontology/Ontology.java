@@ -3,6 +3,9 @@ package miner.ontology;
 
 import com.clarkparsia.pellet.owlapiv3.PelletReasoner;
 import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
+
+import miner.util.Settings;
+
 import org.semanticweb.owlapi.reasoner.ClassExpressionNotInProfileException;
 import org.mindswap.pellet.PelletOptions;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -38,7 +41,7 @@ public class Ontology {
 	}
 	
 	public void create( File file ) throws OWLOntologyCreationException {
-		m_logicalIRI = IRI.create( "http://uni-mannheim.de/ontologies/ontology" );
+		m_logicalIRI = IRI.create( Settings.getString("ontology_logical") );
 		m_physicalIRI = IRI.create( file.toURI().toString() );
 		//OWLOntologyIRIMapper mapper = new OWLOntologyIRIMapper( m_logicalIRI, m_physicalIRI );
 		//m_manager.addIRIMapper( mapper );
@@ -51,7 +54,7 @@ public class Ontology {
 		m_manager.saveOntology( m_ontology );
 	}
 	
-	public void load( File file ) throws Exception {
+	public void load( File file ) throws OWLOntologyCreationException {
 		m_ontology = m_manager.loadOntologyFromOntologyDocument( file );
 		m_reasoner = PelletReasonerFactory.getInstance().createNonBufferingReasoner( m_ontology );
 		m_manager.addOntologyChangeListener( m_reasoner );
@@ -142,9 +145,10 @@ public class Ontology {
 		return m_reasoner.isEntailed( axiom );
 	}
 	
-	public void addAxiom( OWLAxiom axiom ) {
+	public void addAxiom( OWLAxiom axiom ) throws OWLOntologyStorageException {
 		AddAxiom addAxiom = new AddAxiom( m_ontology, axiom );
 		m_manager.applyChange( addAxiom );
+		this.save();
     }
 	
 	public void removeAxiom( OWLAxiom axiom ) {
@@ -152,62 +156,158 @@ public class Ontology {
 		m_manager.applyChange( removeAxiom );
 	}
 	
-	public OWLAxiom get_c_sub_c_Axiom( String subURI, String superURI ){
+	public OWLAxiom get_c_sub_c_Axiom( String subURI, String superURI, double supp, double conf ){
+		if(subURI == null || superURI == null) {
+			return null;
+		}
 		OWLClass c1 = m_factory.getOWLClass( IRI.create( subURI ) );
 		OWLClass c2 = m_factory.getOWLClass( IRI.create( superURI ) );
-		return m_factory.getOWLSubClassOfAxiom( c1, c2 );
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		
+		return m_factory.getOWLSubClassOfAxiom( c1, c2, annotations );
 	}
 	
-	public OWLAxiom get_p_sub_p_Axiom( String subURI, String superURI ){
+	public OWLAxiom get_p_sub_p_Axiom( String subURI, String superURI, double supp, double conf ){
+		if(subURI == null || superURI == null) {
+			return null;
+		}
 		OWLObjectProperty c1 = m_factory.getOWLObjectProperty( IRI.create( subURI ) );
 		OWLObjectProperty c2 = m_factory.getOWLObjectProperty( IRI.create( superURI ) );
-		return m_factory.getOWLSubObjectPropertyOfAxiom( c1, c2 );
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLSubObjectPropertyOfAxiom( c1, c2, annotations );
 	}
 	
-	public OWLAxiom get_c_and_c_sub_c_Axiom( String subURI1, String subURI2, String superURI ){
+	public OWLAxiom get_c_and_c_sub_c_Axiom( String subURI1, String subURI2, String superURI, double supp, double conf ){
+		if(subURI1 == null || subURI2 == null || superURI == null) {
+			return null;
+		}
 		OWLClass c1 = m_factory.getOWLClass( IRI.create( subURI1 ) );
 		OWLClass c2 = m_factory.getOWLClass( IRI.create( subURI2 ) );
 		OWLClass c3 = m_factory.getOWLClass( IRI.create( superURI ) );
-		return m_factory.getOWLSubClassOfAxiom( m_factory.getOWLObjectIntersectionOf(c1, c2), c3 );
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLSubClassOfAxiom( m_factory.getOWLObjectIntersectionOf(c1, c2), c3, annotations );
 	}
 	
-	public OWLAxiom get_c_dis_c_Axiom( String subURI1, String subURI2 ){
+	public OWLAxiom get_c_dis_c_Axiom( String subURI1, String subURI2, double supp, double conf ){
+		if(subURI1 == null || subURI2 == null) {
+			return null;
+		}
 		OWLClass c1 = m_factory.getOWLClass( IRI.create( subURI1 ) );
 		OWLClass c2 = m_factory.getOWLClass( IRI.create( subURI2 ) );
-		return m_factory.getOWLDisjointClassesAxiom(c1, c2);
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		Set<OWLClass> classes = new HashSet<OWLClass>();
+		classes.add(c1);
+		classes.add(c2);
+		return m_factory.getOWLDisjointClassesAxiom(classes, annotations);
 	}
 	
-	public OWLAxiom get_exists_p_c_sub_c_Axiom( String opURI, String classURI1, String classURI2  ){
+	public OWLAxiom get_exists_p_c_sub_c_Axiom( String opURI, String classURI1, String classURI2, double supp, double conf  ){
+		//SubClassOf(ObjectSomeValuesFrom(1 2) 3)
+		if(opURI == null || classURI1 == null || classURI2 == null) {
+			return null;
+		}
+		OWLClass c1 = m_factory.getOWLClass( IRI.create( classURI1 ) );
+		OWLClass c2 = m_factory.getOWLClass( IRI.create( classURI2 ) );
+		OWLObjectProperty c3 = m_factory.getOWLObjectProperty( IRI.create( opURI ) );
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLSubClassOfAxiom(m_factory.getOWLObjectSomeValuesFrom(c3, c1), c2, annotations);
+	}
+	
+	public OWLAxiom get_exists_p_T_sub_c_Axiom( String opURI, String classURI, double supp, double conf  ){
+		//SubClassOf(ObjectSomeValuesFrom(1 2) 3)
+		if(opURI == null || classURI == null) {
+			return null;
+		}
+		OWLClass c1 = m_factory.getOWLClass( IRI.create( classURI ) );
+		OWLObjectProperty c2 = m_factory.getOWLObjectProperty( IRI.create( opURI ) );
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLObjectPropertyDomainAxiom(c2, c1, annotations);
+	}
+	
+	public OWLAxiom get_exists_pi_T_sub_c_Axiom( String opURI, String classURI, double supp, double conf  ){
+		if(opURI == null || classURI == null) {
+			return null;
+		}
+		//SubClassOf(ObjectSomeValuesFrom(1 2) 3)
+		OWLClass c1 = m_factory.getOWLClass( IRI.create( classURI ) );
+		OWLObjectProperty c2 = m_factory.getOWLObjectProperty( IRI.create( opURI ) );
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLObjectPropertyRangeAxiom(c2, c1, annotations);
+	}
+	
+	public OWLAxiom get_c_sub_exists_p_c_Axiom( String classURI1, String opURI, String classURI2, double supp, double conf  ){
+		if(classURI1 == null || opURI == null || classURI2 == null) {
+			return null;
+		}
 		//SubClassOf(ObjectSomeValuesFrom(1 2) 3)
 		OWLClass c1 = m_factory.getOWLClass( IRI.create( classURI1 ) );
 		OWLClass c2 = m_factory.getOWLClass( IRI.create( classURI2 ) );
 		OWLObjectProperty c3 = m_factory.getOWLObjectProperty( IRI.create( opURI ) );
-		return m_factory.getOWLSubClassOfAxiom(m_factory.getOWLObjectSomeValuesFrom(c3, c1), c2);
-	}
-	
-	public OWLAxiom get_exists_p_T_sub_c_Axiom( String opURI, String classURI  ){
-		//SubClassOf(ObjectSomeValuesFrom(1 2) 3)
-		OWLClass c1 = m_factory.getOWLClass( IRI.create( classURI ) );
-		OWLObjectProperty c2 = m_factory.getOWLObjectProperty( IRI.create( opURI ) );
-		return m_factory.getOWLObjectPropertyDomainAxiom(c2, c1);
-	}
-	
-	public OWLAxiom get_exists_pi_T_sub_c_Axiom( String opURI, String classURI  ){
-		//SubClassOf(ObjectSomeValuesFrom(1 2) 3)
-		OWLClass c1 = m_factory.getOWLClass( IRI.create( classURI ) );
-		OWLObjectProperty c2 = m_factory.getOWLObjectProperty( IRI.create( opURI ) );
-		return m_factory.getOWLObjectPropertyRangeAxiom(c2, c1);
-	}
-	
-	public OWLAxiom get_c_sub_exists_p_c_Axiom( String classURI1, String opURI, String classURI2  ){
-		//SubClassOf(ObjectSomeValuesFrom(1 2) 3)
-		OWLClass c1 = m_factory.getOWLClass( IRI.create( classURI1 ) );
-		OWLClass c2 = m_factory.getOWLClass( IRI.create( classURI2 ) );
-		OWLObjectProperty c3 = m_factory.getOWLObjectProperty( IRI.create( opURI ) );
-		return m_factory.getOWLSubClassOfAxiom(c1, m_factory.getOWLObjectSomeValuesFrom(c3, c2));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLSubClassOfAxiom(c1, m_factory.getOWLObjectSomeValuesFrom(c3, c2), annotations);
 	}
 	
 	public Set<OWLAxiom> getAxioms() {
 		return this.m_ontology.getAxioms();
+	}
+	
+	public void addClass(IRI iri) throws OWLOntologyStorageException {
+		OWLClass c = this.m_factory.getOWLClass(iri);
+		OWLDeclarationAxiom declarationAxiom = this.m_factory.getOWLDeclarationAxiom(c);
+		this.m_manager.addAxiom(this.m_ontology, declarationAxiom);
+		System.out.println("Added Class: " + iri.toString());
+		this.save();
+	}
+	
+	public void addProperty(IRI iri) throws OWLOntologyStorageException {
+		OWLObjectProperty p = this.m_factory.getOWLObjectProperty(iri);
+		OWLDeclarationAxiom declarationAxiom = this.m_factory.getOWLDeclarationAxiom(p);
+		this.m_manager.addAxiom(this.m_ontology, declarationAxiom);
+		System.out.println("Added Property: " + iri.toString());
+		this.save();
+	}
+	
+	public void print() {
+		System.out.println("Number of classes: " + this.m_ontology.getClassesInSignature().size());
+		System.out.println("Number of properties: " + this.m_ontology.getObjectPropertiesInSignature().size());
+		System.out.println(this.m_ontology.toString());
+	}
+	
+	public OWLAnnotation annotation( String sAnnotation, double dValue ){
+		OWLAnnotationProperty prop = m_factory.getOWLAnnotationProperty( IRI.create( m_logicalIRI +"#"+ sAnnotation ) );
+		OWLAnnotation annotation = m_factory.getOWLAnnotation( prop, m_factory.getOWLLiteral( dValue ) );
+		return annotation;
 	}
 }

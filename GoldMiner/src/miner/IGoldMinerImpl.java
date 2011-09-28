@@ -37,10 +37,11 @@ public class IGoldMinerImpl implements IGoldMiner {
 	private OntologyWriter writer;
 	private Ontology ontology;
 	
-	public IGoldMinerImpl() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException {
+	public IGoldMinerImpl() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException, OWLOntologyStorageException  {
 		if(!Settings.loaded()) {
 			Settings.load();
 		}
+		this.selectAxioms();
 		this.database = Database.instance();
 		this.setup = new Setup();
 		this.tablePrinter = new TablePrinter();
@@ -49,6 +50,7 @@ public class IGoldMinerImpl implements IGoldMiner {
 		this.parser = new AssociationRulesParser();
 		this.ontology = new Ontology();
 		this.ontology.create(new File(Settings.getString("ontology")));
+		this.ontology.save();
 	}
 	
 	private Database database;
@@ -186,26 +188,16 @@ public class IGoldMinerImpl implements IGoldMiner {
 	}
 
 	@Override
-	public boolean selectAxioms(
-			boolean c_sub_c, 
-			boolean c_and_c_sub_c,
-			boolean c_sub_exists_p_c, 
-			boolean exists_p_c_sub_c,
-			boolean exists_p_T_sub_c, 
-			boolean exists_pi_T_sub_c,
-			boolean p_sub_p, 
-			boolean p_chain_p_sub_p, 
-			boolean c_dis_c) {
-		this.c_sub_c = c_sub_c;
-		this.c_and_c_sub_c = c_and_c_sub_c;
-		this.c_sub_exists_p_c = c_sub_exists_p_c;
-		this.exists_p_c_sub_c = exists_p_c_sub_c;
-		this.exists_p_T_sub_c = exists_p_T_sub_c;
-		this.exists_pi_T_sub_c = exists_pi_T_sub_c;
-		this.p_sub_p = p_sub_p;
-		this.p_chain_p_sub_p = p_chain_p_sub_p;
-		this.c_dis_c = c_dis_c;
-		return true;
+	public void selectAxioms() {
+		this.c_sub_c = Settings.getAxiom("c_sub_c");
+		this.c_and_c_sub_c = Settings.getAxiom("c_and_c_sub_c");
+		this.c_sub_exists_p_c = Settings.getAxiom("c_sub_exists_p_c");
+		this.exists_p_c_sub_c = Settings.getAxiom("exists_p_c_sub_c");
+		this.exists_p_T_sub_c = Settings.getAxiom("exists_p_T_sub_c");
+		this.exists_pi_T_sub_c = Settings.getAxiom("exists_pi_T_sub_c");
+		this.p_sub_p = Settings.getAxiom("p_sub_p");
+		this.p_chain_p_sub_p = Settings.getAxiom("p_chain_p_sub_p");
+		this.c_dis_c = Settings.getAxiom("c_dis_c");
 	}
 
 	@Override
@@ -308,85 +300,117 @@ public class IGoldMinerImpl implements IGoldMiner {
 
 	@Override
 	public HashMap<OWLAxiom, Double> parseAssociationRules() throws IOException, SQLException {
-		this.writer = new OntologyWriter(this.database);
+		this.writer = new OntologyWriter(this.database, this.ontology);
 		HashMap<OWLAxiom, Double> hmAxioms = new HashMap<OWLAxiom, Double>();
 		if(this.c_sub_c){
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		if(this.c_and_c_sub_c) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, true);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		if(this.c_sub_exists_p_c) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_c_sub_exists_p_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_c_sub_exists_p_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		if(this.exists_p_c_sub_c) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_exists_p_c_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_exists_p_c_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		if(this.exists_p_T_sub_c) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[2] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_exists_p_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_exists_p_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		if(this.exists_pi_T_sub_c) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_exists_pi_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_exists_pi_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		if(this.p_sub_p) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		if(this.p_chain_p_sub_p) {
-			File f = new File(Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
-			List<ParsedAxiom> axioms = this.parser.parse(f, false);
-			for(ParsedAxiom pa : axioms) {
+			//File f = new File(Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+			//List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			//for(ParsedAxiom pa : axioms) {
 				//TODO (does an appropriate method exists!?)
-			}
+			//}
 		}
 		if(this.c_dis_c) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[6] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
-				hmAxioms.put(this.writer.get_c_dis_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp()), pa.getConf());
+				OWLAxiom a = this.writer.get_c_dis_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
 			}
 		}
 		return hmAxioms;
 	}
-
-	@Override
-	public Ontology createOntology(HashMap<OWLAxiom, Double> axioms,
-			double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException {
-		this.writer = new OntologyWriter(this.database);
-		this.ontology = this.writer.write(axioms, supportThreshold, confidenceThreshold);
+	
+	private void initializeOntology() throws SQLException, OWLOntologyStorageException {
+		this.writer = new OntologyWriter(this.database, this.ontology);
+		this.ontology = this.writer.writeClassesAndPropertiesToOntology();
 		this.ontology.save();
-		return null;
 	}
 
 	@Override
-	public Ontology greedyDebug(Ontology ontology) {
+	public Ontology createOntology(HashMap<OWLAxiom, Double> axioms,
+			double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException, SQLException {
+		//this.initializeOntology();
+		this.writer = new OntologyWriter(this.database, this.ontology);
+		Ontology o = this.writer.write(axioms, supportThreshold, confidenceThreshold);
+		//o.save();
+		this.ontology = o;
+		return o;
+	}
+
+	@Override
+	public Ontology greedyDebug(Ontology ontology) throws OWLOntologyStorageException {
 		return OntologyDebugger.greedyWrite(ontology);
 	}
 }

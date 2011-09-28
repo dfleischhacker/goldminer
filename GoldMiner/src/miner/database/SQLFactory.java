@@ -156,11 +156,11 @@ public class SQLFactory {
 		return "UPDATE c_dis_c SET ind = "+ iCount +" WHERE cons = "+ id1 +" AND ante = "+ id2;
 	}
 	
-	public String insertIndividualPairQuery( String sURI1, String sURI2, String sName1, String sName2, int id1, int id2 ){
-		return "INSERT INTO individual_pairs (uri1, uri2, name1, name2, id1, id2) VALUES ('"+ sURI1 +"', '"+ sURI2 +"', '"+ sName1 +"', '"+ sName2 +"', "+ id1 +", "+ id2 +")";
+	public String insertIndividualPairQuery(String sURI1, String sURI2, String sName1, String sName2, int id1, int id2 ){
+		return "INSERT INTO individual_pairs (id, uri1, uri2, name1, name2, id1, id2) VALUES ('" + sURI1 +"', '"+ sURI2 +"', '"+ sName1 +"', '"+ sName2 +"', "+ id1 +", "+ id2 +")";
 	}
 	
-	public String insertIndividualPairExtQuery( String sURI1, String sURI2, String sName1, String sName2, int id1, int id2 ){
+	public String insertIndividualPairExtQuery(String sURI1, String sURI2, String sName1, String sName2, int id1, int id2 ){
 		return "INSERT INTO individual_pairs_ext (uri1, uri2, name1, name2, id1, id2) VALUES ('"+ sURI1 +"', '"+ sURI2 +"', '"+ sName1 +"', '"+ sName2 +"', "+ id1 +", "+ id2 +")";
 	}
 	
@@ -188,7 +188,7 @@ public class SQLFactory {
 		return "INSERT INTO classes_ex_property VALUES ("+ iID +", '"+ sPropURI +"', '"+ sClassURI +"', '"+ sPropName +"', '"+ sClassName +"')";
 	}
 	
-	public String insertGoldSubAxiomQuery( int id1, int id2, int iSubsumedBy ){
+	public String insertGoldSubAxiomQuery(int id1, int id2, int iSubsumedBy ){
 		return "INSERT INTO c_sub_c_gold VALUES ("+ id1 +", "+ id2 +", "+ iSubsumedBy +")";
 	}
 	
@@ -290,6 +290,14 @@ public class SQLFactory {
 	
 	public String selectClassURIQuery( int iID ){
 		return "SELECT uri FROM classes WHERE id='"+ iID +"'";
+	}
+	
+	public String selectClassURIsQuery() {
+		return "SELECT name FROM classes";
+	}
+	
+	public String selectPropertyURIsQuery() {
+		return "SELECT name FROM properties";
 	}
 	
 	public String selectIndividualIDQuery( String sURI ){

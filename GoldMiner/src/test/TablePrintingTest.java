@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import miner.IGoldMinerImpl;
 
@@ -19,9 +20,8 @@ public class TablePrintingTest {
 	private IGoldMinerImpl goldMiner;
 	
 	@Before
-	public void init() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException {
+	public void init() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException, OWLOntologyStorageException {
 		this.goldMiner = new IGoldMinerImpl();
-		this.goldMiner.selectAxioms(true, true, true, true, true, true, true, true, false);
 	}
 	
 	@Test

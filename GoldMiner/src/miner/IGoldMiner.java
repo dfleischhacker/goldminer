@@ -31,29 +31,9 @@ public interface IGoldMiner {
 	boolean connect(String url, String user, String password);
 	
 	/**
-	 * determine which types of axioms should be generated for the ontology.
-	 * 
-	 * @param c_sub_c
-	 * @param c_and_c_sub_c
-	 * @param c_sub_exists_p_c
-	 * @param exists_p_c_sub_c
-	 * @param exists_p_T_sub_c
-	 * @param exists_pi_T_sub_c
-	 * @param p_sub_p
-	 * @param p_chain_p_sub_p
-	 * @param c_dis_c
-	 * @return
+	 * determine which types of axioms should be generated for the ontology. (load from axioms.properties)
 	 */
-	boolean selectAxioms(boolean c_sub_c, 
-			boolean c_and_c_sub_c, 
-			boolean c_sub_exists_p_c, 
-			boolean exists_p_c_sub_c, 
-			boolean exists_p_T_sub_c, 
-			boolean exists_pi_T_sub_c, 
-			boolean p_sub_p,
-			boolean p_chain_p_sub_p,
-			boolean c_dis_c
-			);
+	void selectAxioms();
 	
 	/**
 	 * setup of the connection to the sparql endpoint.
@@ -145,7 +125,7 @@ public interface IGoldMiner {
 	 * @param confidenceThreshold only add axioms with a confidence value equal or greater than this threshold.
 	 * @return the ontology generated out of axioms and thresholds.
 	 */
-	Ontology createOntology(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException;
+	Ontology createOntology(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException, SQLException;
 	
 	/**
 	 * enables debugging of an existing ontology. this method applies the
@@ -157,5 +137,5 @@ public interface IGoldMiner {
 	 * @param ontology the ontology that shell be debugged.
 	 * @return the debugged ontology.
 	 */
-	Ontology greedyDebug(Ontology ontology);
+	Ontology greedyDebug(Ontology ontology) throws OWLOntologyStorageException;
 }

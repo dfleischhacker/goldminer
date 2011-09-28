@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import miner.IGoldMiner;
 import miner.IGoldMinerImpl;
@@ -20,24 +21,24 @@ public class UsePropertiesFileTest {
 	private IGoldMiner goldMiner;
 	
 	@Before
-	public void connect() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException {
+	public void connect() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException, OWLOntologyStorageException {
 			this.goldMiner = new IGoldMinerImpl();
 	}
 	
 	@Test
 	public void execute() {
 		try {
-			assertTrue(this.goldMiner.selectAxioms(true, true, true, true, true, true, true, true, false));
 			assertTrue(this.goldMiner.setupDatabase());
 			assertTrue(this.goldMiner.terminologyAcquisition());
-			this.goldMiner.createTransactionTables();
+			//this.goldMiner.createTransactionTables();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			assertTrue(false);
-		} catch (IOException e) {
-			e.printStackTrace();
-			assertTrue(false);
 		}
+		//} catch (IOException e) {
+			//e.printStackTrace();
+			//assertTrue(false);
+		//}
 	}
 	
 	@After

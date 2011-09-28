@@ -11,7 +11,9 @@ import java.util.List;
 
 import miner.database.Database;
 import miner.database.SQLFactory;
+import miner.util.Settings;
 
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
@@ -23,13 +25,13 @@ public class OntologyWriter {
 	
 	private SQLFactory m_sqlFactory;
 	
-	public OntologyWriter(Database d) {
-		m_ontology = new Ontology();
+	public OntologyWriter(Database d, Ontology o) {
+		m_ontology = o;
 		m_sqlFactory = new SQLFactory();
 		m_database = d;
 	}
 	
-	public Ontology write(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) {
+	public Ontology write(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException {
 		//List<OWLAxiom> axioms = getAxioms();
 		//System.out.println( "axioms: "+ axioms.size() );
 		int i=0;
@@ -65,51 +67,51 @@ public class OntologyWriter {
 		return sort( hmAxioms );
 	}
 	
-	public OWLAxiom get_c_sub_c_Axioms(int iCons, int iAnte, double dSupp) throws SQLException {
+	public OWLAxiom get_c_sub_c_Axioms(int iCons, int iAnte, double dSupp, double conf) throws SQLException {
 		// assumption: only one confidence value per axiom
-		OWLAxiom axiom = m_ontology.get_c_sub_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ) );
+		OWLAxiom axiom = m_ontology.get_c_sub_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ), dSupp, conf );
 		return axiom;
 	}
 	 
-	 public OWLAxiom get_c_dis_c_Axioms(int iAnte, int iCons, double supp) throws SQLException {
+	 public OWLAxiom get_c_dis_c_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_c_dis_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ) );
+			OWLAxiom axiom = m_ontology.get_c_dis_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ), supp, conf );
 			return axiom;
 		}
 	 
-	 public OWLAxiom get_p_sub_p_Axioms(int iAnte, int iCons, double supp) throws SQLException {
+	 public OWLAxiom get_p_sub_p_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_p_sub_p_Axiom( getPropertyURI( iAnte ), getPropertyURI( iCons ) );
+			OWLAxiom axiom = m_ontology.get_p_sub_p_Axiom( getPropertyURI( iAnte ), getPropertyURI( iCons ), supp, conf );
 			return axiom;
 		}
 	 
-	 public OWLAxiom get_c_and_c_sub_c_Axioms(int iAnte1, int iAnte2, int iCons, double supp) throws SQLException {
+	 public OWLAxiom get_c_and_c_sub_c_Axioms(int iAnte1, int iAnte2, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_c_and_c_sub_c_Axiom( getClassURI( iAnte1 ), getClassURI(iAnte2), getClassURI( iCons ) );
+			OWLAxiom axiom = m_ontology.get_c_and_c_sub_c_Axiom( getClassURI( iAnte1 ), getClassURI(iAnte2), getClassURI( iCons ), supp, conf );
 			return axiom;
 	}
 	 
-	 public OWLAxiom get_exists_p_c_sub_c_Axioms(int iPropExists, int iCons, double supp) throws SQLException {
+	 public OWLAxiom get_exists_p_c_sub_c_Axioms(int iPropExists, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_exists_p_c_sub_c_Axiom( getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), getClassURI( iCons ) );
+			OWLAxiom axiom = m_ontology.get_exists_p_c_sub_c_Axiom( getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), getClassURI( iCons ), supp, conf );
 			return axiom;
 	}
 	 
-	 public OWLAxiom get_exists_p_T_sub_c_Axioms(int iPropExists, int iCons, double supp) throws SQLException {
+	 public OWLAxiom get_exists_p_T_sub_c_Axioms(int iPropExists, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_exists_p_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ) );
+			OWLAxiom axiom = m_ontology.get_exists_p_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ), supp, conf );
 			return axiom;
 	}
 	 
-	 public OWLAxiom get_exists_pi_T_sub_c_Axioms(int iPropExists, int iCons, double supp) throws SQLException {
+	 public OWLAxiom get_exists_pi_T_sub_c_Axioms(int iPropExists, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_exists_pi_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ) );
+			OWLAxiom axiom = m_ontology.get_exists_pi_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ), supp, conf );
 			return axiom;
 	}
 	 
-	 public OWLAxiom get_c_sub_exists_p_c_Axioms(int iAnte, int iPropExists, double supp) throws SQLException {
+	 public OWLAxiom get_c_sub_exists_p_c_Axioms(int iAnte, int iPropExists, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_c_sub_exists_p_c_Axiom(getClassURI( iAnte ), getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists));
+			OWLAxiom axiom = m_ontology.get_c_sub_exists_p_c_Axiom(getClassURI( iAnte ), getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), supp, conf);
 			return axiom;
 	}
 	
@@ -183,5 +185,21 @@ public class OntologyWriter {
 			return results.getString( "uri" );
 		}
 		return null;
+	}
+	
+	public Ontology writeClassesAndPropertiesToOntology() throws SQLException, OWLOntologyStorageException {
+		String query = m_sqlFactory.selectClassURIsQuery();
+		ResultSet results = m_database.query(query);
+		while(results.next()) {
+			IRI iri = IRI.create(Settings.getString("ontology_logical") + "#" + results.getString("name"));
+			this.m_ontology.addClass(iri);
+		}
+		String query2 = m_sqlFactory.selectPropertyURIsQuery();
+		ResultSet results2 = m_database.query(query2);
+		while(results2.next()) {
+			IRI iri = IRI.create(Settings.getString("ontology_logical") + "#" + results2.getString("name"));
+			this.m_ontology.addProperty(iri);
+		}
+		return this.m_ontology;
 	}
 }

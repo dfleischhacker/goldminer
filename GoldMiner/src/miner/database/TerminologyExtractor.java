@@ -15,9 +15,12 @@ import miner.sparql.SPARQLFactory;
 
 public class TerminologyExtractor extends Extractor {
 	
+	private int id;
+	
 	public TerminologyExtractor() throws SQLException, FileNotFoundException,
 			IOException {
 		super();
+		this.id = 0;
 	}
 	
 	public TerminologyExtractor(Database database, String endpoint, String graph, int chunk, Filter filter) {
@@ -54,7 +57,7 @@ public class TerminologyExtractor extends Extractor {
 			String sProp = results.getString( "uri" );
 			String sName = results.getString( "name" );
 			int iID = results.getInt( "id" );
-			String sInsert = m_sqlFactory.insertPropertyChainTransQuery( iID + 1000, sProp, sName );
+			String sInsert = m_sqlFactory.insertPropertyChainTransQuery( this.id++, sProp, sName );
 			m_database.execute( sInsert );
 		}
 		System.out.println( "done" );
@@ -80,7 +83,7 @@ public class TerminologyExtractor extends Extractor {
 				// update table
 				String sClassName = getLocalName( sClass );
 				String sPropName = getLocalName( sProp );
-				String sQuery3 = m_sqlFactory.insertClassExistsPropertyQuery( id, sProp, sClass, sPropName, sClassName );
+				String sQuery3 = m_sqlFactory.insertClassExistsPropertyQuery( this.id++, sProp, sClass, sPropName, sClassName );
 				m_database.execute( sQuery3 );
 				id++;
 			}
@@ -96,7 +99,7 @@ public class TerminologyExtractor extends Extractor {
 		{
 			String sProp = (String) iter.next();
 			String sName = getLocalName( sProp );
-			String sQuery2 = m_sqlFactory.insertPropertyQuery( id++, sProp, sName );
+			String sQuery2 = m_sqlFactory.insertPropertyQuery( this.id++, sProp, sName );
 			m_database.execute( sQuery2 );
 		}
 		System.out.println( "done: "+ id );
@@ -134,7 +137,7 @@ public class TerminologyExtractor extends Extractor {
 						String sURI2 = properties[j];
 						String sName1 = getLocalName( sURI1 );
 						String sName2 = getLocalName( sURI2 );
-						String sInsertQuery = m_sqlFactory.insertPropertyChainQuery( id++, sURI1, sURI2, sName1, sName2 );
+						String sInsertQuery = m_sqlFactory.insertPropertyChainQuery( this.id++, sURI1, sURI2, sName1, sName2 );
 						m_database.execute( sInsertQuery );
 						break;
 					}
@@ -154,8 +157,8 @@ public class TerminologyExtractor extends Extractor {
 			int iPropID = results.getInt( "id" );
 			int iTopID = iPropID + 1000;
 			int iInvTopID = iPropID + 2000;
-			String sInsert1 = m_sqlFactory.insertPropertyTopQuery( iTopID, 0, sPropURI, sPropName );
-			String sInsert2 = m_sqlFactory.insertPropertyTopQuery( iInvTopID, 1, sPropURI, sPropName );
+			String sInsert1 = m_sqlFactory.insertPropertyTopQuery( this.id++, 0, sPropURI, sPropName );
+			String sInsert2 = m_sqlFactory.insertPropertyTopQuery( this.id++, 1, sPropURI, sPropName );
 			m_database.execute( sInsert1 );
 			m_database.execute( sInsert2 );
 		}
@@ -174,7 +177,7 @@ public class TerminologyExtractor extends Extractor {
 			String sCountClassIndQuery = m_sparqlFactory.classExtensionSizeQuery( sClass );
 			// int iSize = m_engine.count( sCountClassIndQuery );
 			System.out.println( sClass +" ... " );
-			String sQuery = m_sqlFactory.insertClassQuery( id++, sClass, sName );
+			String sQuery = m_sqlFactory.insertClassQuery( this.id++, sClass, sName );
 			m_database.execute( sQuery );
 		}
 		System.out.println( "done: "+ id );
