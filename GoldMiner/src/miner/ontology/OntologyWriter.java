@@ -8,12 +8,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import miner.database.Database;
 import miner.database.SQLFactory;
 import miner.util.Settings;
 
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
@@ -37,16 +39,20 @@ public class OntologyWriter {
 		int i=0;
 		for( OWLAxiom axiom: axioms.keySet() )
 		{
-			System.out.println( "add ("+ i +"): "+ axiom );
-			if(axioms.get(axiom) > confidenceThreshold) {
+			boolean supp = false;
+			Set<OWLAnnotation> anno = axiom.getAnnotations();
+			for(OWLAnnotation a : anno) {
+				if(a.getProperty().getIRI().toString().split("#")[1].equals("support")) {
+					double conf = Double.parseDouble(a.getValue().toString().split("\"")[1]);
+					if(conf >= supportThreshold) {
+						supp = true;
+					}
+				}
+			}
+			if(axioms.get(axiom) > confidenceThreshold && supp) {
+				System.out.println( "add ("+ i +"): "+ axiom );
 				m_ontology.addAxiom( axiom );
 			}
-			//TODO support threshold!
-			//if( !m_ontology.isCoherent() )
-			//{
-				//System.out.println( "remove ("+ i +"): "+ axiom );
-				//m_ontology.removeAxiom( axiom );
-			//}
 			i++;
 		}
 		return this.m_ontology;
@@ -85,6 +91,21 @@ public class OntologyWriter {
 			return axiom;
 		}
 	 
+	 public OWLAxiom get_p_dis_p_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 OWLAxiom axiom = m_ontology.get_p_dis_p_Axiom(getPropertyURI( iAnte ), getDisjointPropertyURI( iCons ), supp, conf);
+		 return axiom;
+	 }
+	 
+	 public OWLAxiom get_p_reflexive_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 OWLAxiom axiom = m_ontology.getPropertyReflexivityAxiom(iAnte + "", getPropertyURI(iCons), supp, conf);
+		 return axiom;
+	 }
+	 
+	 public OWLAxiom get_p_irreflexive_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 OWLAxiom axiom = m_ontology.getPropertyIrreflexivityAxiom(iAnte + "", getDisjointPropertyURI(iCons), supp, conf);
+		 return axiom;
+	 }
+	 
 	 public OWLAxiom get_c_and_c_sub_c_Axioms(int iAnte1, int iAnte2, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
 			OWLAxiom axiom = m_ontology.get_c_and_c_sub_c_Axiom( getClassURI( iAnte1 ), getClassURI(iAnte2), getClassURI( iCons ), supp, conf );
@@ -114,6 +135,53 @@ public class OntologyWriter {
 			OWLAxiom axiom = m_ontology.get_c_sub_exists_p_c_Axiom(getClassURI( iAnte ), getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), supp, conf);
 			return axiom;
 	}
+	 public OWLAxiom get_p_inverse_q_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 	OWLAxiom axiom = m_ontology.getPropertyInverseAxiom(this.getPropertyURI(iAnte), this.getInversePropertyURI(iCons), supp, conf);
+		 	return axiom;
+	 }
+	 
+	 public OWLAxiom get_p_asymmetric_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 	OWLAxiom axiom = m_ontology.getPropertyAsymmetricAxiom(this.getPropertyURI(iAnte), this.getSymmetryPropertyURI( iCons ), supp, conf);
+		 	return axiom;
+	 }
+	 
+	 public OWLAxiom get_p_functional_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 OWLAxiom axiom = m_ontology.getPropertyFunctionalAxiom(getPropertyURI(iAnte), getDisjointPropertyURI(iCons), supp, conf);
+		 return axiom;
+	 }
+	 
+	 public OWLAxiom get_p_inverse_functional_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 OWLAxiom axiom = m_ontology.getPropertyInverseFunctionalAxiom(getPropertyURI(iAnte), getSymmetryPropertyURI(iCons), supp, conf);
+		 return axiom;
+	 }
+	 
+	 public OWLAxiom get_p_chain_p_sub_p_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		 String sQuery = m_sqlFactory.selectURIFromPropertyChainsTrans(iAnte);
+		 ResultSet results = m_database.query(sQuery);
+		 String uri = null;
+		 if(results.next()) {
+			 uri = results.getString("uri");
+		 }
+		 OWLAxiom axiom = m_ontology.get_p_chain_p_sub_p_Axiom(uri, getPropertyURI(iCons), supp, conf);
+		 return axiom;
+	 }
+	 
+	 public OWLAxiom get_p_chain_q_sub_r_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
+		String sQuery = m_sqlFactory.selectURIsFromPropertyChains(iAnte);
+		ResultSet results = m_database.query(sQuery);
+		String uri1;
+		String uri2;
+		List<String> uris = null;
+		if(results.next()) {
+			uri1 = results.getString("uri1");
+			uri2 = results.getString("uri2");
+			uris = new ArrayList<String>();
+			uris.add(uri1);
+			uris.add(uri2);
+		}
+		OWLAxiom axiom = m_ontology.get_p_chain_q_sub_r_Axiom(uris, getPropertyURI(iCons), supp, conf);
+		return axiom;
+	 }
 	
 	private List<OWLAxiom> sort( HashMap<OWLAxiom,Double> hmAxioms ){
 		List<OWLAxiom> axioms = new ArrayList<OWLAxiom>( hmAxioms.keySet() );
@@ -156,7 +224,34 @@ public class OntologyWriter {
 		}
 		return null;
 	}
-
+	
+	public String getDisjointPropertyURI( int iPropertyID ) throws SQLException {
+		String sQuery = m_sqlFactory.selectDisjointPropertyURIQuery( iPropertyID );
+		ResultSet results = m_database.query( sQuery );
+		if( results.next() ) {
+			return results.getString( "uri" );
+		}
+		return null;
+	}
+	
+	public String getInversePropertyURI( int iPropertyID ) throws SQLException {
+		String sQuery = m_sqlFactory.selectInversePropertyURIQuery( iPropertyID );
+		ResultSet results = m_database.query( sQuery );
+		if(results.next() ) {
+			return results.getString("uri");
+		}
+		return null;
+	}
+	
+	public String getSymmetryPropertyURI( int iPropertyID ) throws SQLException {
+		String sQuery = m_sqlFactory.selectSymmetryPropertyURIQuery( iPropertyID );
+		ResultSet results = m_database.query( sQuery );
+		if(results.next() ) {
+			return results.getString("uri");
+		}
+		return null;
+	}
+	
 	//retrieves the property ID form the property_exists table
 	public String getPropertyURIFromExistsProperty( int iExistsPropertyID ) throws SQLException {
 		String sQuery = m_sqlFactory.selectURIsFromExistsQuery( iExistsPropertyID );

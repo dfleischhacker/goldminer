@@ -185,6 +185,23 @@ public class Ontology {
 		return m_factory.getOWLSubObjectPropertyOfAxiom( c1, c2, annotations );
 	}
 	
+	public OWLAxiom get_p_dis_p_Axiom( String subURI, String superURI, double supp, double conf) {
+		if(subURI == null || superURI == null) {
+			return null;
+		}
+		OWLObjectProperty p1 = m_factory.getOWLObjectProperty( IRI.create( subURI ) );
+		OWLObjectProperty p2 = m_factory.getOWLObjectProperty( IRI.create( superURI ) );
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		Set<OWLObjectProperty> properties = new HashSet<OWLObjectProperty>();
+		properties.add(p1);
+		properties.add(p2);
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLDisjointObjectPropertiesAxiom( properties, annotations );
+	}
+	
 	public OWLAxiom get_c_and_c_sub_c_Axiom( String subURI1, String subURI2, String superURI, double supp, double conf ){
 		if(subURI1 == null || subURI2 == null || superURI == null) {
 			return null;
@@ -277,6 +294,120 @@ public class Ontology {
 		annotations.add(suppAnnotation);
 		annotations.add(confAnnotation);
 		return m_factory.getOWLSubClassOfAxiom(c1, m_factory.getOWLObjectSomeValuesFrom(c3, c2), annotations);
+	}
+	
+	public OWLAxiom getPropertyReflexivityAxiom(String uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || !uri1.equals("0") || uri2 == null) {
+			return null;
+		}
+		OWLObjectProperty prop = m_factory.getOWLObjectProperty( IRI.create(uri2));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLReflexiveObjectPropertyAxiom(prop, annotations);
+	}
+	
+	public OWLAxiom getPropertyIrreflexivityAxiom(String uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || !uri1.equals("0") || uri2 == null) {
+			return null;
+		}
+		OWLObjectProperty prop = m_factory.getOWLObjectProperty( IRI.create(uri2));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLIrreflexiveObjectPropertyAxiom(prop, annotations);
+	}
+	
+	public OWLAxiom getPropertyInverseAxiom(String uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || uri2 == null) {
+			return null;
+		}
+			OWLObjectProperty prop1 = m_factory.getOWLObjectProperty( IRI.create(uri1));
+			OWLObjectProperty prop2 = m_factory.getOWLObjectProperty( IRI.create(uri2));
+			OWLAnnotation suppAnnotation = this.annotation("support", supp);
+			OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+			Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+			annotations.add(suppAnnotation);
+			annotations.add(confAnnotation);
+			if(uri1.equals(uri2)) {
+				return m_factory.getOWLSymmetricObjectPropertyAxiom(prop1, annotations);
+			} else {
+				return m_factory.getOWLInverseObjectPropertiesAxiom(prop1, prop2, annotations);
+			}
+	}
+	
+	public OWLAxiom getPropertyAsymmetricAxiom(String uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || uri2 == null) {
+			return null;
+		}
+		OWLObjectProperty prop = m_factory.getOWLObjectProperty( IRI.create(uri1));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLAsymmetricObjectPropertyAxiom(prop, annotations);
+	}
+	
+	public OWLAxiom getPropertyFunctionalAxiom(String uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || uri2 == null || !uri1.equals(uri2)) {
+			return null;
+		}
+		OWLObjectProperty prop = m_factory.getOWLObjectProperty( IRI.create(uri1));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLFunctionalObjectPropertyAxiom(prop, annotations);
+	}
+	
+	public OWLAxiom getPropertyInverseFunctionalAxiom(String uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || uri2 == null || !uri1.equals(uri2)) {
+			return null;
+		}
+		OWLObjectProperty prop = m_factory.getOWLObjectProperty( IRI.create(uri1));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLInverseFunctionalObjectPropertyAxiom(prop, annotations);
+	}
+	
+	public OWLAxiom get_p_chain_q_sub_r_Axiom(List<String> uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || uri2 == null) {
+			return null;
+		}
+		List<OWLObjectProperty> propList = new ArrayList<OWLObjectProperty>();
+		for(int i = 0; i < uri1.size(); i++) {
+				OWLObjectProperty p = m_factory.getOWLObjectProperty(IRI.create(uri1.get(i)));
+				propList.add(p);
+		}
+		OWLObjectProperty prop = m_factory.getOWLObjectProperty(IRI.create(uri2));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLSubPropertyChainOfAxiom(propList, prop, annotations);
+	}
+	
+	public OWLAxiom get_p_chain_p_sub_p_Axiom(String uri1, String uri2, double supp, double conf) {
+		if(uri1 == null || uri2 == null || !uri1.equals(uri2)) {
+			return null;
+		}
+		OWLObjectProperty prop = m_factory.getOWLObjectProperty(IRI.create(uri2));
+		OWLAnnotation suppAnnotation = this.annotation("support", supp);
+		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
+		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+		annotations.add(suppAnnotation);
+		annotations.add(confAnnotation);
+		return m_factory.getOWLTransitiveObjectPropertyAxiom(prop, annotations);
 	}
 	
 	public Set<OWLAxiom> getAxioms() {

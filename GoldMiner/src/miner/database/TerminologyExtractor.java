@@ -20,7 +20,7 @@ public class TerminologyExtractor extends Extractor {
 	public TerminologyExtractor() throws SQLException, FileNotFoundException,
 			IOException {
 		super();
-		this.id = 0;
+		this.id = 1;
 	}
 	
 	public TerminologyExtractor(Database database, String endpoint, String graph, int chunk, Filter filter) {
@@ -100,6 +100,7 @@ public class TerminologyExtractor extends Extractor {
 			String sProp = (String) iter.next();
 			String sName = getLocalName( sProp );
 			String sQuery2 = m_sqlFactory.insertPropertyQuery( this.id++, sProp, sName );
+			this.id = this.id + 2;
 			m_database.execute( sQuery2 );
 		}
 		System.out.println( "done: "+ id );

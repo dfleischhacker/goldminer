@@ -309,6 +309,14 @@ public class SPARQLFactory {
 		return sb.toString();
 	}
 	
+	public String getPairProperty(String sInd) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT distinct ?x WHERE {");
+		sb.append(" <" + sInd + "> ?x <" + sInd + ">.");
+		sb.append(" }");
+		return sb.toString();
+	}
+	
 	// get property chains connecting the two individuals
 	public String individualPropertyChainsQuery( String sInd1, String sInd2 ){
 		StringBuffer sb = new StringBuffer();

@@ -91,6 +91,8 @@ public class SQLFactory {
 	public String createPropertiesTable() {
 		return "CREATE TABLE properties (" +
 				"id bigint(20) PRIMARY KEY, " +
+				"disjointID bigint(20), " +
+				"symmetryID bigint(20), " +
 				"uri varchar(255) NOT NULL, " +
 				"name varchar(255) NOT NULL" +
 				");";
@@ -145,7 +147,7 @@ public class SQLFactory {
 	}
 	
 	public String insertPropertyQuery( int iID, String sURI, String sName ){
-		return "INSERT INTO properties VALUES ("+ iID +", '"+ sURI +"', '"+ sName +"')";
+		return "INSERT INTO properties VALUES ("+ iID + ", " + (iID + 1) + ", " + (iID + 2) + ", '"+ sURI +"', '"+ sName +"')";
 	}
 	
 	public String insertPropertyChainQuery( int iID, String sURI1, String sURI2, String sName1, String sName2 ){
@@ -326,6 +328,26 @@ public class SQLFactory {
 	
 	public String selectPropertyURIQuery( int iID ){
 		return "SELECT uri FROM properties WHERE id='"+ iID +"'";
+	}
+	
+	public String selectDisjointPropertyURIQuery( int iID ) {
+		return "SELECT uri FROM properties WHERE disjointID='" + iID + "'";
+	}
+	
+	public String selectInversePropertyURIQuery( int iID ) {
+		return "SELECT uri FROM properties WHERE disjointID='" + iID + "'";
+	}
+	
+	public String selectSymmetryPropertyURIQuery( int iID ) {
+		return "SELECT uri FROM properties WHERE symmetryID='" + iID + "'";
+	}
+	
+	public String selectURIsFromPropertyChains(int id) {
+		return "SELECT uri1, uri2 FROM property_chains WHERE id='" + id + "'";
+	}
+	
+	public String selectURIFromPropertyChainsTrans(int id) {
+		return "SELECT uri FROM property_chains_trans WHERE id='" + id + "'";
 	}
 	
 	// axioms

@@ -31,7 +31,7 @@ import miner.util.TextFileFilter;
 
 public class IGoldMinerImpl implements IGoldMiner {
 	
-	private static final String[] transactionTableNames = {"t1", "t2", "t3", "t4", "t5", "t6", "t7"};
+	private static final String[] transactionTableNames = {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"};
 	private static final String associationRulesSuffix = "AR";
 	private AssociationRulesParser parser;
 	private OntologyWriter writer;
@@ -65,8 +65,16 @@ public class IGoldMinerImpl implements IGoldMiner {
 	private boolean exists_p_T_sub_c;
 	private boolean exists_pi_T_sub_c;
 	private boolean p_sub_p;
+	private boolean p_dis_p;
 	private boolean p_chain_p_sub_p;
+	private boolean p_chain_q_sub_r;
 	private boolean c_dis_c;
+	private boolean p_reflexive;
+	private boolean p_irreflexive;
+	private boolean p_inverse_q;
+	private boolean p_asymmetric;
+	private boolean p_functional;
+	private boolean p_inverse_functional;
 	
 	@Override
 	public boolean disconnect() {
@@ -94,8 +102,14 @@ public class IGoldMinerImpl implements IGoldMiner {
 				this.c_sub_exists_p_c || 
 				this.exists_p_c_sub_c || 
 				this.exists_p_T_sub_c || 
-				this.exists_pi_T_sub_c ||
-				this.c_dis_c) {
+				this.exists_pi_T_sub_c || 
+				this.c_dis_c || 
+				this.p_reflexive || 
+				this.p_irreflexive ||
+				this.p_inverse_q ||
+				this.p_asymmetric ||
+				this.p_functional ||
+				this.p_inverse_functional) {
 			classes = true;
 			individuals = true;
 		} else {
@@ -103,9 +117,17 @@ public class IGoldMinerImpl implements IGoldMiner {
 			individuals = false;
 		}
 		if(this.p_sub_p ||
+				this.p_chain_q_sub_r ||
 				this.p_chain_p_sub_p ||
 				this.c_sub_exists_p_c ||
-				this.exists_p_c_sub_c) {
+				this.exists_p_c_sub_c ||
+				this.p_dis_p ||
+				this.p_reflexive || 
+				this.p_irreflexive ||
+				this.p_inverse_q ||
+				this.p_asymmetric ||
+				this.p_functional ||
+				this.p_inverse_functional) {
 			properties = true;
 		} else {
 			properties = false;
@@ -120,12 +142,18 @@ public class IGoldMinerImpl implements IGoldMiner {
 		} else {
 			classes_ex_property_top = false;
 		}
-		if(this.p_sub_p || this.p_chain_p_sub_p) {
+		if(this.p_sub_p || 
+				this.p_chain_q_sub_r || 
+				this.p_chain_p_sub_p ||
+				this.p_dis_p || 
+				this.p_inverse_q || 
+				this.p_asymmetric) {
 			individual_pairs = true;
 		} else {
 			individual_pairs = false;
 		}
-		if(this.p_chain_p_sub_p) {
+		if(this.p_chain_q_sub_r ||
+				this.p_chain_p_sub_p) {
 			individual_pairs_trans = true;
 			property_chains = true;
 			property_chains_trans = true;
@@ -149,15 +177,27 @@ public class IGoldMinerImpl implements IGoldMiner {
 				this.c_sub_exists_p_c || 
 				this.exists_p_c_sub_c || 
 				this.exists_p_T_sub_c || 
-				this.exists_pi_T_sub_c ||
-				this.c_dis_c) {
+				this.exists_pi_T_sub_c || 
+				this.c_dis_c || 
+				this.p_reflexive || 
+				this.p_irreflexive ||
+				this.p_inverse_q ||
+				this.p_asymmetric ||
+				this.p_inverse_functional) {
 			this.terminologyExtractor.initClassesTable();
 			this.individualsExtractor.initIndividualsTable();
 		}
 		if(this.p_sub_p ||
+				this.p_chain_q_sub_r ||
 				this.p_chain_p_sub_p ||
 				this.c_sub_exists_p_c ||
-				this.exists_p_c_sub_c) {
+				this.exists_p_c_sub_c ||
+				this.p_dis_p ||
+				this.p_reflexive || 
+				this.p_irreflexive ||
+				this.p_inverse_q ||
+				this.p_asymmetric ||
+				this.p_inverse_functional) {
 			this.terminologyExtractor.initPropertiesTable();
 		}
 		if(this.c_sub_exists_p_c || this.exists_p_c_sub_c) {
@@ -166,10 +206,10 @@ public class IGoldMinerImpl implements IGoldMiner {
 		if(this.exists_p_T_sub_c || this.exists_pi_T_sub_c) {
 			this.terminologyExtractor.initPropertyTopTable();
 		}
-		if(this.p_sub_p || this.p_chain_p_sub_p) {
+		if(this.p_sub_p || this.p_chain_q_sub_r || this.p_chain_p_sub_p || this.p_dis_p || this.p_inverse_q || this.p_asymmetric) {
 			this.individualsExtractor.initIndividualPairsTable();
 		}
-		if(this.p_chain_p_sub_p) {
+		if(this.p_chain_q_sub_r || this.p_chain_p_sub_p) {
 			this.terminologyExtractor.initPropertyChainsTable();
 			this.terminologyExtractor.initPropertyChainsTransTable();
 			this.individualsExtractor.initIndividualPairsTransTable();
@@ -196,8 +236,16 @@ public class IGoldMinerImpl implements IGoldMiner {
 		this.exists_p_T_sub_c = Settings.getAxiom("exists_p_T_sub_c");
 		this.exists_pi_T_sub_c = Settings.getAxiom("exists_pi_T_sub_c");
 		this.p_sub_p = Settings.getAxiom("p_sub_p");
+		this.p_chain_q_sub_r = Settings.getAxiom("p_chain_q_sub_r");
 		this.p_chain_p_sub_p = Settings.getAxiom("p_chain_p_sub_p");
 		this.c_dis_c = Settings.getAxiom("c_dis_c");
+		this.p_dis_p = Settings.getAxiom("p_dis_p");
+		this.p_reflexive = Settings.getAxiom("p_reflexive");
+		this.p_irreflexive = Settings.getAxiom("p_irreflexive");
+		this.p_inverse_q = Settings.getAxiom("p_inverse_q");
+		this.p_asymmetric = Settings.getAxiom("p_asymmetric");
+		this.p_functional = Settings.getAxiom("p_functional");
+		this.p_inverse_functional = Settings.getAxiom("p_inverse_functional");
 	}
 
 	@Override
@@ -223,11 +271,20 @@ public class IGoldMinerImpl implements IGoldMiner {
 		if(this.exists_pi_T_sub_c) {
 			this.tablePrinter.printPropertyRestrictions(Settings.getString("transaction_tables") + transactionTableNames[3] + ".txt", 1);
 		}
-		if(this.p_sub_p) {
+		if(this.p_sub_p || this.p_dis_p) {
 			this.tablePrinter.printPropertyMembers(Settings.getString("transaction_tables") + transactionTableNames[4] + ".txt");
 		}
-		if(this.p_chain_p_sub_p){
-			this.tablePrinter.printPropertyChainMembersTrans(Settings.getString("transaction_tables") + transactionTableNames[5] + ".txt");
+		if(this.p_chain_q_sub_r || this.p_chain_p_sub_p){
+			this.tablePrinter.printPropertyChainMembersTrans_new(Settings.getString("transaction_tables") + transactionTableNames[5] + ".txt");
+		}
+		if(this.p_reflexive || this.p_irreflexive) {
+			this.tablePrinter.printPropertyReflexivity(Settings.getString("transaction_tables") + transactionTableNames[7] + ".txt");
+		}
+		if(this.p_inverse_q || this.p_asymmetric) {
+			this.tablePrinter.printPropertyInverseMembers(Settings.getString("transaction_tables") + transactionTableNames[8] + ".txt");
+		}
+		if(this.p_functional || this.p_inverse_functional) {
+			this.tablePrinter.printPropertyFunctionalMembers(Settings.getString("transaction_tables") + transactionTableNames[9] + ".txt");
 		}
 	}
 	
@@ -245,13 +302,14 @@ public class IGoldMinerImpl implements IGoldMiner {
 			int index = f.getName().lastIndexOf(".");
 			String exec = Settings.getString("apriori") + 
 			"apriori" + 
-			" -tr " + 
+			" -tr -m2 -n3 " + 
 			f.getPath() + 
 			" " +
 			Settings.getString("association_rules") + 
 			f.getName().substring(0, index) +
 			associationRulesSuffix +
 			".txt";
+			System.out.println(exec);
 			Runtime.getRuntime().exec(exec);
 			int y = x;
 			while(x == y) {
@@ -268,9 +326,12 @@ public class IGoldMinerImpl implements IGoldMiner {
 					((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && fileName.equals(transactionTableNames[1] + associationRulesSuffix)) ||
 					(this.exists_p_T_sub_c && fileName.equals(transactionTableNames[2] + associationRulesSuffix)) ||
 					(this.exists_pi_T_sub_c && fileName.equals(transactionTableNames[3] + associationRulesSuffix)) ||
-					(this.p_sub_p && fileName.equals(transactionTableNames[4] + associationRulesSuffix)) ||
-					(this.p_chain_p_sub_p && fileName.equals(transactionTableNames[5] + associationRulesSuffix)) ||
-					(this.c_dis_c && fileName.equals(transactionTableNames[6] + associationRulesSuffix))) {
+					((this.p_sub_p || this.p_dis_p) && fileName.equals(transactionTableNames[4] + associationRulesSuffix)) ||
+					((this.p_chain_q_sub_r || this.p_chain_p_sub_p) && fileName.equals(transactionTableNames[5] + associationRulesSuffix)) ||
+					(this.c_dis_c && fileName.equals(transactionTableNames[6] + associationRulesSuffix)) ||
+					((this.p_reflexive || this.p_irreflexive)&& fileName.equals(transactionTableNames[7] + associationRulesSuffix)) ||
+					((this.p_inverse_q || this.p_asymmetric)&& fileName.equals(transactionTableNames[8] + associationRulesSuffix) ) ||
+					((this.p_functional || this.p_inverse_functional)&& fileName.equals(transactionTableNames[9] + associationRulesSuffix) )) {
 				f.delete();
 			}
 		}
@@ -365,25 +426,114 @@ public class IGoldMinerImpl implements IGoldMiner {
 		if(this.p_sub_p) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			int i = 0;
 			for(ParsedAxiom pa : axioms) {
+				System.out.println(++i);
 				OWLAxiom a = this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
 				if(a != null) {
 					hmAxioms.put(a, pa.getConf());
 				}
 			}
 		}
+		if(this.p_chain_q_sub_r) {
+			File f = new File(Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
 		if(this.p_chain_p_sub_p) {
-			//File f = new File(Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
-			//List<ParsedAxiom> axioms = this.parser.parse(f, false);
-			//for(ParsedAxiom pa : axioms) {
-				//TODO (does an appropriate method exists!?)
-			//}
+			File f = new File(Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_chain_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
 		}
 		if(this.c_dis_c) {
 			File f = new File(Settings.getString("association_rules") + transactionTableNames[6] + associationRulesSuffix + ".txt");
 			List<ParsedAxiom> axioms = this.parser.parse(f, false);
 			for(ParsedAxiom pa : axioms) {
 				OWLAxiom a = this.writer.get_c_dis_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
+		if(this.p_dis_p) {
+			File f = new File(Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			int i = 0;
+			for(ParsedAxiom pa : axioms) {
+				System.out.println(++i);
+				OWLAxiom a = this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
+		if(this.p_reflexive) {
+			File f = new File(Settings.getString("association_rules")  + transactionTableNames[7] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_reflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
+		if(this.p_irreflexive) {
+			File f = new File(Settings.getString("association_rules")  + transactionTableNames[7] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_irreflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
+		if(this.p_inverse_q) {
+			File f = new File(Settings.getString("association_rules")  + transactionTableNames[8] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_inverse_q_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
+		if(this.p_asymmetric) {
+			File f = new File(Settings.getString("association_rules")  + transactionTableNames[8] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_asymmetric_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
+		
+		if(this.p_functional) {
+			System.out.println("functional");
+			File f = new File(Settings.getString("association_rules")  + transactionTableNames[9] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+				if(a != null) {
+					hmAxioms.put(a, pa.getConf());
+				}
+			}
+		}
+		if(this.p_inverse_functional) {
+			File f = new File(Settings.getString("association_rules")  + transactionTableNames[9] + associationRulesSuffix + ".txt");
+			List<ParsedAxiom> axioms = this.parser.parse(f, false);
+			for(ParsedAxiom pa : axioms) {
+				OWLAxiom a = this.writer.get_p_inverse_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
 				if(a != null) {
 					hmAxioms.put(a, pa.getConf());
 				}
