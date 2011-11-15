@@ -286,6 +286,11 @@ public class IGoldMinerImpl implements IGoldMiner {
 		if(this.p_functional || this.p_inverse_functional) {
 			this.tablePrinter.printPropertyFunctionalMembers(Settings.getString("transaction_tables") + transactionTableNames[9] + ".txt");
 		}
+		if(this.c_dis_c) {
+			//TODO
+			File f = new File(Settings.getString("transaction_tables") + transactionTableNames[6] + ".txt");
+			f.createNewFile();
+		}
 	}
 	
 	@Override
@@ -297,8 +302,11 @@ public class IGoldMinerImpl implements IGoldMiner {
 		this.deleteFiles(ruleFiles);
 		files = file.listFiles(new TextFileFilter());
 		for(File f : files) {
-			ruleFiles = ruleFile.listFiles(new TextFileFilter());
 			int index = f.getName().lastIndexOf(".");
+			File targetFile = new File(Settings.getString("association_rules") + f.getName().substring(0, index) + associationRulesSuffix + ".txt");
+			System.out.println(targetFile.toString());
+			System.out.println(targetFile.createNewFile());
+			ruleFiles = ruleFile.listFiles(new TextFileFilter());
 			String exec = Settings.getString("apriori") + 
 			"apriori" + 
 			" -tr -m2 -n3 " + 

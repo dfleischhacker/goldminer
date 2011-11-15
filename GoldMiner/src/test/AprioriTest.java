@@ -32,11 +32,6 @@ private IGoldMinerImpl goldMiner;
 	public void test() {
 		try {
 			this.goldMiner.mineAssociationRules();
-			HashMap<OWLAxiom, Double> axioms = this.goldMiner.parseAssociationRules();
-			System.out.println("Anzahl Axiome: " + axioms.size());
-			Ontology o = this.goldMiner.createOntology(axioms, 0.0, 0.0);
-			o = this.goldMiner.greedyDebug(o);
-			o.save();
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertTrue(false);
