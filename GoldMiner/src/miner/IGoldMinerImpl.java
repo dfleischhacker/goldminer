@@ -298,7 +298,6 @@ public class IGoldMinerImpl implements IGoldMiner {
 		files = file.listFiles(new TextFileFilter());
 		for(File f : files) {
 			ruleFiles = ruleFile.listFiles(new TextFileFilter());
-			int x = ruleFiles.length;
 			int index = f.getName().lastIndexOf(".");
 			String exec = Settings.getString("apriori") + 
 			"apriori" + 
@@ -309,12 +308,7 @@ public class IGoldMinerImpl implements IGoldMiner {
 			f.getName().substring(0, index) +
 			associationRulesSuffix +
 			".txt";
-			System.out.println(exec);
 			Runtime.getRuntime().exec(exec);
-			int y = x;
-			while(x == y) {
-				y = ruleFile.listFiles(new TextFileFilter()).length;
-			}
 		}
 	}
 	
