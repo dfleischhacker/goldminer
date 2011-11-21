@@ -1,8 +1,5 @@
 package miner.database;
 
-import java.util.*;
-
-
 public class SQLFactory {
 	
 	public String createClassesTable() {
@@ -85,7 +82,7 @@ public class SQLFactory {
 				"uri2 varchar(255) NOT NULL, " +
 				"name1 varchar(255) NOT NULL, " +
 				"name2 varchar(255) NOT NULL" +
-				");)";
+				");";
 	}
 	
 	public String createPropertiesTable() {
