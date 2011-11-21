@@ -19,7 +19,9 @@ public class SQLFactory {
 				"classes_ex_property, " +
 				"classes_ex_property_top, " +
 				"individual_pairs, " +
-				"individual_pairs_trans";
+				"individual_pairs_trans" +
+                "property_chains" +
+                "property_chains_trans";
 	}
 	
 	public String createClassesExPropertyTable() {
