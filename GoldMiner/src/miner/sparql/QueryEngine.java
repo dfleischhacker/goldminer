@@ -1,45 +1,53 @@
 package miner.sparql;
 
-import java.io.*;
-import java.util.*;
-
 import com.hp.hpl.jena.query.*;
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.graph.*;
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Resource;
+import miner.util.Parameter;
+import miner.util.Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import miner.util.*;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 
 public class QueryEngine {
-	
+
+    private final static Logger logger = LoggerFactory.getLogger(QueryEngine.class);
+
 	protected String m_sEndpoint;
-	
+
 	protected String m_sGraph;
-	
+
 	protected int m_iChunk;
-	
+
 	public QueryEngine(){
 		m_sEndpoint = Settings.getString( Parameter.ENDPOINT );
-		m_sGraph = Settings.getString( Parameter.GRAPH );
-		m_iChunk = Settings.getInteger( Parameter.SPARQL_CHUNK );
-	}
+        m_sGraph = Settings.getString( Parameter.GRAPH );
+        m_iChunk = Settings.getInteger( Parameter.SPARQL_CHUNK );
+        logger.debug("Initialized query engine with: " + m_sEndpoint + " " + m_sGraph + " " + m_iChunk);
+    }
 
-	
+
 	public QueryEngine(String endpoint, String graph, int chunk){
 		m_sEndpoint = endpoint;
 		m_sGraph = graph;
 		m_iChunk = chunk;
 	}
-	
+
 	public QueryEngine( String sEndpoint, int iChunk ){
 		m_sEndpoint = sEndpoint;
 		m_iChunk = iChunk;
 	}
-	
+
 	public int getChunkSize(){
 		return m_iChunk;
 	}
-	
+
 	public List<String> getAll( Iterator<String> iter ){
 		List<String> all = new ArrayList<String>();
 		while( iter.hasNext() ){
@@ -47,15 +55,15 @@ public class QueryEngine {
 		}
 		return all;
 	}
-	
+
 	public ResultsIterator query( String query, String filter ) {
 		return new ResultsIterator( this, query, filter );
 	}
-	
+
 	public ResultPairsIterator queryPairs( String query, String filter ) {
 		return new ResultPairsIterator( this, query, filter );
 	}
-	
+
 	protected List<String> execute( String queryString, String sVar, String filter ) throws UnsupportedEncodingException, IOException {
 		System.out.println( "QueryEngine.query: "+ queryString +"\n" );
 		List<String> set = new ArrayList<String>();
@@ -67,23 +75,26 @@ public class QueryEngine {
 		else {
 			qe = QueryExecutionFactory.sparqlService( m_sEndpoint, query, m_sGraph );
 		}
-		ResultSet results = qe.execSelect();
-		while( results.hasNext() )
-		{
-			QuerySolution soln = results.nextSolution();
-			Resource r = soln.getResource( sVar );
-			String sURI = checkURISyntax( r.getURI() );
-			if( sURI != null )
-			{
-				if( filter == null || sURI.startsWith( filter ) ){
-					set.add( sURI );
-				}
-			}
-		}
+        try {
+            ResultSet results = qe.execSelect();
+            while (results.hasNext()) {
+                QuerySolution soln = results.nextSolution();
+                Resource r = soln.getResource(sVar);
+                String sURI = checkURISyntax(r.getURI());
+                if (sURI != null) {
+                    if (filter == null || sURI.startsWith(filter)) {
+                        set.add(sURI);
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            logger.error("Query \"" + queryString + "\" failed", e);
+        }
 		if( qe != null ) qe.close();
 		return set;
 	}
-	
+
 	protected List<String[]> execute( String queryString, String sVar1, String sVar2, String filter ) throws Exception {
 		// System.out.println( "QueryEngine.query: "+ queryString +"\n" );
 		List<String[]> set = new ArrayList<String[]>();
@@ -121,7 +132,7 @@ public class QueryEngine {
 		}
 		return set;
 	}
-	
+
 	public int count( String queryString ) throws Exception {
 		// System.out.println( "QueryEngine.count: "+ queryString +"\n" );
 		List<String> set = new ArrayList<String>();
@@ -149,9 +160,9 @@ public class QueryEngine {
 		}
 		return 0;
 	}
-	
+
 	protected String checkURISyntax( String sURI ){
-		if( sURI == null ) return null; 
+		if( sURI == null ) return null;
 		String s = new String( sURI );
 		s = s.replaceAll( "'", "_" );
 		return s;
