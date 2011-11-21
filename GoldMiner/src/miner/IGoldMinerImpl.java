@@ -171,6 +171,9 @@ public class IGoldMinerImpl implements IGoldMiner {
 
     @Override
     public boolean terminologyAcquisition() throws SQLException {
+        if (chk.reached("terminologyacquisition")) {
+            return true;
+        }
         if (this.c_sub_c ||
             this.c_and_c_sub_c ||
             this.c_sub_exists_p_c ||
@@ -214,6 +217,7 @@ public class IGoldMinerImpl implements IGoldMiner {
             this.terminologyExtractor.initPropertyChainsTransTable();
             this.individualsExtractor.initIndividualPairsTransTable();
         }
+        chk.reach("terminologyacquisition");
         return true;
     }
 
@@ -252,8 +256,14 @@ public class IGoldMinerImpl implements IGoldMiner {
     @Override
     public boolean sparqlSetup(String endpoint, Filter filter, String graph,
                                int chunk) {
-        this.terminologyExtractor = new TerminologyExtractor(this.database, endpoint, graph, chunk, filter);
-        this.individualsExtractor = new IndividualsExtractor(this.database, endpoint, graph, chunk, filter);
+        if (!chk.reached("terminologyextract")) {
+            this.terminologyExtractor = new TerminologyExtractor(this.database, endpoint, graph, chunk, filter);
+            chk.reach("terminologyextract");
+        }
+        if (!chk.reached("individualextract")) {
+            this.individualsExtractor = new IndividualsExtractor(this.database, endpoint, graph, chunk, filter);
+            chk.reach("individualextract");
+        }
         return false;
     }
 
