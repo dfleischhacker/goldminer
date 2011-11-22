@@ -79,6 +79,10 @@ public class IGoldMinerImpl implements IGoldMiner {
 
     @Override
     public boolean setupDatabase() throws SQLException {
+        if (chk.reached("setupdatebase")) {
+            return true;
+        }
+
         boolean classes;
         boolean individuals;
         boolean properties;
@@ -161,6 +165,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         if (this.setup.setupSchema(classes, individuals, properties, classes_ex_property, classes_ex_property_top,
                                    individual_pairs, individual_pairs_trans, property_chains, property_chains_trans)) {
+            chk.reach("setupdatabase");
             return true;
         }
         else {
