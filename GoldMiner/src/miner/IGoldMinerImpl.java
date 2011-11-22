@@ -168,10 +168,11 @@ public class IGoldMinerImpl implements IGoldMiner {
             chk.reach("setupdatabase");
             return true;
         }
-        else {
-            this.setup.removeSchema();
-            return false;
-        }
+//        else {
+//            this.setup.removeSchema();
+//            return false;
+//        }
+        return false;
     }
 
     @Override
