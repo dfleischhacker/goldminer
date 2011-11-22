@@ -176,10 +176,7 @@ public class IGoldMinerImpl implements IGoldMiner {
 
     @Override
     public boolean terminologyAcquisition() throws SQLException {
-        if (chk.reached("terminologyacquisition")) {
-            return true;
-        }
-        if (this.c_sub_c ||
+        if ((this.c_sub_c ||
             this.c_and_c_sub_c ||
             this.c_sub_exists_p_c ||
             this.exists_p_c_sub_c ||
@@ -190,11 +187,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             this.p_irreflexive ||
             this.p_inverse_q ||
             this.p_asymmetric ||
-            this.p_inverse_functional) {
+            this.p_inverse_functional) &&
+            !chk.reached("initclassestable")) {
             this.terminologyExtractor.initClassesTable();
             this.individualsExtractor.initIndividualsTable();
+            chk.reach("initclassestable");
         }
-        if (this.p_sub_p ||
+        if ((this.p_sub_p ||
             this.p_chain_q_sub_r ||
             this.p_chain_p_sub_p ||
             this.c_sub_exists_p_c ||
@@ -204,25 +203,30 @@ public class IGoldMinerImpl implements IGoldMiner {
             this.p_irreflexive ||
             this.p_inverse_q ||
             this.p_asymmetric ||
-            this.p_inverse_functional) {
+            this.p_inverse_functional) &&
+            !chk.reached("initpropertiestable")) {
             this.terminologyExtractor.initPropertiesTable();
+            chk.reach("initpropertiestable");
         }
-        if (this.c_sub_exists_p_c || this.exists_p_c_sub_c) {
+        if ((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && !chk.reached("initclassesexistspropertytable")) {
             this.terminologyExtractor.initClassesExistsPropertyTable();
+            chk.reach("initclassesexistspropertytable");
         }
-        if (this.exists_p_T_sub_c || this.exists_pi_T_sub_c) {
+        if ((this.exists_p_T_sub_c || this.exists_pi_T_sub_c) && !chk.reached("initpropertytoptable")) {
             this.terminologyExtractor.initPropertyTopTable();
+            chk.reach("initpropertytoptable");
         }
-        if (this.p_sub_p || this.p_chain_q_sub_r || this.p_chain_p_sub_p || this.p_dis_p || this.p_inverse_q ||
-            this.p_asymmetric) {
+        if ((this.p_sub_p || this.p_chain_q_sub_r || this.p_chain_p_sub_p || this.p_dis_p || this.p_inverse_q ||
+            this.p_asymmetric) && !chk.reached("initindividualpairstable")) {
             this.individualsExtractor.initIndividualPairsTable();
+            chk.reach("initindividualpairstable");
         }
-        if (this.p_chain_q_sub_r || this.p_chain_p_sub_p) {
+        if ((this.p_chain_q_sub_r || this.p_chain_p_sub_p) && !chk.reached("initpropertychainstable")) {
             this.terminologyExtractor.initPropertyChainsTable();
             this.terminologyExtractor.initPropertyChainsTransTable();
             this.individualsExtractor.initIndividualPairsTransTable();
+            chk.reach("initpropertychainstable");
         }
-        chk.reach("terminologyacquisition");
         return true;
     }
 
