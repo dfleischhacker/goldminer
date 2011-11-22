@@ -24,7 +24,7 @@ define "gold-miner" do
   eclipse_layout[:source, :main, :resources] = 'res'
 
   define "GoldMiner", :layout=>eclipse_layout do
-    package = :jar
+    package(:jar).with(:manifest => _('src/META-INF/MANIFEST.MF')).merge(Dir[_("dependencies/*.jar")])
     compile.with Dir[_("dependencies/*.jar")]
   end
 
