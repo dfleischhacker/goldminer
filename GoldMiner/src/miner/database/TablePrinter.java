@@ -19,7 +19,6 @@ import java.util.List;
 
 
 public class TablePrinter {
-
     // SPARQL
 
     private QueryEngine m_engine;
@@ -657,7 +656,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = iter.next();
+                String sPair[] = (String[]) iter.next();
                 HashMap<String, Boolean> hmInds = hmInd2Inds.get(sPair[0]);
                 if (hmInds == null) {
                     hmInds = new HashMap<String, Boolean>();
@@ -1025,8 +1024,7 @@ public class TablePrinter {
             String sInd = results.getString("uri");
             StringBuffer sbLine = new StringBuffer();
             // get individual complex classes
-            ResultPairsIterator iter2 =
-                m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), this.classesFilter);
+            ResultPairsIterator iter2 = m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), "");
             while (iter2.hasNext()) {
                 String sPropClass[] = (String[]) iter2.next();
                 String sClass = sPropClass[1];
@@ -1035,21 +1033,17 @@ public class TablePrinter {
                 String sExPropID = getExistsPropertyID(sProp, sClass);
                 if (sExPropID != null) {
                     sbLine.append(sExPropID);
-                    if (iter2.hasNext()) {
-                        sbLine.append("\t");
-                    }
+                    sbLine.append("\t");
                 }
             }
             // get individual atomic classes
-            ResultsIterator iter1 = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
+            ResultsIterator iter1 = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), "");
             while (iter1.hasNext()) {
                 String sClass = (String) iter1.next();
                 String sClassID = getClassID(sClass);
                 if (sClassID != null) {
                     sbLine.append(sClassID);
-                    if (iter1.hasNext()) {
-                        sbLine.append("\t");
-                    }
+                    sbLine.append("\t");
                 }
             }
             if (sbLine.length() > 0) {
@@ -1152,15 +1146,13 @@ public class TablePrinter {
             String sInd = results.getString("uri");
             StringBuffer sbLine = new StringBuffer();
             // get individual classes
-            ResultsIterator iter = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
+            ResultsIterator iter = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), "");
             while (iter.hasNext()) {
                 String sClass = (String) iter.next();
                 String sClassID = getClassID(sClass);
                 if (sClassID != null) {
                     sbLine.append(sClassID);
-                    if (iter.hasNext()) {
-                        sbLine.append("\t");
-                    }
+                    sbLine.append("\t");
                 }
             }
             iDone++;
