@@ -23,21 +23,9 @@ define "gold-miner" do
   eclipse_layout[:source, :main, :java] = 'src'
   eclipse_layout[:source, :main, :resources] = 'res'
 
-  PELLET='com.owldl:pellet:jar:2.3.0'
-  download artifact(PELLET) => 'file:///home/daniel/Repositories/gold-miner/GoldMiner/dependencies/pellet-core.jar'
-  ATERM='com.owldl:aterm:jar:1.6.0'
-  download artifact(ATERM) => 'file:///home/daniel/Repositories/gold-miner/GoldMiner/dependencies/aterm-java-1.6.jar'
-  PELLETOWLAPI3='com.owldl:pellet-owlapiv3:jar:2.3.0'
-  download artifact(PELLETOWLAPI3) => 'file:///home/daniel/Repositories/gold-miner/GoldMiner/dependencies/pellet-owlapiv3.jar'
-
   define "GoldMiner", :layout=>eclipse_layout do
     package = :jar
-    compile.with PELLET, PELLETOWLAPI3, ATERM
-    compile.with transitive('com.hp.hpl.jena:jena:jar:2.6.4')
-    compile.with transitive('com.hp.hpl.jena:arq:jar:2.8.8')
-    compile.with transitive('net.sourceforge.owlapi:owlapi-all:jar:3.2.4')
-    compile.with transitive('junit:junit:jar:4.8.2')
-    compile.with transitive('mysql:mysql-connector-java:jar:5.1.6')
+    compile.with Dir[_("dependencies/*.jar")]
   end
 
 end
