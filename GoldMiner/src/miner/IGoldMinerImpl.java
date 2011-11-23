@@ -18,7 +18,8 @@ import java.util.List;
 
 public class IGoldMinerImpl implements IGoldMiner {
 
-    private static final String[] transactionTableNames = {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10"};
+    private static final String[] transactionTableNames =
+        {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11"};
     private static final String associationRulesSuffix = "AR";
     private AssociationRulesParser parser;
     private OntologyWriter writer;
@@ -173,6 +174,7 @@ public class IGoldMinerImpl implements IGoldMiner {
 //            return false;
 //        }
         return false;
+
     }
 
     @Override
@@ -322,11 +324,18 @@ public class IGoldMinerImpl implements IGoldMiner {
                 Settings.getString("transaction_tables") + transactionTableNames[8] + ".txt");
             chk.reach("propertyinversemembers");
         }
-        if ((this.p_functional || this.p_inverse_functional) && !chk.reached("propertyfunctionalmembers")) {
+        if (this.p_functional && !chk.reached("propertyfunctionalmembers")) {
             this.tablePrinter.printPropertyFunctionalMembers(
                 Settings.getString("transaction_tables") + transactionTableNames[9] + ".txt");
             chk.reach("propertyfunctionalmembers");
+
         }
+        if (this.p_inverse_functional && !chk.reached("propertyinversefunctional")) {
+            this.tablePrinter.printPropertyInverseFunctionalMembers(
+                            Settings.getString("transaction_tables") + transactionTableNames[10] + ".txt");
+            chk.reach("propertyinversefunctional");
+        }
+
         if (this.c_dis_c) {
             //TODO
             File f = new File(Settings.getString("transaction_tables") + transactionTableNames[6] + ".txt");
@@ -382,8 +391,8 @@ public class IGoldMinerImpl implements IGoldMiner {
                  fileName.equals(transactionTableNames[7] + associationRulesSuffix)) ||
                 ((this.p_inverse_q || this.p_asymmetric) &&
                  fileName.equals(transactionTableNames[8] + associationRulesSuffix)) ||
-                ((this.p_functional || this.p_inverse_functional) &&
-                 fileName.equals(transactionTableNames[9] + associationRulesSuffix))) {
+                (this.p_functional && fileName.equals(transactionTableNames[9] + associationRulesSuffix)) ||
+                (this.p_inverse_functional && fileName.equals(transactionTableNames[10] + associationRulesSuffix))) {
                 f.delete();
             }
         }
@@ -611,7 +620,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         if (this.p_inverse_functional) {
             File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[9] + associationRulesSuffix + ".txt");
+                Settings.getString("association_rules") + transactionTableNames[10] + associationRulesSuffix + ".txt");
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a = this.writer
