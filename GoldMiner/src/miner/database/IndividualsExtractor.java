@@ -1,17 +1,14 @@
 package miner.database;
 
+import miner.sparql.Filter;
+import miner.sparql.ResultPairsIterator;
+import miner.sparql.ResultsIterator;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
-
-import miner.sparql.Filter;
-import miner.sparql.QueryEngine;
-import miner.sparql.ResultPairsIterator;
-import miner.sparql.ResultsIterator;
-import miner.sparql.SPARQLFactory;
 
 public class IndividualsExtractor extends Extractor {
 
