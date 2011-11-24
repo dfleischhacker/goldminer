@@ -682,7 +682,9 @@ public class TablePrinter {
     }
 
     public void printPropertyMembers(String sOutFile) throws SQLException, IOException {
+        System.out.println("TablePrinter.write: " + sOutFile);
         // one hashmap per property: ind -> ind -> boolean
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String properties[] = getProperties();
         HashMap[] hmProp2Ext = new HashMap[properties.length];
         for (int i = 0; i < properties.length; i++) {
@@ -705,7 +707,6 @@ public class TablePrinter {
         // for each pair: for each property: in extension?
         String sQuery1 = m_sqlFactory.selectIndividualPairsQuery();
         ResultSet results = m_database.query(sQuery1);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String sId = results.getString("id");
             String sInd1 = results.getString("uri1");
@@ -732,18 +733,19 @@ public class TablePrinter {
             if (sbLine.length() > 0) {
                 System.out.println(
                     "TablePrinter.print: 1=" + sInd1 + " 2=" + sInd2 + " (" + sId + ") -> " + sbLine.toString());
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
         }
-        System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
+        writer.flush();
+        writer.close();
         System.out.println("TablePrinter: done");
     }
 
     public void printPropertyReflexivity(String sOutFile) throws SQLException, IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String query = m_sqlFactory.selectIndividualsQuery();
         ResultSet results = m_database.query(query);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String[] properties = this.getProperties();
             StringBuffer sb = new StringBuffer();
@@ -768,10 +770,12 @@ public class TablePrinter {
                 }
             }
             if (sb.length() > 0) {
-                chunk.add(sb.toString());
+                writer.write(sb.toString());
+                writer.newLine();
             }
         }
-        write(sOutFile, chunk);
+        writer.flush();
+        writer.close();
     }
 
     public String[] getProperties() throws SQLException {
@@ -785,7 +789,7 @@ public class TablePrinter {
     }
 
     public void printPropertyChainMembers(String sOutFile) throws Exception {
-        ArrayList<String> chunk = new ArrayList<String>();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         HashMap<String, HashMap<String, String>> hmChains = getPropertyChains();
         // read individual pairs from table individual_pairs_ext
         String sQuery1 = m_sqlFactory.selectIndividualPairsExtQuery();
@@ -1051,10 +1055,11 @@ public class TablePrinter {
     }
 
     public boolean printExistsPropertyMembers(int iStart, int iEnd, String sOutFile) throws SQLException, IOException {
+        System.out.println("TablePrinter.write: " + sOutFile);
         // read individuals from database
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String sQuery1 = m_sqlFactory.selectIndividualsQuery(iStart, iEnd);
         ResultSet results = m_database.query(sQuery1);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
@@ -1084,16 +1089,16 @@ public class TablePrinter {
             }
             if (sbLine.length() > 0) {
                 System.out.println("TablePrinter.print: " + sInd + " (" + sId + ") -> " + sbLine.toString());
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
+            writer.flush();
+            writer.close();
         }
         //if( chunk.size() == 0 ){
         //return true;
         //}
-        chunk.add(new String("\n"));
-        System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
-        System.out.println("TablePrinter: done (" + chunk.size() + ")");
+//        System.out.println("TablePrinter: done (" + chunk.size() + ")");
         return true;
     }
 
@@ -1112,9 +1117,10 @@ public class TablePrinter {
 
     public boolean printExistsPropertyNonMembers(int iStart, int iEnd, String sOutFile) throws Exception {
         // read individuals from database
+        System.out.println("TablePrinter.write: " + sOutFile);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String sQuery1 = m_sqlFactory.selectIndividualsQuery(iStart, iEnd);
         ResultSet results = m_database.query(sQuery1);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
@@ -1157,17 +1163,16 @@ public class TablePrinter {
                 }
                 if (sbLine.length() > 0) {
                     System.out.println("TablePrinter.print: " + sInd + " (" + sId + ") -> " + sbLine.toString());
-                    chunk.add(sbLine.toString());
+                    writer.write(sbLine.toString());
+                    writer.newLine();
                 }
             }
         }
         //if( chunk.size() == 0 ){
         //return true;
         //}
-        chunk.add(new String("\n"));
-        System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
-        System.out.println("TablePrinter: done (" + chunk.size() + ")");
+
+        System.out.println("TablePrinter: done");
         return true;
     }
 
