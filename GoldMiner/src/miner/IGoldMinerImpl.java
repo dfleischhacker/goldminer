@@ -80,7 +80,7 @@ public class IGoldMinerImpl implements IGoldMiner {
 
     @Override
     public boolean setupDatabase() throws SQLException {
-        if (chk.reached("setupdatebase")) {
+        if (chk.reached("setupdatabase")) {
             return true;
         }
 
