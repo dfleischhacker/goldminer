@@ -79,6 +79,7 @@ public class Database {
 		ResultSet results = null;
 		try {
 			stmt = m_connection.createStatement();
+            stmt.setFetchSize(5000);
 			results = stmt.executeQuery( sQuery );
 			return results;
 		} 
