@@ -41,7 +41,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         this.ontology = new Ontology();
         this.ontology.create(new File(Settings.getString("ontology")));
         this.ontology.save();
-        this.chk = new CheckpointUtil(Settings.getString("transaction_tables"));
+        this.chk = new CheckpointUtil(Settings.getString("transaction_tables") + "/checkpoints");
     }
 
     private Database database;
