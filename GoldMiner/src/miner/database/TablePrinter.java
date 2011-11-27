@@ -6,10 +6,8 @@ import miner.sparql.ResultsIterator;
 import miner.sparql.SPARQLFactory;
 import miner.util.Settings;
 
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.Buffer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -338,6 +336,7 @@ public class TablePrinter {
 
     public void printPropertyRestrictions(String sOutFile, int iInverse) throws SQLException, IOException {
         String properties[] = getProperties();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         // two hashmaps for each property: domain and range
         HashMap hmRanges[] = new HashMap[properties.length];
         HashMap hmDomains[] = new HashMap[properties.length];
@@ -390,11 +389,13 @@ public class TablePrinter {
             iDone++;
             if (sbLine.length() > 0) {
                 System.out.println("TablePrinter.print: " + sIndURI + " (" + iIndID + ") -> " + sbLine.toString());
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
         }
         System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
+        writer.flush();
+        writer.close();
         System.out.println("TablePrinter: done (" + iDone + ")");
     }
 
@@ -411,6 +412,7 @@ public class TablePrinter {
     }
 
     public void printPropertyChainMembersTrans_new(String outFile) throws SQLException, IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));
         String properties[] = this.getProperties();
         HashMap<String, HashMap<String, String>> propertyChains = this.getPropertyChains_new();
         HashMap<String, HashMap<String, String>> propertyChainsTrans = this.getPropertyChainsTrans();
@@ -472,7 +474,6 @@ public class TablePrinter {
         }
         String sQuery1 = m_sqlFactory.selectIndividualPairsQuery();
         ResultSet results = m_database.query(sQuery1);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String sInd1 = results.getString("uri1");
             String sInd2 = results.getString("uri2");
@@ -503,15 +504,18 @@ public class TablePrinter {
                 }
             }
             if (sbLine.length() > 0) {
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
         }
         System.out.println("TablePrinter.write: " + outFile);
-        write(outFile, chunk);
+        writer.flush();
+        writer.close();
         System.out.println("TablePrinter: done");
     }
 
     public void printPropertyFunctionalMembers(String sOutFile) throws SQLException, IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String properties[] = this.getProperties();
         HashMap<String, List<String>>[] hm = new HashMap[properties.length];
         for (int i = 0; i < properties.length; i++) {
@@ -550,15 +554,18 @@ public class TablePrinter {
             }
             if (sbLine.length() > 0) {
                 System.out.println("TablePrinter.print: 1=" + sInd + " (" + sId + ") -> " + sbLine.toString());
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
         }
         System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
+        writer.flush();
+        writer.close();
         System.out.println("TablePrinter: done");
     }
 
     public void printPropertyInverseFunctionalMembers(String sOutFile) throws SQLException, IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String properties[] = this.getProperties();
         HashMap<String, List<String>>[] hm = new HashMap[properties.length];
         for (int i = 0; i < properties.length; i++) {
@@ -608,15 +615,18 @@ public class TablePrinter {
             }
             if (sbLine.length() > 0) {
                 System.out.println("TablePrinter.print: 1=" + sInd + " (" + sId + ") -> " + sbLine.toString());
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
         }
         System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
+        writer.flush();
+        writer.close();
         System.out.println("TablePrinter: done");
     }
 
     public void printPropertyInverseMembers(String sOutFile) throws SQLException, IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String properties[] = this.getProperties();
         HashMap<String, List<String>>[] hmProp2Ext = new HashMap[properties.length];
         for (int i = 0; i < properties.length; i++) {
@@ -637,7 +647,6 @@ public class TablePrinter {
         }
         String sQuery1 = m_sqlFactory.selectIndividualPairsQuery();
         ResultSet results = m_database.query(sQuery1);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String sId = results.getString("id");
             String sInd1 = results.getString("uri1");
@@ -673,11 +682,13 @@ public class TablePrinter {
             if (sbLine.length() > 0) {
                 System.out.println(
                     "TablePrinter.print: 1=" + sInd1 + " 2=" + sInd2 + " (" + sId + ") -> " + sbLine.toString());
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
         }
         System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
+        writer.flush();
+        writer.close();
         System.out.println("TablePrinter: done");
     }
 
@@ -875,7 +886,6 @@ public class TablePrinter {
         }
         String sQuery = m_sqlFactory.selectIndividualPairsExtQuery();
         ResultSet results = m_database.query(sQuery);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             int iIndPairID = results.getInt("id");
             String sIndURI1 = results.getString("uri1");
@@ -1177,10 +1187,10 @@ public class TablePrinter {
     }
 
     public void printClassMembers(String sOutFile) throws SQLException, IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         // read individuals from database
         String sQuery1 = m_sqlFactory.selectIndividualsQuery();
         ResultSet results = m_database.query(sQuery1);
-        ArrayList<String> chunk = new ArrayList<String>();
         int iDone = 0;
         while (results.next()) {
             String sId = results.getString("id");
@@ -1199,43 +1209,14 @@ public class TablePrinter {
             iDone++;
             if (sbLine.length() > 0) {
                 System.out.println("TablePrinter.print: " + sInd + " (" + sId + ") -> " + sbLine.toString());
-                chunk.add(sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
             }
         }
         System.out.println("TablePrinter.write: " + sOutFile);
-        write(sOutFile, chunk);
+        writer.flush();
+        writer.close();
         System.out.println("TablePrinter: done (" + iDone + ")");
-    }
-
-    public boolean write(String sOutFile, List<String> lines) throws IOException {
-        BufferedWriter out = new BufferedWriter(new FileWriter(sOutFile, true));
-        try {
-            for (String sLine : lines) {
-                if (sLine.trim().length() == 0) {
-                    continue;
-                }
-                out.write(sLine);
-                out.newLine();
-            }
-            out.flush();
-            out.close();
-            return true;
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        /* finally {
-              try {
-                  if( out != null ) {
-                      out.flush();
-                      out.close();
-                  }
-              } catch (IOException ex) {
-                  ex.printStackTrace();
-              }
-              return false;
-          } */
-        return false;
     }
 
     public String getClassID(String sURI) throws SQLException {
