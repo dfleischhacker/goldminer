@@ -52,9 +52,9 @@ public class TablePrinter {
 
     private HashMap<String, HashMap<String, String>> m_hmProp2Prop2ID;
 
-    private String classesFilter = "";
+    private String classesFilter;
 
-    private String individualsFilter = "";
+    private String individualsFilter;
 
 
     public static void main(String args[]) throws SQLException, FileNotFoundException, IOException {
@@ -72,7 +72,12 @@ public class TablePrinter {
         // printer.printPropertyChainMembersTrans( "dbpedia_property_trans.txt" );
     }
 
-    public TablePrinter() throws SQLException {
+    public TablePrinter() throws SQLException, FileNotFoundException, IOException {
+    	if(!Settings.loaded()) {
+    		Settings.load();
+    	}
+    	this.classesFilter = Settings.getString("classesFilter");
+    	this.individualsFilter = Settings.getString("individualsFilter");
         m_engine = new QueryEngine();
         m_sparqlFactory = new SPARQLFactory();
         m_database = Database.instance();
@@ -1101,7 +1106,7 @@ public class TablePrinter {
             String sInd = results.getString("uri");
             StringBuilder sbLine = new StringBuilder();
             // get individual complex classes
-            ResultPairsIterator iter2 = m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), "");
+            ResultPairsIterator iter2 = m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), this.classesFilter);
             while (iter2.hasNext()) {
                 String sPropClass[] = iter2.next();
                 String sClass = sPropClass[1];
@@ -1114,7 +1119,7 @@ public class TablePrinter {
                 }
             }
             // get individual atomic classes
-            ResultsIterator iter1 = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), "");
+            ResultsIterator iter1 = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
             while (iter1.hasNext()) {
                 String sClass = iter1.next();
                 String sClassID = getClassID(sClass);
@@ -1227,7 +1232,7 @@ public class TablePrinter {
             String sInd = results.getString("uri");
             StringBuilder sbLine = new StringBuilder();
             // get individual classes
-            ResultsIterator iter = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), "");
+            ResultsIterator iter = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
             while (iter.hasNext()) {
                 String sClass = iter.next();
                 String sClassID = getClassID(sClass);
