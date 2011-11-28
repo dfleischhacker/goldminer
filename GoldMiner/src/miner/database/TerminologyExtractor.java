@@ -97,7 +97,7 @@ public class TerminologyExtractor extends Extractor {
 		int id = 0;
 		while( iter.hasNext() )
 		{
-			String sProp = (String) iter.next();
+			String sProp = iter.next();
 			String sName = getLocalName( sProp );
 			String sQuery2 = m_sqlFactory.insertPropertyQuery( this.id++, sProp, sName );
 			this.id = this.id + 2;
@@ -120,7 +120,7 @@ public class TerminologyExtractor extends Extractor {
 			ResultPairsIterator iter = m_engine.queryPairs( m_sparqlFactory.propertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
 			while( iter.hasNext() ) 
 			{
-				String sPair[] = (String[]) iter.next();
+				String sPair[] = iter.next();
 				hmDomains[i].put( sPair[0], true );
 				hmRanges[i].put( sPair[1], true );
 			}
@@ -173,7 +173,7 @@ public class TerminologyExtractor extends Extractor {
 		int id = 0;
 		while( iter.hasNext() && !iter.isFailed() )
 		{
-			String sClass = (String) iter.next();
+			String sClass = iter.next();
 			String sName = getLocalName( sClass );
 			String sCountClassIndQuery = m_sparqlFactory.classExtensionSizeQuery( sClass );
 			// int iSize = m_engine.count( sCountClassIndQuery );

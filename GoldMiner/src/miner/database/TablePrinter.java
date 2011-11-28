@@ -101,7 +101,7 @@ public class TablePrinter {
             int iPairs = 0;
             while (iter.hasNext()) {
                 iPairs++;
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 // System.out.println( sPair[0] +" / "+ sPair[1] );
                 HashMap<String, Boolean> hmRanges = hmChainDomain2Ranges.get(sPair[0]);
                 if (hmRanges == null) {
@@ -133,7 +133,7 @@ public class TablePrinter {
             int iPairs = 0;
             while (iter.hasNext()) {
                 iPairs++;
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 // System.out.println( sPair[0] +" / "+ sPair[1] );
                 HashMap<String, Boolean> hmRanges = hmPropDomain2Ranges.get(sPair[0]);
                 if (hmRanges == null) {
@@ -154,13 +154,13 @@ public class TablePrinter {
             int iIndPairID = results3.getInt("id");
             String sIndURI1 = results3.getString("uri1");
             String sIndURI2 = results3.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             // property chains
             for (Integer iChainID : chains.keySet()) {
                 HashMap<String, HashMap<String, Boolean>> hmChainDomain2Ranges = chains.get(iChainID);
                 HashMap<String, Boolean> hmRanges = hmChainDomain2Ranges.get(sIndURI1);
                 if (hmRanges != null && hmRanges.get(sIndURI2) != null) {
-                    sbLine.append(iChainID + "\t");
+                    sbLine.append(iChainID).append("\t");
                 }
             }
             // properties
@@ -168,7 +168,7 @@ public class TablePrinter {
                 HashMap<String, HashMap<String, Boolean>> hmPropDomain2Ranges = properties.get(iPropID);
                 HashMap<String, Boolean> hmRanges = hmPropDomain2Ranges.get(sIndURI1);
                 if (hmRanges != null && hmRanges.get(sIndURI2) != null) {
-                    sbLine.append(iPropID + "\t");
+                    sbLine.append(iPropID).append("\t");
                 }
             }
             System.out.println(
@@ -195,7 +195,7 @@ public class TablePrinter {
             int iPairs = 0;
             while (iter.hasNext()) {
                 iPairs++;
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 // System.out.println( sPair[0] +" / "+ sPair[1] );
                 HashMap<String, Boolean> hmRanges = hmChainDomain2Ranges.get(sPair[0]);
                 if (hmRanges == null) {
@@ -217,13 +217,13 @@ public class TablePrinter {
             int iIndPairID = results2.getInt("id");
             String sIndURI1 = results2.getString("uri1");
             String sIndURI2 = results2.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             boolean bComplex = false;
             for (Integer iChainID : chains.keySet()) {
                 HashMap<String, HashMap<String, Boolean>> hmChainDomain2Ranges = chains.get(iChainID);
                 HashMap<String, Boolean> hmRanges = hmChainDomain2Ranges.get(sIndURI1);
                 if (hmRanges != null && hmRanges.get(sIndURI2) != null) {
-                    sbLine.append(iChainID + "\t");
+                    sbLine.append(iChainID).append("\t");
                     bComplex = true;
                 }
             }
@@ -233,10 +233,10 @@ public class TablePrinter {
             ResultsIterator iter1 =
                 m_engine.query(m_sparqlFactory.individualPropertiesQuery(sIndURI1, sIndURI2), this.classesFilter);
             while (iter1.hasNext()) {
-                String sProp = (String) iter1.next();
+                String sProp = iter1.next();
                 String sPropID = getPropertyID(sProp);
                 if (sPropID != null) {
-                    sbLine.append(sPropID + "\t");
+                    sbLine.append(sPropID).append("\t");
                     if (iter1.hasNext()) {
                         sbLine.append("\t");
                     }
@@ -266,7 +266,7 @@ public class TablePrinter {
                 .queryPairs(m_sparqlFactory.propertyChainExtensionQuery(sProp1, sProp2), this.individualsFilter);
             int iPairs = 0;
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 HashMap<String, Boolean> hmRanges = hmChainDomain2Ranges.get(sPair[0]);
                 if (hmRanges == null) {
                     hmRanges = new HashMap<String, Boolean>();
@@ -288,7 +288,7 @@ public class TablePrinter {
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             int iPairs = 0;
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 HashMap<String, Boolean> hmInds = hmInd2Inds.get(sPair[0]);
                 if (hmInds == null) {
                     hmInds = new HashMap<String, Boolean>();
@@ -306,13 +306,13 @@ public class TablePrinter {
             int iIndPairID = results2.getInt("id");
             String sIndURI1 = results2.getString("uri1");
             String sIndURI2 = results2.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             boolean bComplex = false;
             for (Integer iChainID : chains.keySet()) {
                 HashMap<String, HashMap<String, Boolean>> hmChainDomain2Ranges = chains.get(iChainID);
                 HashMap<String, Boolean> hmRanges = hmChainDomain2Ranges.get(sIndURI1);
                 if (hmRanges != null && hmRanges.get(sIndURI2) != null) {
-                    sbLine.append(iChainID + "\t");
+                    sbLine.append(iChainID).append("\t");
                     bComplex = true;
                 }
             }
@@ -323,7 +323,7 @@ public class TablePrinter {
                     if (hmRanges != null && hmRanges.get(sIndURI2) != null) {
                         String sPropID = getPropertyID(sProp);
                         if (sPropID != null) {
-                            sbLine.append(sPropID + "\t");
+                            sbLine.append(sPropID).append("\t");
                         }
                     }
                 }
@@ -350,7 +350,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 hmDomains[i].put(sPair[0], true);
                 hmRanges[i].put(sPair[1], true);
             }
@@ -363,14 +363,14 @@ public class TablePrinter {
         while (results.next()) {
             int iIndID = results.getInt("id");
             String sIndURI = results.getString("uri");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             boolean bComplex = false;
             for (int i = 0; i < properties.length; i++) {
                 if ((iInverse == 0 && hmDomains[i].get(sIndURI) != null)
                     || (iInverse == 1 && hmRanges[i].get(sIndURI) != null)) {
                     String sPropURI = properties[i];
                     int iPropID = hmPropTops.get(sPropURI);
-                    sbLine.append(iPropID + "\t");
+                    sbLine.append(iPropID).append("\t");
                     bComplex = true;
                 }
             }
@@ -378,7 +378,7 @@ public class TablePrinter {
             //{
             ResultsIterator iter = m_engine.query(m_sparqlFactory.individualClassesQuery(sIndURI), this.classesFilter);
             while (iter.hasNext()) {
-                String sClass = (String) iter.next();
+                String sClass = iter.next();
                 String sClassID = getClassID(sClass);
                 if (sClassID != null) {
                     sbLine.append(sClassID);
@@ -429,7 +429,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 List<String> inds = hmInds.get(sPair[0]);
                 if (inds == null) {
                     inds = new ArrayList<String>();
@@ -447,7 +447,7 @@ public class TablePrinter {
                 m_engine.queryPairs(m_sparqlFactory.propertyChainExtensionQuery(prop1, prop2), this.individualsFilter);
             System.out.println(id);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 List<String> inds = propChainInds.get(sPair[0]);
                 if (inds == null) {
                     inds = new ArrayList<String>();
@@ -464,7 +464,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyChainExtensionQuery(prop1, prop2), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 List<String> inds = propChainTransInds.get(sPair[0]);
                 if (inds == null) {
                     inds = new ArrayList<String>();
@@ -479,13 +479,13 @@ public class TablePrinter {
         while (results.next()) {
             String sInd1 = results.getString("uri1");
             String sInd2 = results.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
                 List<String> hmInd2Inds = hmProp[i].get(sInd1);
                 if (hmInd2Inds != null) {
                     if (hmInd2Inds.contains(sInd2)) {
                         String sPropID = getPropertyID(properties[i]);
-                        sbLine.append(sPropID + "\t");
+                        sbLine.append(sPropID).append("\t");
                     }
                 }
             }
@@ -493,7 +493,7 @@ public class TablePrinter {
                 List<String> list = hmPropChain.get(id).get(sInd1);
                 if (list != null) {
                     if (list.contains(sInd2)) {
-                        sbLine.append(id + "\t");
+                        sbLine.append(id).append("\t");
                     }
                 }
             }
@@ -501,7 +501,7 @@ public class TablePrinter {
                 List<String> list = hmPropChainTrans.get(id).get(sInd1);
                 if (list != null) {
                     if (list.contains(sInd2)) {
-                        sbLine.append(id + "\t");
+                        sbLine.append(id).append("\t");
                     }
                 }
             }
@@ -526,7 +526,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 List<String> inds = hmInds.get(sPair[0]);
                 if (inds == null) {
                     inds = new ArrayList<String>();
@@ -542,15 +542,15 @@ public class TablePrinter {
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
                 List<String> list = hm[i].get(sInd);
                 if (list != null) {
                     String sPropID = getPropertyID(properties[i]);
-                    sbLine.append(sPropID + "\t");
+                    sbLine.append(sPropID).append("\t");
                     if (list.size() == 1) {
                         String sPropID2 = getPropertyDisjointID(properties[i]);
-                        sbLine.append(sPropID2 + "\t");
+                        sbLine.append(sPropID2).append("\t");
                     }
                 }
             }
@@ -576,7 +576,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 List<String> inds = hmInds.get(sPair[0]);
                 if (inds == null) {
                     inds = new ArrayList<String>();
@@ -592,7 +592,7 @@ public class TablePrinter {
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
                 HashMap<String, List<String>> all = hm[i];
                 Collection<List<String>> values = all.values();
@@ -607,11 +607,11 @@ public class TablePrinter {
                     }
                     if (count > 0) {
                         String sPropID = getPropertyID(properties[i]);
-                        sbLine.append(sPropID + "\t");
+                        sbLine.append(sPropID).append("\t");
                     }
                     if (count == 1) {
                         String sPropID = this.getPropertySymmetryID(properties[i]);
-                        sbLine.append(sPropID + "\t");
+                        sbLine.append(sPropID).append("\t");
                     }
                 }
             }
@@ -637,7 +637,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 List<String> inds = hmInd2Inds.get(sPair[0]);
                 if (inds == null) {
                     inds = new ArrayList<String>();
@@ -653,23 +653,23 @@ public class TablePrinter {
             String sId = results.getString("id");
             String sInd1 = results.getString("uri1");
             String sInd2 = results.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
                 List<String> hmInd2Inds = hmProp2Ext[i].get(sInd1);
                 if (hmInd2Inds != null) {
                     if (hmInd2Inds.contains(sInd2)) {
                         String sPropID = getPropertyID(properties[i]);
-                        sbLine.append(sPropID + "\t");
+                        sbLine.append(sPropID).append("\t");
                         List<String> hmInd2Inds2 = hmProp2Ext[i].get(sInd2);
                         if (hmInd2Inds2 != null) {
                             if (!hmInd2Inds2.contains(sInd1)) {
                                 String sPropID2 = this.getPropertySymmetryID(properties[i]);
-                                sbLine.append(sPropID2 + "\t");
+                                sbLine.append(sPropID2).append("\t");
                             }
                         }
                         else {
                             String sPropID2 = this.getPropertySymmetryID(properties[i]);
-                            sbLine.append(sPropID2 + "\t");
+                            sbLine.append(sPropID2).append("\t");
                         }
                     }
                 }
@@ -677,7 +677,7 @@ public class TablePrinter {
                 if (hmInd2Inds2 != null) {
                     if (hmInd2Inds2.contains(sInd1)) {
                         String sPropID = this.getPropertyDisjointID(properties[i]);
-                        sbLine.append(sPropID + "\t");
+                        sbLine.append(sPropID).append("\t");
                     }
                 }
             }
@@ -707,7 +707,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 HashMap<String, Boolean> hmInds = hmInd2Inds.get(sPair[0]);
                 if (hmInds == null) {
                     hmInds = new HashMap<String, Boolean>();
@@ -724,23 +724,23 @@ public class TablePrinter {
             String sId = results.getString("id");
             String sInd1 = results.getString("uri1");
             String sInd2 = results.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
                 HashMap<String, Boolean> hmInd2Inds = (HashMap<String, Boolean>) hmProp2Ext[i].get(sInd1);
                 if (hmInd2Inds != null) {
                     Boolean bExt = hmInd2Inds.get(sInd2);
                     if (bExt != null) {
                         String sPropID = getPropertyID(properties[i]);
-                        sbLine.append(sPropID + "\t");
+                        sbLine.append(sPropID).append("\t");
                     }
                     else {
                         String sPropID = getPropertyDisjointID(properties[i]);
-                        sbLine.append(sPropID + "\t");
+                        sbLine.append(sPropID).append("\t");
                     }
                 }
                 else {
                     String sPropID = getPropertyDisjointID(properties[i]);
-                    sbLine.append(sPropID + "\t");
+                    sbLine.append(sPropID).append("\t");
                 }
             }
             if (sbLine.length() > 0) {
@@ -761,13 +761,13 @@ public class TablePrinter {
         ResultSet results = m_database.query(query);
         while (results.next()) {
             String[] properties = this.getProperties();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("0\t");
             ResultsIterator iter =
                 m_engine.query(m_sparqlFactory.getPairProperty(results.getString("uri")), this.individualsFilter);
             while (iter.hasNext()) {
                 String s = iter.next();
-                sb.append(this.getPropertyID(s) + "\t");
+                sb.append(this.getPropertyID(s)).append("\t");
                 for (int i = 0; i < properties.length; i++) {
                     if (properties[i].equals(s)) {
                         properties[i] = "";
@@ -811,7 +811,7 @@ public class TablePrinter {
             String sId = results1.getString("id");
             String sInd1 = results1.getString("uri1");
             String sInd2 = results1.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             boolean bComplex = false;
             // property chains
             for (String sProp1 : hmChains.keySet()) {
@@ -825,7 +825,7 @@ public class TablePrinter {
                     if (iter2.hasNext()) {
                         String sChainID = hmSecond.get(sProp2);
                         System.out.println(sChainID + " = " + sProp1 + " / " + sProp2);
-                        sbLine.append(sChainID + "\t");
+                        sbLine.append(sChainID).append("\t");
                         bComplex = true;
                     }
                 }
@@ -835,7 +835,7 @@ public class TablePrinter {
                 ResultsIterator iter1 =
                     m_engine.query(m_sparqlFactory.individualPropertiesQuery(sInd1, sInd2), this.classesFilter);
                 while (iter1.hasNext()) {
-                    String sProp = (String) iter1.next();
+                    String sProp = iter1.next();
                     String sPropID = getPropertyID(sProp);
                     if (sPropID != null) {
                         sbLine.append(sPropID);
@@ -869,7 +869,7 @@ public class TablePrinter {
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
-                String sPair[] = (String[]) iter.next();
+                String sPair[] = iter.next();
                 // property
                 HashMap<String, Boolean> hmDomainRanges = (HashMap<String, Boolean>) hmDomains[i].get(sPair[0]);
                 if (hmDomainRanges == null) {
@@ -892,7 +892,7 @@ public class TablePrinter {
             int iIndPairID = results.getInt("id");
             String sIndURI1 = results.getString("uri1");
             String sIndURI2 = results.getString("uri2");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             boolean bComplex = false;
             for (int i = 0; i < properties.length; i++) {
                 for (int j = 0; j < properties.length; j++) {
@@ -907,7 +907,7 @@ public class TablePrinter {
                                 String sChainID = getPropertyChainID(properties[i], properties[j]);
                                 if (sChainID != null) {
                                     System.out.println(sChainID + " = " + properties[i] + " / " + properties[j]);
-                                    sbLine.append(sChainID + "\t");
+                                    sbLine.append(sChainID).append("\t");
                                     bComplex = true;
                                 }
                             }
@@ -920,7 +920,7 @@ public class TablePrinter {
                 ResultsIterator iter =
                     m_engine.query(m_sparqlFactory.individualPropertiesQuery(sIndURI1, sIndURI2), this.classesFilter);
                 while (iter.hasNext()) {
-                    String sProp = (String) iter.next();
+                    String sProp = iter.next();
                     String sPropID = getPropertyID(sProp);
                     if (sPropID != null) {
                         sbLine.append(sPropID);
@@ -1075,11 +1075,11 @@ public class TablePrinter {
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             // get individual complex classes
             ResultPairsIterator iter2 = m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), "");
             while (iter2.hasNext()) {
-                String sPropClass[] = (String[]) iter2.next();
+                String sPropClass[] = iter2.next();
                 String sClass = sPropClass[1];
                 String sProp = sPropClass[0];
                 // TODO: filter duplicates?
@@ -1092,7 +1092,7 @@ public class TablePrinter {
             // get individual atomic classes
             ResultsIterator iter1 = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), "");
             while (iter1.hasNext()) {
-                String sClass = (String) iter1.next();
+                String sClass = iter1.next();
                 String sClassID = getClassID(sClass);
                 if (sClassID != null) {
                     sbLine.append(sClassID);
@@ -1136,13 +1136,13 @@ public class TablePrinter {
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             boolean bComplex = false;
             // get individual complex classes
             ResultPairsIterator iter2 =
                 m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), this.classesFilter);
             while (iter2.hasNext()) {
-                String sPropClass[] = (String[]) iter2.next();
+                String sPropClass[] = iter2.next();
                 String sClass = sPropClass[1];
                 String sProp = sPropClass[0];
                 // TODO: filter duplicates?
@@ -1164,7 +1164,7 @@ public class TablePrinter {
                 ResultsIterator iter1 =
                     m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
                 while (iter1.hasNext()) {
-                    String sClass = (String) iter1.next();
+                    String sClass = iter1.next();
                     String sClassID = getClassID(sClass);
                     if (sClassID != null) {
                         sbLine.append(sClassID);
@@ -1197,11 +1197,11 @@ public class TablePrinter {
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
-            StringBuffer sbLine = new StringBuffer();
+            StringBuilder sbLine = new StringBuilder();
             // get individual classes
             ResultsIterator iter = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), "");
             while (iter.hasNext()) {
-                String sClass = (String) iter.next();
+                String sClass = iter.next();
                 String sClassID = getClassID(sClass);
                 if (sClassID != null) {
                     sbLine.append(sClassID);
@@ -1368,7 +1368,7 @@ public class TablePrinter {
     }
 
     private String checkURISyntax(String sURI) {
-        String s = new String(sURI);
+        String s = sURI;
         s = s.replaceAll("'", "_");
         return s;
     }

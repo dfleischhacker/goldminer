@@ -16,8 +16,8 @@ public class AssociationRulesParser {
 	
 	public List<ParsedAxiom> parse(File rules, boolean secondAnte) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(rules));
-		String ruleString = new String();
-		String s = new String();
+		String ruleString = "";
+		String s = "";
 		while((s = in.readLine()) != null) {
 			ruleString = ruleString + s;
 		}

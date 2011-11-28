@@ -413,7 +413,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         for (File f : files) {
             BufferedReader in = new BufferedReader(new FileReader(f));
             String line;
-            String fileText = new String();
+            String fileText = "";
             while ((line = in.readLine()) != null) {
                 fileText = fileText + line;
             }

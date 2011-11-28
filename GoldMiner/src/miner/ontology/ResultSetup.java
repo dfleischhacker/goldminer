@@ -1,15 +1,15 @@
 
 package miner.ontology;
 
-import java.io.*;
-import java.util.*;
+import miner.database.Database;
+import miner.database.SQLFactory;
+import miner.util.Parameter;
+import miner.util.Settings;
+import org.semanticweb.owlapi.model.OWLAxiom;
 
-import miner.util.*;
-import miner.database.*;
-
+import java.io.File;
 import java.sql.ResultSet;
-
-import org.semanticweb.owlapi.model.*;
+import java.util.HashMap;
 
 
 public class ResultSetup {
@@ -118,7 +118,7 @@ public class ResultSetup {
 		{
 			for( Integer c2: classes.keySet() )
 			{
-				if( c1 == c2 ){
+				if(c1.equals(c2)){
 					continue;
 				}
 				String s1 = classes.get( c1 );

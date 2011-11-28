@@ -56,7 +56,7 @@ public abstract class Extractor {
 	}
 	
 	protected String checkURISyntax( String sURI ){
-		String s = new String( sURI );
+		String s = sURI;
 		s = s.replaceAll( "'", "_" );
 		return s;
 	}

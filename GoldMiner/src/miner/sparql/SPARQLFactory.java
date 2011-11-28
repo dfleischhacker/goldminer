@@ -31,7 +31,7 @@ public class SPARQLFactory {
 	
 	// count classes
 	public String countClassesQuery(){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( " ?y a ?x ." );
@@ -44,7 +44,7 @@ public class SPARQLFactory {
 	
 	// count properties connecting two individuals
 	public String countPropertiesQuery( String sInd1, String sInd2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( "<"+ sInd1 +"> ?x <"+ sInd2 +"> ." );
@@ -54,7 +54,7 @@ public class SPARQLFactory {
 	
 	// get classes
 	public String classesQuery(){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x" );
 		sb.append( " WHERE {" );
@@ -68,7 +68,7 @@ public class SPARQLFactory {
 	
 	// get properties
 	public String propertiesQuery(){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x" );
 		sb.append( " WHERE {" );
@@ -83,7 +83,7 @@ public class SPARQLFactory {
 	
 	// get properties
 	public String propertiesQuery( String sInd ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x" );
 		sb.append( " WHERE {" );
@@ -98,7 +98,7 @@ public class SPARQLFactory {
 	
 	// get individuals related to this individual
 	public String propertyIndividualsQuery( String sInd, String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x" );
 		sb.append( " WHERE {" );
@@ -109,7 +109,7 @@ public class SPARQLFactory {
 	
 	// count individuals related to this individual
 	public String countPropertyIndividualsQuery( String sInd, String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( " <"+ sInd +"> <"+ sProp +"> ?x ." );
@@ -119,7 +119,7 @@ public class SPARQLFactory {
 	
 	// count individuals related to this individual
 	public String countInversePropertyIndividualsQuery( String sInd, String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( "?x <"+ sProp +"> <"+ sInd +"> ." );
@@ -129,7 +129,7 @@ public class SPARQLFactory {
 	
 	// count individuals of this class
 	public String classExtensionSizeQuery( String sClass ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( " ?x a <"+ sClass +"> ." );
@@ -139,7 +139,7 @@ public class SPARQLFactory {
 	
 	// count individuals of this class
 	public String classExtensionQuery( String sClass1, String sClass2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " ?x a <"+ sClass1 +"> ." );
@@ -150,7 +150,7 @@ public class SPARQLFactory {
 	
 	// count individuals of this class
 	public String classExtensionSizeQuery( String sClass1, String sClass2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( " ?x a <"+ sClass1 +"> ." );
@@ -161,7 +161,7 @@ public class SPARQLFactory {
 	
 	// count individuals in property domain
 	public String propDomainExtensionSizeQuery( String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( " ?x <"+ sProp +"> ?y ." );
@@ -172,7 +172,7 @@ public class SPARQLFactory {
 	
 	// count individuals in property range
 	public String propRangeExtensionSizeQuery( String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( " ?y <"+ sProp +"> ?x ." );
@@ -183,7 +183,7 @@ public class SPARQLFactory {
 	
 	// count individuals in exists property class
 	public String existsPropertyExtensionSizeQuery( String sProp, String sClass ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT (count(distinct ?x) AS ?count) WHERE {" );
 		sb.append( " ?x <"+ sProp +"> ?y ." );
@@ -194,7 +194,7 @@ public class SPARQLFactory {
 	
 	// get individuals in exists property class
 	public String existsPropertyExtensionQuery( String sProp, String sClass ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " ?x <"+ sProp +"> ?y ." );
@@ -205,7 +205,7 @@ public class SPARQLFactory {
 	
 	// get individuals in exists property top
 	public String existsPropertyExtensionQuery( String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " ?x <"+ sProp +"> ?y ." );
@@ -215,7 +215,7 @@ public class SPARQLFactory {
 	
 	// get individuals in exists property top
 	public String existsInversePropertyExtensionQuery( String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " ?y <"+ sProp +"> ?x ." );
@@ -225,7 +225,7 @@ public class SPARQLFactory {
 	
 	// get individuals in this class
 	public String classExtensionQuery( String sClass ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " ?x a <"+ sClass +"> ." );
@@ -235,7 +235,7 @@ public class SPARQLFactory {
 	
 	// get individual pairs in this property
 	public String propertyExtensionQuery( String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x ?y WHERE {" );
 		sb.append( " ?x <"+ sProp +"> ?y ." );
@@ -246,7 +246,7 @@ public class SPARQLFactory {
 	
 	// get pairs (domain individual, range class) for this property
 	public String propertyExtensionClassesQuery( String sProp ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x ?y WHERE {" );
 		sb.append( " ?x <"+ sProp +"> ?yi ." );
@@ -257,7 +257,7 @@ public class SPARQLFactory {
 	
 	// get individual pairs in this property chain
 	public String propertyChainExtensionQuery( String sProp1, String sProp2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x ?y WHERE {" );
 		sb.append( " ?x <"+ sProp1 +"> ?z ." );
@@ -269,7 +269,7 @@ public class SPARQLFactory {
 	
 	// get (atomic) classes for this individual
 	public String individualClassesQuery( String sInd ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " <"+ sInd +"> a ?x ." );
@@ -279,7 +279,7 @@ public class SPARQLFactory {
 	
 	// get (complex) classes for this individual: exists x.y
 	public String individualExistsPropertyQuery( String sInd ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x ?y WHERE {" );
 		sb.append( " <"+ sInd +"> ?x ?iy ." );
@@ -290,7 +290,7 @@ public class SPARQLFactory {
 	
 	// get properties connecting the two individuals
 	public String individualPropertiesQuery( String sInd1, String sInd2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " <"+ sInd1 +"> ?x <"+ sInd2 +"> ." );
@@ -300,7 +300,7 @@ public class SPARQLFactory {
 	
 	// get properties connecting the two individuals
 	public String propertyQuery( String sInd1, String sProp, String sInd2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " <"+ sInd1 +"> <"+ sProp +"> <"+ sInd2 +"> ." );
@@ -310,7 +310,7 @@ public class SPARQLFactory {
 	}
 	
 	public String getPairProperty(String sInd) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT distinct ?x WHERE {");
 		sb.append(" <" + sInd + "> ?x <" + sInd + ">.");
 		sb.append(" }");
@@ -319,7 +319,7 @@ public class SPARQLFactory {
 	
 	// get property chains connecting the two individuals
 	public String individualPropertyChainsQuery( String sInd1, String sInd2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x ?y WHERE {" );
 		sb.append( " <"+ sInd1 +"> ?x ?z ." );
@@ -330,7 +330,7 @@ public class SPARQLFactory {
 	
 	// get property chains connecting the two individuals
 	public String propertyChainsQuery( String sInd1, String sProp1, String sProp2, String sInd2 ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( PREFIX +" " );
 		sb.append( "SELECT distinct ?x WHERE {" );
 		sb.append( " <"+ sInd1 +"> <"+ sProp1 +"> ?x ." );

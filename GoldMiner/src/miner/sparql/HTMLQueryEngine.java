@@ -1,15 +1,15 @@
 package miner.sparql;
 
-import java.io.*;
-import java.sql.SQLException;
-import java.util.*;
-import java.net.*;
-
-import com.hp.hpl.jena.query.*;
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.graph.*;
-
-import miner.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class HTMLQueryEngine extends QueryEngine {
@@ -28,7 +28,7 @@ public class HTMLQueryEngine extends QueryEngine {
 			url = new URL( urlString );
 			URLConnection conn = url.openConnection ();
 			br = new BufferedReader( new InputStreamReader( conn.getInputStream() ) );
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			String line;
 			String sURI1 = null;
 			String sURI2 = null;
@@ -36,7 +36,7 @@ public class HTMLQueryEngine extends QueryEngine {
 			boolean b2 = false;
 			while ( ( line = br.readLine() ) != null)
 			{
-				if( line.indexOf( "</result>" ) != -1 )
+				if(line.contains("</result>"))
 				{
 					if( sURI1 != null && sURI2 != null )
 					{
@@ -48,7 +48,7 @@ public class HTMLQueryEngine extends QueryEngine {
 					b1 = false;
 					b2 = false;
 				}
-				if( line.indexOf( "binding name=\""+ sVar1 +"\"" ) != -1 ){
+				if(line.contains("binding name=\"" + sVar1 + "\"")){
 					b1 = true;
 					continue;
 				}
@@ -65,7 +65,7 @@ public class HTMLQueryEngine extends QueryEngine {
 					b1 = false;
 					continue;
 				}
-				if( line.indexOf( "binding name=\""+ sVar2 +"\"" ) != -1 ){
+				if(line.contains("binding name=\"" + sVar2 + "\"")){
 					b2 = true;
 					continue;
 				}
@@ -106,7 +106,7 @@ public class HTMLQueryEngine extends QueryEngine {
 			url = new URL( urlString );
 			URLConnection conn = url.openConnection ();
 			br = new BufferedReader( new InputStreamReader( conn.getInputStream() ) );
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			String line;
 			while ( ( line = br.readLine() ) != null)
 			{

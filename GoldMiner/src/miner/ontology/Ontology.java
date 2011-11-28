@@ -81,9 +81,9 @@ public class Ontology {
 	}
 	
 	public String toString(){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for( OWLAxiom axiom: m_ontology.getAxioms() ){
-			sb.append( axiom.toString() +"\n" );
+            sb.append(axiom.toString()).append("\n");
 		}
 		return sb.toString();
 	}
@@ -107,7 +107,7 @@ public class Ontology {
 	public String getDomain( String sPropURI ) throws Exception {
 		OWLObjectProperty prop = m_factory.getOWLObjectProperty( IRI.create( sPropURI ) );
 		Set<OWLObjectPropertyDomainAxiom> axioms = m_ontology.getObjectPropertyDomainAxioms( prop );
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		Iterator iter = axioms.iterator();
 		while( iter.hasNext() )
 		{
@@ -124,7 +124,7 @@ public class Ontology {
 	public String getRange( String sPropURI ) throws Exception {
 		OWLObjectProperty prop = m_factory.getOWLObjectProperty( IRI.create( sPropURI ) );
 		Set<OWLObjectPropertyRangeAxiom> axioms = m_ontology.getObjectPropertyRangeAxioms( prop );
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		Iterator iter = axioms.iterator();
 		while( iter.hasNext() )
 		{

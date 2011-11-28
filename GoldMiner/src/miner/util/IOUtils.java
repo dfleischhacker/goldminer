@@ -8,7 +8,7 @@ import java.util.*;
 public class IOUtils {
 	
 	public static String toString( Set<? extends Object> set ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append( "[ " );
 		Iterator iter = set.iterator();
 		while( iter.hasNext() )
@@ -25,13 +25,13 @@ public class IOUtils {
 	
 	public static String read( String sFile ) throws Exception {
 		File file = new File( sFile );
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader( new FileReader( file ) );
 			String sLine = null;
 			while( ( sLine = reader.readLine() ) != null ) {
-				sb.append( sLine.trim()+"\n" );
+                sb.append(sLine.trim()).append("\n");
 			}
 		}
 		finally {

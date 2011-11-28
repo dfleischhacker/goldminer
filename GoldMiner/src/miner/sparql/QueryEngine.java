@@ -51,7 +51,7 @@ public class QueryEngine {
 	public List<String> getAll( Iterator<String> iter ){
 		List<String> all = new ArrayList<String>();
 		while( iter.hasNext() ){
-			all.add( (String) iter.next() );
+			all.add(iter.next());
 		}
 		return all;
 	}
@@ -163,7 +163,7 @@ public class QueryEngine {
 
 	protected String checkURISyntax( String sURI ){
 		if( sURI == null ) return null;
-		String s = new String( sURI );
+		String s = sURI;
 		s = s.replaceAll( "'", "_" );
 		return s;
 	}

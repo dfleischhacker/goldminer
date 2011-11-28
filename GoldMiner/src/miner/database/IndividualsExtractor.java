@@ -34,7 +34,7 @@ public class IndividualsExtractor extends Extractor {
 			while( iter1.hasNext() ) 
 			{
 				iPropPairs++;
-				String sPair[] = (String[]) iter1.next();
+				String sPair[] = iter1.next();
 				HashMap hm = hmURIs.get( sPair[0] );
 				if( hm == null )
 				{
@@ -61,7 +61,7 @@ public class IndividualsExtractor extends Extractor {
 				while( iter.hasNext() )
 				{
 					iChainPairs++;
-					String sPair[] = (String[]) iter.next();
+					String sPair[] = iter.next();
 					HashMap hm = hmURIs.get( sPair[0] );
 					if( hm == null )
 					{
@@ -106,7 +106,7 @@ public class IndividualsExtractor extends Extractor {
 			while( iter1.hasNext() ) 
 			{
 				iPropPairs++;
-				String sPair[] = (String[]) iter1.next();
+				String sPair[] = iter1.next();
 				HashMap hm = hmURIs.get( sPair[0] );
 				if( hm == null )
 				{
@@ -131,7 +131,7 @@ public class IndividualsExtractor extends Extractor {
 			while( iter.hasNext() )
 			{
 				iChainPairs++;
-				String sPair[] = (String[]) iter.next();
+				String sPair[] = iter.next();
 				HashMap hm = hmURIs.get( sPair[0] );
 				if( hm == null )
 				{
@@ -193,7 +193,7 @@ public class IndividualsExtractor extends Extractor {
 			while( iter.hasNext() ) 
 			{
 				iClassInd++;
-				String sInd = (String) iter.next();
+				String sInd = iter.next();
 				hmURI2Ext.put( sInd, 3 );
 			}
 			System.out.println( "Setup.initIndividuals( "+ sClass +" ) ... "+ iClassInd +" -> "+ hmURI2Ext.size() );
@@ -210,7 +210,7 @@ public class IndividualsExtractor extends Extractor {
 			while( iter.hasNext() ) 
 			{
 				iClassInd++;
-				String sInd = (String) iter.next();
+				String sInd = iter.next();
 				hmURI2Ext.put( sInd, 2 );
 			}
 			System.out.println( "Setup.initIndividuals( "+ sProp +", "+ sClass +" ) ... "+ iClassInd +" -> "+ hmURI2Ext.size() );
@@ -226,14 +226,14 @@ public class IndividualsExtractor extends Extractor {
 			while( iter1.hasNext() ) 
 			{
 				iClassInd++;
-				String sInd = (String) iter1.next();
+				String sInd = iter1.next();
 				hmURI2Ext.put( sInd, 1 );
 			}
 			ResultsIterator iter2 = m_engine.query( m_sparqlFactory.existsInversePropertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
 			while( iter2.hasNext() ) 
 			{
 				iClassInd++;
-				String sInd = (String) iter2.next();
+				String sInd = iter2.next();
 				hmURI2Ext.put( sInd, 1 );
 			}
 			System.out.println( "Setup.initIndividuals( "+ sProp +" ) ... "+ iClassInd +" -> "+ hmURI2Ext.size() );
@@ -274,7 +274,7 @@ public class IndividualsExtractor extends Extractor {
 			while( iter.hasNext() ) 
 			{
 				iPropPairs++;
-				String sPair[] = (String[]) iter.next();
+				String sPair[] = iter.next();
 				HashMap hm = hmURIs.get( sPair[0] );
 				if( hm == null )
 				{
@@ -321,7 +321,7 @@ public class IndividualsExtractor extends Extractor {
 			while( iter.hasNext() ) 
 			{
 				iClassInd++;
-				String sInd = (String) iter.next();
+				String sInd = iter.next();
 				hmURI2Name.put( sInd, getLocalName( sInd ) );
 			}
 			System.out.println( "Setup.initIndividuals( "+ sClass +" ) ... "+ iClassInd +" -> "+ hmURI2Name.size() );
