@@ -19,7 +19,9 @@ import java.util.List;
 public class IGoldMinerImpl implements IGoldMiner {
 
     private static final String[] transactionTableNames =
-        {"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11"};
+        {"classmembers", "existspropertymembers", "propertyrestrictions1", "propertyrestrictions2", "propertymembers",
+         "propertychainmembers", "classdisjointness", "propertyreflexivity", "propertyinversemembers",
+         "propertyfunctionalmembers", "propertyinversefunctional"};
     private static final String associationRulesSuffix = "AR";
     private AssociationRulesParser parser;
     private OntologyWriter writer;
@@ -180,33 +182,33 @@ public class IGoldMinerImpl implements IGoldMiner {
     @Override
     public boolean terminologyAcquisition() throws SQLException {
         if ((this.c_sub_c ||
-            this.c_and_c_sub_c ||
-            this.c_sub_exists_p_c ||
-            this.exists_p_c_sub_c ||
-            this.exists_p_T_sub_c ||
-            this.exists_pi_T_sub_c ||
-            this.c_dis_c ||
-            this.p_reflexive ||
-            this.p_irreflexive ||
-            this.p_inverse_q ||
-            this.p_asymmetric ||
-            this.p_inverse_functional) &&
+             this.c_and_c_sub_c ||
+             this.c_sub_exists_p_c ||
+             this.exists_p_c_sub_c ||
+             this.exists_p_T_sub_c ||
+             this.exists_pi_T_sub_c ||
+             this.c_dis_c ||
+             this.p_reflexive ||
+             this.p_irreflexive ||
+             this.p_inverse_q ||
+             this.p_asymmetric ||
+             this.p_inverse_functional) &&
             !chk.reached("initclassestable")) {
             this.terminologyExtractor.initClassesTable();
             this.individualsExtractor.initIndividualsTable();
             chk.reach("initclassestable");
         }
         if ((this.p_sub_p ||
-            this.p_chain_q_sub_r ||
-            this.p_chain_p_sub_p ||
-            this.c_sub_exists_p_c ||
-            this.exists_p_c_sub_c ||
-            this.p_dis_p ||
-            this.p_reflexive ||
-            this.p_irreflexive ||
-            this.p_inverse_q ||
-            this.p_asymmetric ||
-            this.p_inverse_functional) &&
+             this.p_chain_q_sub_r ||
+             this.p_chain_p_sub_p ||
+             this.c_sub_exists_p_c ||
+             this.exists_p_c_sub_c ||
+             this.p_dis_p ||
+             this.p_reflexive ||
+             this.p_irreflexive ||
+             this.p_inverse_q ||
+             this.p_asymmetric ||
+             this.p_inverse_functional) &&
             !chk.reached("initpropertiestable")) {
             this.terminologyExtractor.initPropertiesTable();
             chk.reach("initpropertiestable");
@@ -220,7 +222,7 @@ public class IGoldMinerImpl implements IGoldMiner {
             chk.reach("initpropertytoptable");
         }
         if ((this.p_sub_p || this.p_chain_q_sub_r || this.p_chain_p_sub_p || this.p_dis_p || this.p_inverse_q ||
-            this.p_asymmetric) && !chk.reached("initindividualpairstable")) {
+             this.p_asymmetric) && !chk.reached("initindividualpairstable")) {
             this.individualsExtractor.initIndividualPairsTable();
             chk.reach("initindividualpairstable");
         }
@@ -332,7 +334,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         if (this.p_inverse_functional && !chk.reached("propertyinversefunctional")) {
             this.tablePrinter.printPropertyInverseFunctionalMembers(
-                            Settings.getString("transaction_tables") + transactionTableNames[10] + ".txt");
+                Settings.getString("transaction_tables") + transactionTableNames[10] + ".txt");
             chk.reach("propertyinversefunctional");
         }
 
