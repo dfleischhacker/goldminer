@@ -40,6 +40,9 @@ public class TablePrinter {
     private HashMap<String, String> m_hmProp2ID;
     private HashMap<String, String> m_hmProp2DisID;
     private HashMap<String, String> m_hmProp2InvID;
+    
+    // property cache
+    private String[] cachedProperties = null;
 
     // caching of (complex) exists property ids
 
@@ -116,6 +119,7 @@ public class TablePrinter {
             chains.put(iID, hmChainDomain2Ranges);
             System.out.println("printPropertyChainMembers( " + sProp + " ) ... " + iPairs + " -> " + iAllPairs);
         }
+        results1.getStatement().close();
         // properties
         HashMap<Integer, HashMap<String, HashMap<String, Boolean>>> properties =
             new HashMap<Integer, HashMap<String, HashMap<String, Boolean>>>();
@@ -148,6 +152,7 @@ public class TablePrinter {
             properties.put(iID, hmPropDomain2Ranges);
             System.out.println("printPropertyMembers( " + sProp + " ) ... " + iPairs + " -> " + iAllPairs);
         }
+        results2.getStatement().close();
         String sQuery = m_sqlFactory.selectIndividualPairsTransQuery();
         ResultSet results3 = m_database.query(sQuery);
         while (results3.next()) {
@@ -174,6 +179,7 @@ public class TablePrinter {
             System.out.println(
                 "TablePrinter.print: " + sIndURI1 + " / " + sIndURI2 + " (" + iIndPairID + ") -> " + sbLine.toString());
         }
+        results3.getStatement().close();
         System.out.println("done");
     }
 
@@ -211,6 +217,7 @@ public class TablePrinter {
             System.out.println(
                 "printPropertyChainMembers( " + sProp1 + ", " + sProp2 + " ) ... " + iPairs + " -> " + iAllPairs);
         }
+        results1.getStatement().close();
         String sQuery = m_sqlFactory.selectIndividualPairsExtQuery(iStart, iStart + 1000000);
         ResultSet results2 = m_database.query(sQuery);
         while (results2.next()) {
@@ -249,6 +256,7 @@ public class TablePrinter {
             }
             //}
         }
+        results2.getStatement().close();
     }
 
     public void printPropertyChainMembers_new(String sOutFile) throws Exception {
@@ -278,6 +286,7 @@ public class TablePrinter {
             chains.put(iID, hmChainDomain2Ranges);
             System.out.println("printPropertyChainMembers( " + sProp1 + ", " + sProp2 + " ) ... " + iPairs);
         }
+        results1.getStatement().close();
         // one hashmap per property: ind -> ind -> boolean
         String properties[] = getProperties();
         HashMap[] hmProp2Ext = new HashMap[properties.length];
@@ -334,6 +343,7 @@ public class TablePrinter {
                 }
             }
         }
+        results2.getStatement().close();
     }
 
     public void printPropertyRestrictions(String sOutFile, int iInverse) throws SQLException, IOException {
@@ -395,6 +405,7 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         System.out.println("TablePrinter.write: " + sOutFile);
         writer.flush();
         writer.close();
@@ -410,6 +421,7 @@ public class TablePrinter {
             int iPropID = results.getInt("id");
             hmPropTops.put(sPropURI, iPropID);
         }
+        results.getStatement().close();
         return hmPropTops;
     }
 
@@ -445,6 +457,7 @@ public class TablePrinter {
             HashMap<String, List<String>> propChainInds = new HashMap<String, List<String>>();
             ResultPairsIterator iter =
                 m_engine.queryPairs(m_sparqlFactory.propertyChainExtensionQuery(prop1, prop2), this.individualsFilter);
+            //TODO: remove
             System.out.println(id);
             while (iter.hasNext()) {
                 String sPair[] = iter.next();
@@ -510,6 +523,7 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         System.out.println("TablePrinter.write: " + outFile);
         writer.flush();
         writer.close();
@@ -538,7 +552,6 @@ public class TablePrinter {
         }
         String sQuery = m_sqlFactory.selectIndividualsQuery();
         ResultSet results = m_database.query(sQuery);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
@@ -560,6 +573,7 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         System.out.println("TablePrinter.write: " + sOutFile);
         writer.flush();
         writer.close();
@@ -588,7 +602,6 @@ public class TablePrinter {
         }
         String sQuery = m_sqlFactory.selectIndividualsQuery();
         ResultSet results = m_database.query(sQuery);
-        ArrayList<String> chunk = new ArrayList<String>();
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
@@ -621,6 +634,7 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         System.out.println("TablePrinter.write: " + sOutFile);
         writer.flush();
         writer.close();
@@ -688,6 +702,7 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         System.out.println("TablePrinter.write: " + sOutFile);
         writer.flush();
         writer.close();
@@ -750,6 +765,7 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         writer.flush();
         writer.close();
         System.out.println("TablePrinter: done");
@@ -787,18 +803,24 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         writer.flush();
         writer.close();
     }
 
     public String[] getProperties() throws SQLException {
+        if (cachedProperties != null) {
+            return cachedProperties;
+        }
         ArrayList<String> properties = new ArrayList<String>();
         String sQuery = m_sqlFactory.selectPropertiesQuery();
         ResultSet results = m_database.query(sQuery);
         while (results.next()) {
             properties.add(results.getString("uri"));
         }
-        return properties.toArray(new String[properties.size()]);
+        results.getStatement().close();
+        cachedProperties = properties.toArray(new String[properties.size()]);
+        return cachedProperties;
     }
 
     public void printPropertyChainMembers(String sOutFile) throws Exception {
@@ -851,6 +873,7 @@ public class TablePrinter {
                 }
             }
         }
+        results1.getStatement().close();
         // System.out.println( "TablePrinter.write: "+ sOutFile );
         // write( sOutFile, chunk );
         // System.out.println( "TablePrinter: done ("+ chunk.size() +")" );
@@ -937,6 +960,7 @@ public class TablePrinter {
                 }
             }
         }
+        results.getStatement().close();
     }
 
     public String getLocalName(String sURI) {
@@ -1104,9 +1128,10 @@ public class TablePrinter {
                 writer.write(sbLine.toString());
                 writer.newLine();
             }
-            writer.flush();
-            writer.close();
         }
+        writer.flush();
+        writer.close();
+        results.getStatement().close();
         //if( chunk.size() == 0 ){
         //return true;
         //}
@@ -1180,6 +1205,9 @@ public class TablePrinter {
                 }
             }
         }
+        results.getStatement().close();
+        writer.flush();
+        writer.close();
         //if( chunk.size() == 0 ){
         //return true;
         //}
@@ -1215,6 +1243,7 @@ public class TablePrinter {
                 writer.newLine();
             }
         }
+        results.getStatement().close();
         System.out.println("TablePrinter.write: " + sOutFile);
         writer.flush();
         writer.close();
@@ -1230,6 +1259,7 @@ public class TablePrinter {
                 String sID = results.getString("id");
                 m_hmClass2ID.put(sClass, sID);
             }
+            results.getStatement().close();
         }
         return m_hmClass2ID.get(sURI);
     }
@@ -1237,8 +1267,11 @@ public class TablePrinter {
     public String getIndividualPairID(String sURI1, String sURI2) throws Exception {
         ResultSet results = m_database.query(m_sqlFactory.selectIndividualPairIDQuery(sURI1, sURI2));
         if (results.next()) {
-            return results.getString("id");
+            String res = results.getString("id");
+            results.getStatement().close();
+            return res;
         }
+        results.getStatement().close();
         return null;
     }
 
@@ -1251,6 +1284,7 @@ public class TablePrinter {
                 String sID = results.getString("id");
                 m_hmProp2ID.put(sProp, sID);
             }
+            results.getStatement().close();
         }
         return m_hmProp2ID.get(sURI);
     }
@@ -1264,6 +1298,7 @@ public class TablePrinter {
                 String sID = results.getString("disjointID");
                 m_hmProp2DisID.put(sProp, sID);
             }
+            results.getStatement().close();
         }
         return m_hmProp2DisID.get(sURI);
     }
@@ -1277,6 +1312,7 @@ public class TablePrinter {
                 String sID = results.getString("symmetryID");
                 m_hmProp2InvID.put(sProp, sID);
             }
+            results.getStatement().close();
         }
         return m_hmProp2InvID.get(sURI);
     }
@@ -1295,6 +1331,7 @@ public class TablePrinter {
             }
             hmProp2ID.put(sURI2, sID);
         }
+        results.getStatement().close();
         return hmProp2Prop2ID;
     }
 
@@ -1312,6 +1349,7 @@ public class TablePrinter {
             }
             hmProp2ID.put(sURI1, sURI2);
         }
+        results.getStatement().close();
         return hmProp2Prop2ID;
     }
 
@@ -1328,6 +1366,7 @@ public class TablePrinter {
             }
             hm.put(uri, uri);
         }
+        results.getStatement().close();
         return result;
     }
 
@@ -1346,6 +1385,7 @@ public class TablePrinter {
                 }
                 hmProp2ID.put(sURI2, sID);
             }
+            results.getStatement().close();
         }
         HashMap<String, String> hmProp2ID = m_hmProp2Prop2ID.get(sProp1);
         if (hmProp2ID != null) {
@@ -1362,8 +1402,11 @@ public class TablePrinter {
         }
         ResultSet results = m_database.query(m_sqlFactory.selectExistsPropertyIDQuery(sPropURI, sClassURI));
         if (results.next()) {
-            return results.getString("id");
+            String res = results.getString("id");
+            results.getStatement().close();
+            return res;
         }
+        results.getStatement().close();
         return null;
     }
 
