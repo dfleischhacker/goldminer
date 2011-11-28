@@ -6,8 +6,10 @@ import miner.sparql.ResultsIterator;
 import miner.sparql.SPARQLFactory;
 import miner.util.Settings;
 
-import java.io.*;
-import java.nio.Buffer;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,7 +49,7 @@ public class TablePrinter {
 
     private HashMap<String, HashMap<String, String>> m_hmProp2Prop2ID;
 
-    private String classesFilter = "http://bibleontology.com";
+    private String classesFilter = "";
 
     private String individualsFilter = "";
 
