@@ -285,74 +285,90 @@ public class IGoldMinerImpl implements IGoldMiner {
     public void createTransactionTables() throws IOException,
                                                  SQLException {
         if ((this.c_sub_c || this.c_and_c_sub_c) && !chk.reached("classmembers")) {
+        	this.deleteFile(0);
             this.tablePrinter
                 .printClassMembers(Settings.getString("transaction_tables") + transactionTableNames[0] + ".txt");
             chk.reach("classmembers");
         }
         if ((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && !chk.reached("existspropertymembers")) {
+        	this.deleteFile(1);
             this.tablePrinter.printExistsPropertyMembers(
                 Settings.getString("transaction_tables") + transactionTableNames[1] + ".txt", 0);
             chk.reach("existspropertymembers");
         }
         if (this.exists_p_T_sub_c && !chk.reached("propertyrestrictions1")) {
+        	this.deleteFile(2);
             this.tablePrinter
                 .printPropertyRestrictions(Settings.getString("transaction_tables") + transactionTableNames[2] + ".txt",
                                            0);
             chk.reach("propertyrestrictions1");
         }
         if (this.exists_pi_T_sub_c && !chk.reached("propertyrestrictions2")) {
+        	this.deleteFile(3);
             this.tablePrinter
                 .printPropertyRestrictions(Settings.getString("transaction_tables") + transactionTableNames[3] + ".txt",
                                            1);
             chk.reach("propertyrestrictions2");
         }
         if ((this.p_sub_p || this.p_dis_p) && !chk.reached("propertymembers")) {
+        	this.deleteFile(4);
             this.tablePrinter
                 .printPropertyMembers(Settings.getString("transaction_tables") + transactionTableNames[4] + ".txt");
             chk.reach("propertymembers");
         }
         if ((this.p_chain_q_sub_r || this.p_chain_p_sub_p) && !chk.reached("propertychainmembers")) {
+        	this.deleteFile(5);
             this.tablePrinter.printPropertyChainMembersTrans_new(
                 Settings.getString("transaction_tables") + transactionTableNames[5] + ".txt");
             chk.reach("propertychainmembers");
         }
         if ((this.p_reflexive || this.p_irreflexive) && !chk.reached("propertyreflexivity")) {
+        	this.deleteFile(7);
             this.tablePrinter
                 .printPropertyReflexivity(Settings.getString("transaction_tables") + transactionTableNames[7] + ".txt");
             chk.reach("propertyreflexivity");
         }
         if ((this.p_inverse_q || this.p_asymmetric) && !chk.reached("propertyinversemembers")) {
+        	this.deleteFile(8);
             this.tablePrinter.printPropertyInverseMembers(
                 Settings.getString("transaction_tables") + transactionTableNames[8] + ".txt");
             chk.reach("propertyinversemembers");
         }
         if (this.p_functional && !chk.reached("propertyfunctionalmembers")) {
+        	this.deleteFile(9);
             this.tablePrinter.printPropertyFunctionalMembers(
                 Settings.getString("transaction_tables") + transactionTableNames[9] + ".txt");
             chk.reach("propertyfunctionalmembers");
 
         }
         if (this.p_inverse_functional && !chk.reached("propertyinversefunctional")) {
+        	this.deleteFile(10);
             this.tablePrinter.printPropertyInverseFunctionalMembers(
                 Settings.getString("transaction_tables") + transactionTableNames[10] + ".txt");
             chk.reach("propertyinversefunctional");
         }
 
         if (this.c_dis_c) {
+        	this.deleteFile(6);
             //TODO
             File f = new File(Settings.getString("transaction_tables") + transactionTableNames[6] + ".txt");
             f.createNewFile();
         }
     }
+    
+    private void deleteFile(int index) throws IOException {
+    	File f = new File(Settings.getString("transaction_tables") + transactionTableNames[index] + ".txt");
+    	f.delete();
+    	f.createNewFile();
+    }
 
     @Override
     public void mineAssociationRules() throws IOException {
         File file = new File(Settings.getString("transaction_tables"));
-        File[] files = file.listFiles(new TextFileFilter());
+        File[] files = this.removeFiles(file.listFiles(new TextFileFilter()));
         File ruleFile = new File(Settings.getString("association_rules"));
         File[] ruleFiles = ruleFile.listFiles(new TextFileFilter());
         this.deleteFiles(ruleFiles);
-        files = file.listFiles(new TextFileFilter());
         for (File f : files) {
             int index = f.getName().lastIndexOf(".");
             File targetFile = new File(
@@ -372,6 +388,100 @@ public class IGoldMinerImpl implements IGoldMiner {
                           ".txt";
             Runtime.getRuntime().exec(exec);
         }
+    }
+    
+    private File[] removeFiles(File[] files) {
+    	File[] result;
+    	List<Integer> indexes = new ArrayList<Integer>();
+    	if(!this.c_sub_c && !this.c_and_c_sub_c) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[0] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.c_sub_exists_p_c && !this.exists_p_c_sub_c) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[1] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.exists_p_T_sub_c) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[2] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.exists_pi_T_sub_c) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[3] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.p_sub_p && !this.p_dis_p) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[4] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.p_chain_q_sub_r && !this.p_chain_p_sub_p) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[5] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.c_dis_c) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[6] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.p_reflexive && !this.p_irreflexive) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[7] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.p_inverse_q && !this.p_asymmetric) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[8] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.p_functional) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[9] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	if(!this.p_inverse_functional) {
+    		for(int i = 0; i < files.length; i++) {
+    			if(files[i].getName().equals(transactionTableNames[10] + ".txt")) {
+    				indexes.add(i);
+    			}
+    		}
+    	}
+    	result = new File[files.length - indexes.size()];
+    	int x = 0;
+    	for(int i = 0; i < files.length; i++) {
+    		if(!indexes.contains(i)) {
+    			result[x] = files[i];
+    			x++;
+    		}
+    	}
+    	for(File f : result) {
+    		System.out.println(f.getName());
+    	}
+    	return result;
     }
 
     private void deleteFiles(File[] files) {
