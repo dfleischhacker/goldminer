@@ -287,10 +287,10 @@ public class IGoldMinerImpl implements IGoldMiner {
                 .printClassMembers(Settings.getString("transaction_tables") + transactionTableNames[0] + ".txt");
             chk.reach("classmembers");
         }
-        if ((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && !chk.reached("propertymembers")) {
+        if ((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && !chk.reached("existspropertymembers")) {
             this.tablePrinter.printExistsPropertyMembers(
                 Settings.getString("transaction_tables") + transactionTableNames[1] + ".txt", 0);
-            chk.reach("propertymembers");
+            chk.reach("existspropertymembers");
         }
         if (this.exists_p_T_sub_c && !chk.reached("propertyrestrictions1")) {
             this.tablePrinter
