@@ -10,48 +10,46 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AssociationRulesParser {
-	
-	public AssociationRulesParser() {
-	}
-	
-	public List<ParsedAxiom> parse(File rules, boolean secondAnte) throws IOException {
-		BufferedReader in = new BufferedReader(new FileReader(rules));
-		String ruleString = "";
-		String s = "";
-		while((s = in.readLine()) != null) {
-			ruleString = ruleString + s;
-		}
-		String patternRegex;
-		if(secondAnte) {
-			patternRegex = "(\\d+ <- \\d+ \\d+  \\(\\d+.\\d, \\d+.\\d\\))";
-		} else {
-			patternRegex = "(\\d+ <- \\d+  \\(\\d+.\\d, \\d+.\\d\\))";
-		}
-		List<ParsedAxiom> axioms = new ArrayList<ParsedAxiom>();
-		Pattern pattern = Pattern.compile(patternRegex);
-		Matcher matcher = pattern.matcher(ruleString);
-		while(matcher.find()) {
-			String rule = ruleString.substring(matcher.start(), matcher.end());
-			Pattern p = Pattern.compile("[\\d.]+");
-			Matcher m = p.matcher(rule);
-			m.find();
-			int cons = Integer.parseInt(rule.substring(m.start(), m.end()));
-			m.find();
-			int ante = Integer.parseInt(rule.substring(m.start(), m.end()));
-			int ante2 = -1;
-			if(secondAnte) {
-				m.find();
-				ante2 = Integer.parseInt(rule.substring(m.start(), m.end()));
-			}
-			m.find();
-			double supp = Double.parseDouble(rule.substring(m.start(), m.end()));
-			m.find();
-			double conf = Double.parseDouble(rule.substring(m.start(), m.end()));
-			if(secondAnte) {
-				axioms.add(new ParsedAxiom(ante, ante2, cons, supp, conf));
-			}
-			axioms.add(new ParsedAxiom(ante, cons, supp, conf));
-		}
-		return axioms;
-	}
+
+    public AssociationRulesParser() {
+    }
+
+    public List<ParsedAxiom> parse(File rules, boolean secondAnte) throws IOException {
+        BufferedReader in = new BufferedReader(new FileReader(rules));
+        String patternRegex;
+        if (secondAnte) {
+            patternRegex = "(\\d+)\\s+<-\\s+(\\d+)\\s+(\\d+)\\s+\\((\\d+(\\.\\d+)?),\\s+(\\d+(\\.\\d+)?(e[+-]\\d+))\\)";
+        }
+        else {
+            patternRegex = "(\\d+)\\s+<-\\s+(\\d+)\\s+\\((\\d+(\\.\\d+)?),\\s+(\\d+(\\.\\d+)?(e[+-]\\d+))\\)";
+        }
+        String line;
+        Pattern pattern = Pattern.compile(patternRegex);
+        List<ParsedAxiom> axioms = new ArrayList<ParsedAxiom>();
+        while ((line = in.readLine()) != null) {
+            Matcher matcher = pattern.matcher(line);
+            if (!matcher.matches() || matcher.groupCount() != 4) {
+                System.out.println("Unable to parse: " + line);
+                continue;
+            }
+            int cons = Integer.parseInt(matcher.group(1));
+            int ante = Integer.parseInt(matcher.group(2));
+
+            int counter = 3;
+            int ante2 = -1;
+            if (secondAnte) {
+                ante2 = Integer.parseInt(matcher.group(counter++));
+            }
+            double supp = Double.parseDouble(matcher.group(counter++));
+            double conf = Double.parseDouble(matcher.group(counter));
+            if (secondAnte) {
+                axioms.add(new ParsedAxiom(ante, ante2, cons, supp, conf));
+            }
+            else {
+                axioms.add(new ParsedAxiom(ante, cons, supp, conf));
+            }
+        }
+
+        return axioms;
+    }
 }
