@@ -17,6 +17,8 @@ import java.util.*;
 public class Ontology {
 	
 	private IRI m_logicalIRI;
+    
+    private IRI annotationIRI;
 	
 	private IRI m_physicalIRI;
 	
@@ -40,6 +42,7 @@ public class Ontology {
 	public void create( File file ) throws OWLOntologyCreationException {
 		m_logicalIRI = IRI.create( Settings.getString("ontology_logical") );
 		m_physicalIRI = IRI.create( file.toURI().toString() );
+        annotationIRI = IRI.create(Settings.getString("annotation_iri"));
 		//OWLOntologyIRIMapper mapper = new OWLOntologyIRIMapper( m_logicalIRI, m_physicalIRI );
 		//m_manager.addIRIMapper( mapper );
 		m_ontology = m_manager.createOntology( m_physicalIRI );
@@ -434,12 +437,16 @@ public class Ontology {
 	}
 	
 	public OWLAnnotation annotation( String sAnnotation, double dValue ){
-		OWLAnnotationProperty prop = m_factory.getOWLAnnotationProperty( IRI.create( getLogicalIRI() +"#"+ sAnnotation ) );
+		OWLAnnotationProperty prop = m_factory.getOWLAnnotationProperty( IRI.create( getAnnotationIRI() +"#"+ sAnnotation ) );
 		OWLAnnotation annotation = m_factory.getOWLAnnotation( prop, m_factory.getOWLLiteral( dValue ) );
 		return annotation;
 	}
 
     public IRI getLogicalIRI() {
         return m_logicalIRI;
+    }
+
+    public IRI getAnnotationIRI() {
+        return annotationIRI;
     }
 }
