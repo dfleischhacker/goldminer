@@ -347,12 +347,11 @@ public class IGoldMinerImpl implements IGoldMiner {
                 Settings.getString("transaction_tables") + transactionTableNames[10] + ".txt");
             chk.reach("propertyinversefunctional");
         }
-
-        if (this.c_dis_c) {
+        if (this.c_dis_c && !chk.reached("classdisjointness")) {
         	this.deleteFile(6);
-            //TODO
-            File f = new File(Settings.getString("transaction_tables") + transactionTableNames[6] + ".txt");
-            f.createNewFile();
+            this.tablePrinter.printDisjointClassMembers(
+                Settings.getString("transaction_tables") + transactionTableNames[6] + ".txt");
+            chk.reach("classdisjointness");
         }
     }
 

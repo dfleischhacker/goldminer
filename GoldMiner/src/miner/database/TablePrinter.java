@@ -12,10 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 public class TablePrinter {
@@ -40,7 +37,7 @@ public class TablePrinter {
     private HashMap<String, String> m_hmProp2ID;
     private HashMap<String, String> m_hmProp2DisID;
     private HashMap<String, String> m_hmProp2InvID;
-    
+
     // property cache
     private String[] cachedProperties = null;
 
@@ -73,11 +70,11 @@ public class TablePrinter {
     }
 
     public TablePrinter() throws SQLException, FileNotFoundException, IOException {
-    	if(!Settings.loaded()) {
-    		Settings.load();
-    	}
-    	this.classesFilter = Settings.getString("classesFilter");
-    	this.individualsFilter = Settings.getString("individualsFilter");
+        if (!Settings.loaded()) {
+            Settings.load();
+        }
+        this.classesFilter = Settings.getString("classesFilter");
+        this.individualsFilter = Settings.getString("individualsFilter");
         m_engine = new QueryEngine();
         m_sparqlFactory = new SPARQLFactory();
         m_database = Database.instance();
@@ -1106,7 +1103,8 @@ public class TablePrinter {
             String sInd = results.getString("uri");
             StringBuilder sbLine = new StringBuilder();
             // get individual complex classes
-            ResultPairsIterator iter2 = m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), this.classesFilter);
+            ResultPairsIterator iter2 =
+                m_engine.queryPairs(m_sparqlFactory.individualExistsPropertyQuery(sInd), this.classesFilter);
             while (iter2.hasNext()) {
                 String sPropClass[] = iter2.next();
                 String sClass = sPropClass[1];
@@ -1238,6 +1236,56 @@ public class TablePrinter {
                 String sClassID = getClassID(sClass);
                 if (sClassID != null) {
                     sbLine.append(sClassID);
+                    sbLine.append("\t");
+                }
+            }
+            iDone++;
+            if (sbLine.length() > 0) {
+                System.out.println("TablePrinter.print: " + sInd + " (" + sId + ") -> " + sbLine.toString());
+                writer.write(sbLine.toString());
+                writer.newLine();
+            }
+        }
+        results.getStatement().close();
+        System.out.println("TablePrinter.write: " + sOutFile);
+        writer.flush();
+        writer.close();
+        System.out.println("TablePrinter: done (" + iDone + ")");
+    }
+
+    public void printDisjointClassMembers(String sOutFile) throws SQLException, IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
+        // assure that we have the class ID resolver initialized
+        //TODO: make it right(TM)
+        getClassID("");
+        ArrayList<String> classIds = new ArrayList<String>(new HashSet<String>(m_hmClass2ID.values()));
+        Collections.sort(classIds);
+        System.out.println("Class ids: " + classIds.size());
+        
+        // read individuals from database
+        String sQuery1 = m_sqlFactory.selectIndividualsQuery();
+        ResultSet results = m_database.query(sQuery1);
+        int iDone = 0;
+        while (results.next()) {
+            String sId = results.getString("id");
+            String sInd = results.getString("uri");
+            StringBuilder sbLine = new StringBuilder();
+            // get individual classes
+            ResultsIterator iter = m_engine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
+            HashSet<String> classMemberships = new HashSet<String>();
+            while (iter.hasNext()) {
+                String sClass = iter.next();
+                String sClassID = getClassID(sClass);
+                classMemberships.add(sClassID);
+            }
+            for (String classId : classIds) {
+                if (classMemberships.contains(classId)) {
+                    sbLine.append(classId);
+                    sbLine.append("\t");
+                }
+                else {
+                    //TODO: do not hard-code offset
+                    sbLine.append(String.valueOf(Integer.parseInt(classId) + 1000));
                     sbLine.append("\t");
                 }
             }
