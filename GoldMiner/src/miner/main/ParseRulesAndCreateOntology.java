@@ -24,7 +24,9 @@ public class ParseRulesAndCreateOntology {
 			System.out.println("Anzahl Axiome: " + axioms.size());
 			Ontology o = goldMiner.createOntology(axioms, 0.0, 0.0);
 			//o = goldMiner.greedyDebug(o);
+            System.out.println("Saving ontology");
 			o.save();
+            System.out.println("Done saving");
 			goldMiner.disconnect();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

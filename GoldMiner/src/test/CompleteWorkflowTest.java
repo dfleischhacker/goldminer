@@ -1,18 +1,18 @@
 package test;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-
 import miner.IGoldMiner;
 import miner.IGoldMinerImpl;
 import miner.ontology.Ontology;
-
+import miner.ontology.ParsedAxiom;
 import org.junit.Test;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.HashMap;
 
 
 public class CompleteWorkflowTest {
@@ -40,7 +40,7 @@ public class CompleteWorkflowTest {
 		this.goldMiner.mineAssociationRules();
 		
 		//parse the association rules and transform them to OWLAxioms
-		HashMap<OWLAxiom, Double> axioms = this.goldMiner.parseAssociationRules();
+		HashMap<OWLAxiom,ParsedAxiom.SupportConfidenceTuple> axioms = this.goldMiner.parseAssociationRules();
 		
 		//Create an ontology that contains all the axioms that have been parsed.
 		//You can specify support and confidence thresholds.

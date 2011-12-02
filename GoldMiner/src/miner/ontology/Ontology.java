@@ -145,7 +145,7 @@ public class Ontology {
 	public void addAxiom( OWLAxiom axiom ) throws OWLOntologyStorageException {
 		AddAxiom addAxiom = new AddAxiom( m_ontology, axiom );
 		m_manager.applyChange( addAxiom );
-		this.save();
+		//this.save();
     }
 	
 	public void removeAxiom( OWLAxiom axiom ) {

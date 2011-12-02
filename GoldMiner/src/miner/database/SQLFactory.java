@@ -292,6 +292,10 @@ public class SQLFactory {
 	public String selectClassURIQuery( int iID ){
 		return "SELECT uri FROM classes WHERE id='"+ iID +"'";
 	}
+
+    public String selectClassURIQuery(){
+    		return "SELECT id, uri FROM classes";
+    }
 	
 	public String selectClassURIsQuery() {
 		return "SELECT name FROM classes";
@@ -320,10 +324,18 @@ public class SQLFactory {
 	public String selectURIsFromExistsQuery(int iExpID) {
 		return "SELECT * FROM classes_ex_property WHERE id='"+ iExpID +"'";
 	}
+
+    public String selectURIsFromExistsQuery() {
+        return "SELECT * FROM classes_ex_property";
+    }
 	
 	public String selectURIsFromExistsTopQuery(int iExpID) {
 		return "SELECT * FROM classes_ex_property_top WHERE id='"+ iExpID +"'";
 	}
+
+    public String selectURIsFromExistsTopQuery() {
+        return "SELECT * FROM classes_ex_property_top";
+    }
 	
 	public String selectPropertyURIQuery( int iID ){
 		return "SELECT uri FROM properties WHERE id='"+ iID +"'";

@@ -18,11 +18,72 @@ public class OntologyWriter {
 	private Database m_database;
 
 	private SQLFactory m_sqlFactory;
+    private HashMap<Integer, String> classURICache;
+    private HashMap<Integer, String> propertyURICache;
+    private HashMap<Integer, String> disjointPropertyURICache;
+    private HashMap<Integer, String> symmetryPropertyURICache;
+    private HashMap<Integer, String> propertyURIFromExistsCache;
+    private HashMap<Integer, String> classURIFromExistsCache;
+    private HashMap<Integer, String> propertyURIFromExistsPropertyTopCache;
 
-	public OntologyWriter(Database d, Ontology o) {
+
+    public OntologyWriter(Database d, Ontology o) throws SQLException {
 		m_ontology = o;
 		m_sqlFactory = new SQLFactory();
 		m_database = d;
+
+        // cache ID to URI maps
+        classURICache = new HashMap<Integer, String>();
+        propertyURICache = new HashMap<Integer, String>();
+        disjointPropertyURICache = new HashMap<Integer, String>();
+        symmetryPropertyURICache = new HashMap<Integer, String>();
+        propertyURIFromExistsCache = new HashMap<Integer, String>();
+        classURIFromExistsCache = new HashMap<Integer, String>();
+        propertyURIFromExistsPropertyTopCache = new HashMap<Integer, String>();
+
+        ResultSet res = m_database.query(m_sqlFactory.selectClassURIQuery());
+
+        while (res.next()) {
+            classURICache.put(res.getInt(1), res.getString(2));
+        }
+
+        res.getStatement().close();
+
+        res = m_database.query(m_sqlFactory.selectPropertiesQuery());
+
+        while (res.next()) {
+            String uri = res.getString("uri");
+            int id = res.getInt("id");
+            int disjId = res.getInt("disjointID");
+            int symId = res.getInt("symmetryId");
+
+            propertyURICache.put(id, uri);
+            disjointPropertyURICache.put(disjId, uri);
+            symmetryPropertyURICache.put(symId, uri);
+        }
+        res.getStatement().close();
+        
+        res = m_database.query(m_sqlFactory.selectURIsFromExistsQuery());
+
+        while (res.next()) {
+            int id = res.getInt("id");
+            String propUri = res.getString("prop_uri");
+            String classUri = res.getString("class_uri");
+
+            propertyURIFromExistsCache.put(id, propUri);
+            classURIFromExistsCache.put(id, classUri);
+        }
+        res.getStatement().close();
+
+        res = m_database.query(m_sqlFactory.selectURIsFromExistsTopQuery());
+
+        while (res.next()) {
+            int id = res.getInt("id");
+            String uri = res.getString("uri");
+
+            propertyURIFromExistsPropertyTopCache.put(id, uri);
+        }
+        res.getStatement().close();
 	}
 
     public Ontology write(HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms, double supportThreshold, double confidenceThreshold)
@@ -35,7 +96,7 @@ public class OntologyWriter {
             if (entry.getValue().getSupport() > supportThreshold &&
                 entry.getValue().getConfidence() > confidenceThreshold) {
 
-                System.out.println("add (" + i + "): " + entry);
+                //System.out.println("add (" + i + "): " + entry);
                 m_ontology.addAxiom(entry.getKey());
             }
             i++;
@@ -195,101 +256,39 @@ public class OntologyWriter {
 	}
 
 	public String getClassURI( int iClassID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectClassURIQuery( iClassID );
-		ResultSet results = m_database.query( sQuery );
-		if( results.next() ){
-			String res = results.getString( "uri" );
-            results.getStatement().close();
-            return res;
-		}
-        results.getStatement().close();
-		return null;
+        return classURICache.get(iClassID);
 	}
 
 	public String getPropertyURI( int iPropertyID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectPropertyURIQuery( iPropertyID );
-		ResultSet results = m_database.query( sQuery );
-		if( results.next() ){
-			String res = results.getString( "uri" );
-            results.getStatement().close();
-            return res;
-		}
-        results.getStatement().close();
-		return null;
-	}
+        return propertyURICache.get(iPropertyID);
+    }
 
 	public String getDisjointPropertyURI( int iPropertyID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectDisjointPropertyURIQuery( iPropertyID );
-		ResultSet results = m_database.query( sQuery );
-		if( results.next() ) {
-			String res =  results.getString( "uri" );
-            results.getStatement().close();
-            return res;
-		}
-        results.getStatement().close();
-		return null;
-	}
+        return disjointPropertyURICache.get(iPropertyID);
+    }
 
 	public String getInversePropertyURI( int iPropertyID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectInversePropertyURIQuery( iPropertyID );
-		ResultSet results = m_database.query( sQuery );
-		if(results.next() ) {
-			String res = results.getString("uri");
-            results.getStatement().close();
-            return res;
-		}
-        results.getStatement().close();
-		return null;
-	}
+        return disjointPropertyURICache.get(iPropertyID);
+    }
 
 	public String getSymmetryPropertyURI( int iPropertyID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectSymmetryPropertyURIQuery( iPropertyID );
-		ResultSet results = m_database.query( sQuery );
-		if(results.next() ) {
-			String res = results.getString("uri");
-            results.getStatement().close();
-            return res;
-		}
-        results.getStatement().close();
-		return null;
-	}
+        return symmetryPropertyURICache.get(iPropertyID);
+    }
 
 	//retrieves the property ID form the property_exists table
 	public String getPropertyURIFromExistsProperty( int iExistsPropertyID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectURIsFromExistsQuery( iExistsPropertyID );
-		ResultSet results = m_database.query( sQuery );
-		if( results.next() ){
-			String res = results.getString( "prop_uri" );
-            results.getStatement().close();
-            return res;
-		}
-        results.getStatement().close();
-		return null;
-	}
+        return propertyURIFromExistsCache.get(iExistsPropertyID);
+    }
 
 	//retrieves the property ID form the property_exists table
 	public String getClassURIFromExistsProperty( int iExistsPropertyID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectURIsFromExistsQuery( iExistsPropertyID );
-		ResultSet results = m_database.query( sQuery );
-		if( results.next() ){
-			String res = results.getString( "class_uri" );
-            results.getStatement().close();
-            return res;
-		}
-        results.getStatement().close();
-		return null;
-	}
+        return classURIFromExistsCache.get(iExistsPropertyID);
+    }
 
 	//retrieves the property ID form the property_exists_top table
 	public String getPropertyURIFromExistsPropertyTop( int iExistsPropertyID ) throws SQLException {
-		String sQuery = m_sqlFactory.selectURIsFromExistsTopQuery( iExistsPropertyID );
-		ResultSet results = m_database.query( sQuery );
-		if( results.next() ){
-			return results.getString( "uri" );
-		}
-        results.getStatement().close();
-		return null;
-	}
+        return propertyURIFromExistsPropertyTopCache.get(iExistsPropertyID);
+    }
 
 	public Ontology writeClassesAndPropertiesToOntology() throws SQLException, OWLOntologyStorageException {
 		String query = m_sqlFactory.selectClassURIsQuery();
