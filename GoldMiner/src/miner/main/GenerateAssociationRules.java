@@ -1,14 +1,13 @@
 package miner.main;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-
+import miner.IGoldMiner;
+import miner.IGoldMinerImpl;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
-import miner.IGoldMiner;
-import miner.IGoldMinerImpl;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
 
 public class GenerateAssociationRules {
 	
@@ -20,7 +19,7 @@ public class GenerateAssociationRules {
 			goldMiner.setupDatabase();
 			goldMiner.terminologyAcquisition();
 			goldMiner.createTransactionTables();
-			goldMiner.mineAssociationRules();
+			//goldMiner.mineAssociationRules();
 			goldMiner.disconnect();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
