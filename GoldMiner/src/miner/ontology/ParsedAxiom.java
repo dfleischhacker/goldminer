@@ -7,12 +7,14 @@ public class ParsedAxiom {
 	private int cons;
 	private double supp;
 	private double conf;
+    private SupportConfidenceTuple tuple;
 
 	public ParsedAxiom(int ante1, int cons, double supp, double conf) {
 		this.ante1= ante1;
 		this.cons = cons;
 		this.supp = supp;
 		this.conf = conf;
+        this.tuple = new SupportConfidenceTuple(supp, conf);
 	}
 	
 	public ParsedAxiom(int ante1, int ante2, int cons, double supp, double conf) {
@@ -21,6 +23,7 @@ public class ParsedAxiom {
 		this.cons = cons;
 		this.supp = supp;
 		this.conf = conf;
+        this.tuple = new SupportConfidenceTuple(supp, conf);
 	}
 
 	/**
@@ -57,4 +60,26 @@ public class ParsedAxiom {
 	public double getConf() {
 		return conf;
 	}
+    
+    public SupportConfidenceTuple getSuppConfTuple() {
+        return tuple;
+    }
+
+    public static class SupportConfidenceTuple {
+        private double support;
+        private double confidence;
+
+        private SupportConfidenceTuple(double support, double confidence) {
+            this.support = support;
+            this.confidence = confidence;
+        }
+
+        public double getSupport() {
+            return support;
+        }
+
+        public double getConfidence() {
+            return confidence;
+        }
+    }
 }

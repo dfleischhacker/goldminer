@@ -4,7 +4,6 @@ import miner.database.Database;
 import miner.database.SQLFactory;
 import miner.util.Settings;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
@@ -26,30 +25,23 @@ public class OntologyWriter {
 		m_database = d;
 	}
 
-	public Ontology write(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException {
-		//List<OWLAxiom> axioms = getAxioms();
-		//System.out.println( "axioms: "+ axioms.size() );
-		int i=0;
-		for( OWLAxiom axiom: axioms.keySet() )
-		{
-			boolean supp = false;
-			Set<OWLAnnotation> anno = axiom.getAnnotations();
-			for(OWLAnnotation a : anno) {
-				if(a.getProperty().getIRI().toString().split("#")[1].equals("support")) {
-					double conf = Double.parseDouble(a.getValue().toString().split("\"")[1]);
-					if(conf >= supportThreshold) {
-						supp = true;
-					}
-				}
-			}
-			if(axioms.get(axiom) > confidenceThreshold && supp) {
-				System.out.println( "add ("+ i +"): "+ axiom );
-				m_ontology.addAxiom( axiom );
-			}
-			i++;
-		}
-		return this.m_ontology;
-	}
+    public Ontology write(HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms, double supportThreshold, double confidenceThreshold)
+        throws OWLOntologyStorageException {
+
+        //List<OWLAxiom> axioms = getAxioms();
+        //System.out.println( "axioms: "+ axioms.size() );
+        int i = 0;
+        for (Map.Entry<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> entry : axioms.entrySet()) {
+            if (entry.getValue().getSupport() > supportThreshold &&
+                entry.getValue().getConfidence() > confidenceThreshold) {
+
+                System.out.println("add (" + i + "): " + entry);
+                m_ontology.addAxiom(entry.getKey());
+            }
+            i++;
+        }
+        return this.m_ontology;
+    }
 
 	private List<OWLAxiom> getAxioms() throws Exception {
 		HashMap<OWLAxiom,Double> hmAxioms = new HashMap<OWLAxiom,Double>();

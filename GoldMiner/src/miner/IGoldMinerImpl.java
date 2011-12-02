@@ -533,9 +533,10 @@ public class IGoldMinerImpl implements IGoldMiner {
     }
 
     @Override
-    public HashMap<OWLAxiom, Double> parseAssociationRules() throws IOException, SQLException {
+    public HashMap<OWLAxiom,ParsedAxiom.SupportConfidenceTuple> parseAssociationRules() throws IOException, SQLException {
         this.writer = new OntologyWriter(this.database, this.ontology);
-        HashMap<OWLAxiom, Double> hmAxioms = new HashMap<OWLAxiom, Double>();
+        HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> hmAxioms =
+            new HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple>();
         if (this.c_sub_c) {
             File f = new File(
                 Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
@@ -548,7 +549,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -568,7 +569,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                         .get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp(),
                                                   pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -588,7 +589,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                         this.writer
                             .get_c_sub_exists_p_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -608,7 +609,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                         this.writer
                             .get_exists_p_c_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -628,7 +629,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                         this.writer
                             .get_exists_p_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -648,7 +649,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                         this.writer
                             .get_exists_pi_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -667,7 +668,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -686,7 +687,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -705,7 +706,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_chain_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -724,7 +725,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_c_dis_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -743,7 +744,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -762,7 +763,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_reflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -781,7 +782,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_irreflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -800,7 +801,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_inverse_q_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -819,7 +820,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_asymmetric_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -839,7 +840,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a =
                         this.writer.get_p_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -858,7 +859,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                     OWLAxiom a = this.writer
                         .get_p_inverse_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                     if (a != null) {
-                        hmAxioms.put(a, pa.getConf());
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
                 }
             }
@@ -874,7 +875,7 @@ public class IGoldMinerImpl implements IGoldMiner {
     }
 
     @Override
-    public Ontology createOntology(HashMap<OWLAxiom, Double> axioms,
+    public Ontology createOntology(HashMap<OWLAxiom,ParsedAxiom.SupportConfidenceTuple> axioms,
                                    double supportThreshold, double confidenceThreshold)
         throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();

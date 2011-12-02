@@ -1,15 +1,16 @@
 package miner;
 
+import miner.ontology.AssociationRulesMiner;
+import miner.ontology.Ontology;
+import miner.ontology.ParsedAxiom;
+import miner.sparql.Filter;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLOntologyStorageException;
-
-import miner.ontology.AssociationRulesMiner;
-import miner.ontology.Ontology;
-import miner.sparql.Filter;
 
 /**
  * interface that provides the different methods for the workflow of the system.
@@ -111,21 +112,21 @@ public interface IGoldMiner {
 	 * parses the association rules and returns a list of the generated
 	 * OWL axioms.
 	 * 
-	 * @param associationRules the list of association rules files.
 	 * @return the list of generated axioms.
 	 */
-	HashMap<OWLAxiom, Double> parseAssociationRules() throws IOException, SQLException;
+	HashMap<OWLAxiom,ParsedAxiom.SupportConfidenceTuple> parseAssociationRules() throws IOException, SQLException;
 	
 	/**
 	 * creates an ontology out of the provided OWL axioms. There is no optimization,
 	 * eventually existing inconsistencies are not taken into account.
 	 * 
-	 * @param axioms the axioms for the ontology.
-	 * @param supportThreshold only add axioms with a support value equal or greater than this threshold.
-	 * @param confidenceThreshold only add axioms with a confidence value equal or greater than this threshold.
-	 * @return the ontology generated out of axioms and thresholds.
+	 *
+     * @param axioms the axioms for the ontology.
+     * @param supportThreshold only add axioms with a support value equal or greater than this threshold.
+     * @param confidenceThreshold only add axioms with a confidence value equal or greater than this threshold.
+     * @return the ontology generated out of axioms and thresholds.
 	 */
-	Ontology createOntology(HashMap<OWLAxiom, Double> axioms, double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException, SQLException;
+	Ontology createOntology(HashMap<OWLAxiom,ParsedAxiom.SupportConfidenceTuple> axioms, double supportThreshold, double confidenceThreshold) throws OWLOntologyStorageException, SQLException;
 	
 	/**
 	 * enables debugging of an existing ontology. this method applies the

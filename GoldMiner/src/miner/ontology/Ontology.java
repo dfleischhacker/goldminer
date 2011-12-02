@@ -6,14 +6,11 @@ import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 
 import miner.util.Settings;
 
-import org.semanticweb.owlapi.reasoner.ClassExpressionNotInProfileException;
 import org.mindswap.pellet.PelletOptions;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.util.SimpleIRIMapper;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 
@@ -437,8 +434,12 @@ public class Ontology {
 	}
 	
 	public OWLAnnotation annotation( String sAnnotation, double dValue ){
-		OWLAnnotationProperty prop = m_factory.getOWLAnnotationProperty( IRI.create( m_logicalIRI +"#"+ sAnnotation ) );
+		OWLAnnotationProperty prop = m_factory.getOWLAnnotationProperty( IRI.create( getLogicalIRI() +"#"+ sAnnotation ) );
 		OWLAnnotation annotation = m_factory.getOWLAnnotation( prop, m_factory.getOWLLiteral( dValue ) );
 		return annotation;
 	}
+
+    public IRI getLogicalIRI() {
+        return m_logicalIRI;
+    }
 }
