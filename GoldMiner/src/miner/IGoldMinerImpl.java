@@ -537,330 +537,296 @@ public class IGoldMinerImpl implements IGoldMiner {
         this.writer = new OntologyWriter(this.database, this.ontology);
         HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> hmAxioms =
             new HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple>();
-        if (this.c_sub_c) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        File f = new File(
+            Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("Subsumption");
-        if (this.c_and_c_sub_c) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, true);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a = this.writer
-                        .get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp(),
-                                                  pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, true);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a = this.writer
+                    .get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp(),
+                                              pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("c sub exists p c");
-        if (this.c_sub_exists_p_c) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer
-                            .get_c_sub_exists_p_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer
+                        .get_c_sub_exists_p_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("exists_p_c_sub_c");
-        if (this.exists_p_c_sub_c) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer
-                            .get_exists_p_c_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer
+                        .get_exists_p_c_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("exists_p_T_sub_c");
-        if (this.exists_p_T_sub_c) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[2] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer
-                            .get_exists_p_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[2] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer
+                        .get_exists_p_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("exists_pi_T_sub_c");
-        if (this.exists_pi_T_sub_c) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer
-                            .get_exists_pi_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer
+                        .get_exists_pi_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_sub_p");
-        if (this.p_sub_p) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-                        }
-                        else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_chain_q_sub_r");
-        if (this.p_chain_q_sub_r) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_chain_p_sub_p");
-        if (this.p_chain_p_sub_p) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_chain_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_chain_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("c_dis_c");
-        if (this.c_dis_c) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[6] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_c_dis_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[6] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_c_dis_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_dis_p");
-        if (this.p_dis_p) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_reflexive");
-        if (this.p_reflexive) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_reflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_reflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_irreflexive");
-        if (this.p_irreflexive) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_irreflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_irreflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_inverse_q");
-        if (this.p_inverse_q) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_inverse_q_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_inverse_q_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_asymmetric");
-        if (this.p_asymmetric) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_asymmetric_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_asymmetric_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_functional");
-        if (this.p_functional) {
-            System.out.println("functional");
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[9] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                        this.writer.get_p_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        System.out.println("functional");
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[9] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                    this.writer.get_p_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
         System.out.println("p_inverse_functional");
-        if (this.p_inverse_functional) {
-            File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[10] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a = this.writer
-                        .get_p_inverse_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                    if (a != null) {
-                        hmAxioms.put(a, pa.getSuppConfTuple());
-                    }
+        f = new File(
+            Settings.getString("association_rules") + transactionTableNames[10] + associationRulesSuffix + ".txt");
+        if (!f.exists()) {
+            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a = this.writer
+                    .get_p_inverse_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                if (a != null) {
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
