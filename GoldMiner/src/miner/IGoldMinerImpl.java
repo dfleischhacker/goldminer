@@ -46,6 +46,25 @@ public class IGoldMinerImpl implements IGoldMiner {
         this.chk = new CheckpointUtil(Settings.getString("transaction_tables") + "/checkpoints");
     }
 
+    public IGoldMinerImpl(String ontologyFile)
+        throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException,
+               OWLOntologyStorageException {
+        if (!Settings.loaded()) {
+            Settings.load();
+        }
+        this.selectAxioms();
+        this.database = Database.instance();
+        this.setup = new Setup();
+        this.tablePrinter = new TablePrinter();
+        this.terminologyExtractor = new TerminologyExtractor();
+        this.individualsExtractor = new IndividualsExtractor();
+        this.parser = new AssociationRulesParser();
+        this.ontology = new Ontology();
+        this.ontology.create(new File(ontologyFile));
+        this.ontology.save();
+        this.chk = new CheckpointUtil(Settings.getString("transaction_tables") + "/checkpoints");
+    }
+
     private Database database;
     private Setup setup;
     private TerminologyExtractor terminologyExtractor;
@@ -68,6 +87,7 @@ public class IGoldMinerImpl implements IGoldMiner {
     private boolean p_asymmetric;
     private boolean p_functional;
     private boolean p_inverse_functional;
+    private boolean writeAnnotations;
 
     @Override
     public boolean disconnect() {
@@ -265,6 +285,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         this.p_asymmetric = Settings.getAxiom("p_asymmetric");
         this.p_functional = Settings.getAxiom("p_functional");
         this.p_inverse_functional = Settings.getAxiom("p_inverse_functional");
+        this.writeAnnotations = Settings.getAxiom("write_annotations");
     }
 
     @Override
@@ -533,7 +554,7 @@ public class IGoldMinerImpl implements IGoldMiner {
 
     @Override
     public HashMap<OWLAxiom,ParsedAxiom.SupportConfidenceTuple> parseAssociationRules() throws IOException, SQLException {
-        this.writer = new OntologyWriter(this.database, this.ontology);
+        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
         HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> hmAxioms =
             new HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple>();
         File f = new File(
@@ -702,8 +723,22 @@ public class IGoldMinerImpl implements IGoldMiner {
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             for (ParsedAxiom pa : axioms) {
+                //TODO: we are not able to preserve the order of concepts in axiom
+                int ante1 = pa.getAnte1();
+                int cons = pa.getCons();
+
+                if (ante1 >= 1000 && cons < 1000) {
+                    ante1 -= 1000;
+                }
+                else if (ante1 < 1000 && cons >= 1000) {
+                    cons -= 1000;
+                }
+                else {
+                    continue;
+                }
+
                 OWLAxiom a =
-                    this.writer.get_c_dis_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
+                    this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
                 if (a != null) {
                     hmAxioms.put(a, pa.getSuppConfTuple());
                 }
@@ -834,7 +869,7 @@ public class IGoldMinerImpl implements IGoldMiner {
     }
 
     private void initializeOntology() throws SQLException, OWLOntologyStorageException {
-        this.writer = new OntologyWriter(this.database, this.ontology);
+        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
         this.ontology = this.writer.writeClassesAndPropertiesToOntology();
         this.ontology.save();
     }
@@ -844,7 +879,7 @@ public class IGoldMinerImpl implements IGoldMiner {
                                    double supportThreshold, double confidenceThreshold)
         throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();
-        this.writer = new OntologyWriter(this.database, this.ontology);
+        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
         Ontology o = this.writer.write(axioms, supportThreshold, confidenceThreshold);
         //o.save();
         this.ontology = o;

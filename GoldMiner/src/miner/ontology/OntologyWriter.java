@@ -26,11 +26,17 @@ public class OntologyWriter {
     private HashMap<Integer, String> classURIFromExistsCache;
     private HashMap<Integer, String> propertyURIFromExistsPropertyTopCache;
 
+    private boolean writeAnnotations;
 
     public OntologyWriter(Database d, Ontology o) throws SQLException {
+        this(d, o, true);
+    }
+
+    public OntologyWriter(Database d, Ontology o, boolean writeAnnotations) throws SQLException {
 		m_ontology = o;
 		m_sqlFactory = new SQLFactory();
 		m_database = d;
+        this.writeAnnotations = writeAnnotations;
 
         // cache ID to URI maps
         classURICache = new HashMap<Integer, String>();

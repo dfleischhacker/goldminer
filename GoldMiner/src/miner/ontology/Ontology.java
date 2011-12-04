@@ -29,6 +29,8 @@ public class Ontology {
 	OWLDataFactory m_factory;
 	
 	PelletReasoner m_reasoner;
+
+    boolean writeAnnotations;
 	
 	
     public Ontology() {
@@ -43,6 +45,7 @@ public class Ontology {
 		m_logicalIRI = IRI.create( Settings.getString("ontology_logical") );
 		m_physicalIRI = IRI.create( file.toURI().toString() );
         annotationIRI = IRI.create(Settings.getString("annotation_iri"));
+        writeAnnotations = Settings.getAxiom("write_annotations");
 		//OWLOntologyIRIMapper mapper = new OWLOntologyIRIMapper( m_logicalIRI, m_physicalIRI );
 		//m_manager.addIRIMapper( mapper );
 		m_ontology = m_manager.createOntology( m_physicalIRI );
@@ -165,8 +168,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+		if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+		    annotations.add(confAnnotation);
+        }
 		
 		return m_factory.getOWLSubClassOfAxiom( c1, c2, annotations );
 	}
@@ -180,8 +185,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLSubObjectPropertyOfAxiom( c1, c2, annotations );
 	}
 	
@@ -197,8 +204,10 @@ public class Ontology {
 		Set<OWLObjectProperty> properties = new HashSet<OWLObjectProperty>();
 		properties.add(p1);
 		properties.add(p2);
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLDisjointObjectPropertiesAxiom( properties, annotations );
 	}
 	
@@ -212,8 +221,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLSubClassOfAxiom( m_factory.getOWLObjectIntersectionOf(c1, c2), c3, annotations );
 	}
 	
@@ -226,8 +237,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		Set<OWLClass> classes = new HashSet<OWLClass>();
 		classes.add(c1);
 		classes.add(c2);
@@ -245,8 +258,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLSubClassOfAxiom(m_factory.getOWLObjectSomeValuesFrom(c3, c1), c2, annotations);
 	}
 	
@@ -260,8 +275,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLObjectPropertyDomainAxiom(c2, c1, annotations);
 	}
 	
@@ -275,8 +292,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLObjectPropertyRangeAxiom(c2, c1, annotations);
 	}
 	
@@ -291,8 +310,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLSubClassOfAxiom(c1, m_factory.getOWLObjectSomeValuesFrom(c3, c2), annotations);
 	}
 	
@@ -304,8 +325,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLReflexiveObjectPropertyAxiom(prop, annotations);
 	}
 	
@@ -317,8 +340,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLIrreflexiveObjectPropertyAxiom(prop, annotations);
 	}
 	
@@ -331,8 +356,10 @@ public class Ontology {
 			OWLAnnotation suppAnnotation = this.annotation("support", supp);
 			OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 			Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-			annotations.add(suppAnnotation);
-			annotations.add(confAnnotation);
+            if (writeAnnotations) {
+                annotations.add(suppAnnotation);
+                annotations.add(confAnnotation);
+            }
 			if(uri1.equals(uri2)) {
 				return m_factory.getOWLSymmetricObjectPropertyAxiom(prop1, annotations);
 			} else {
@@ -348,8 +375,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLAsymmetricObjectPropertyAxiom(prop, annotations);
 	}
 	
@@ -361,8 +390,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLFunctionalObjectPropertyAxiom(prop, annotations);
 	}
 	
@@ -374,8 +405,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLInverseFunctionalObjectPropertyAxiom(prop, annotations);
 	}
 	
@@ -392,8 +425,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLSubPropertyChainOfAxiom(propList, prop, annotations);
 	}
 	
@@ -405,8 +440,10 @@ public class Ontology {
 		OWLAnnotation suppAnnotation = this.annotation("support", supp);
 		OWLAnnotation confAnnotation = this.annotation("confidence", conf);
 		Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
-		annotations.add(suppAnnotation);
-		annotations.add(confAnnotation);
+        if (writeAnnotations) {
+            annotations.add(suppAnnotation);
+            annotations.add(confAnnotation);
+        }
 		return m_factory.getOWLTransitiveObjectPropertyAxiom(prop, annotations);
 	}
 	

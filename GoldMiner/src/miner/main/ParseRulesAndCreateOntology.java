@@ -19,16 +19,32 @@ public class ParseRulesAndCreateOntology {
 
 	public static void main(String[] args) {
 		try {
-			goldMiner = new IGoldMinerImpl();
-			HashMap<OWLAxiom,ParsedAxiom.SupportConfidenceTuple> axioms = goldMiner.parseAssociationRules();
-			System.out.println("Anzahl Axiome: " + axioms.size());
-			Ontology o = goldMiner.createOntology(axioms, 0.0, 0.0);
-			//o = goldMiner.greedyDebug(o);
+            double supportThreshold = 0;
+            double confidenceThreshold = 0;
+            String ontology = null;
+            if (args.length == 3) {
+                supportThreshold = Double.parseDouble(args[0]);
+                confidenceThreshold = Double.parseDouble(args[1]);
+                ontology = args[2];
+            }
+            System.out.println("--------- Support: " + supportThreshold);
+            System.out.println("--------- Confidence: " + confidenceThreshold);
+            System.out.println("--------- Writing to: " + ontology);
+            if (ontology == null) {
+                goldMiner = new IGoldMinerImpl();
+            }
+            else {
+                goldMiner = new IGoldMinerImpl(ontology);
+            }
+            HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms = goldMiner.parseAssociationRules();
+            System.out.println("Total number of axioms: " + axioms.size());
+            Ontology o = goldMiner.createOntology(axioms, supportThreshold, confidenceThreshold);
+            //o = goldMiner.greedyDebug(o);
             System.out.println("Saving ontology");
-			o.save();
+            o.save();
             System.out.println("Done saving");
-			goldMiner.disconnect();
-		} catch (FileNotFoundException e) {
+            goldMiner.disconnect();
+        } catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (OWLOntologyCreationException e) {
 			e.printStackTrace();

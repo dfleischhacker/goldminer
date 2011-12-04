@@ -1260,8 +1260,7 @@ public class TablePrinter {
         getClassID("");
         ArrayList<String> classIds = new ArrayList<String>(new HashSet<String>(m_hmClass2ID.values()));
         Collections.sort(classIds);
-        System.out.println("Class ids: " + classIds.size());
-        
+
         // read individuals from database
         String sQuery1 = m_sqlFactory.selectIndividualsQuery();
         ResultSet results = m_database.query(sQuery1);
@@ -1291,7 +1290,7 @@ public class TablePrinter {
             }
             iDone++;
             if (sbLine.length() > 0) {
-                System.out.println("TablePrinter.print: " + sInd + " (" + sId + ") -> " + sbLine.toString());
+//                System.out.println("TablePrinter.print: " + sInd + " (" + sId + ") -> " + sbLine.toString());
                 writer.write(sbLine.toString());
                 writer.newLine();
             }
