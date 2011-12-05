@@ -45,17 +45,24 @@ public class Ontology {
 		m_logicalIRI = IRI.create( Settings.getString("ontology_logical") );
 		m_physicalIRI = IRI.create( file.toURI().toString() );
         annotationIRI = IRI.create(Settings.getString("annotation_iri"));
+        
+        String baseOntology = Settings.getString("base_ontology");
         writeAnnotations = Settings.getAxiom("write_annotations");
 		//OWLOntologyIRIMapper mapper = new OWLOntologyIRIMapper( m_logicalIRI, m_physicalIRI );
 		//m_manager.addIRIMapper( mapper );
-		m_ontology = m_manager.createOntology( m_physicalIRI );
+        if (baseOntology != null && !baseOntology.isEmpty()) {
+            m_ontology = m_manager.loadOntology(IRI.create(new File(baseOntology).toURI()));
+        }
+        else {
+		    m_ontology = m_manager.createOntology( m_physicalIRI );
+        }
 		m_reasoner = PelletReasonerFactory.getInstance().createNonBufferingReasoner( m_ontology );
 		m_manager.addOntologyChangeListener( m_reasoner );
 	}
 	
 	public void save() throws OWLOntologyStorageException {
-		m_manager.saveOntology( m_ontology );
-	}
+        m_manager.saveOntology(m_ontology, m_physicalIRI);
+    }
 	
 	public void load( File file ) throws OWLOntologyCreationException {
 		m_ontology = m_manager.loadOntologyFromOntologyDocument( file );
