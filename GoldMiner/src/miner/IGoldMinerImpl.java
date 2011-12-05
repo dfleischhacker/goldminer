@@ -737,6 +737,11 @@ public class IGoldMinerImpl implements IGoldMiner {
                     continue;
                 }
 
+                //TODO: move to config
+                if (pa.getConf() <= 99.8) {
+                    continue;
+                }
+                
                 OWLAxiom a =
                     this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
                 if (a != null) {
@@ -754,6 +759,10 @@ public class IGoldMinerImpl implements IGoldMiner {
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             for (ParsedAxiom pa : axioms) {
+                //TODO: move to config
+                if (pa.getConf() <= 99.8) {
+                    continue;
+                }
                 OWLAxiom a =
                     this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
