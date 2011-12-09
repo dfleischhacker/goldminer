@@ -1,0 +1,18 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.6
+version = '1.2-eswc'
+
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+repositories {
+	flatDir {
+		dirs 'dependencies'
+	}
+}
+
+dependencies {
+	compile fileTree(dir: 'lib', include: '*.jar')
+}
