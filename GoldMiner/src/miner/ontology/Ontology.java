@@ -39,6 +39,7 @@ public class Ontology {
 		PelletOptions.USE_SMART_RESTORE = false;
 		m_manager = OWLManager.createOWLOntologyManager();
 		m_factory = m_manager.getOWLDataFactory();
+        writeAnnotations = Settings.getBoolean("write_annotations");
 	}
 	
 	public void create( File file ) throws OWLOntologyCreationException {
@@ -47,7 +48,6 @@ public class Ontology {
         annotationIRI = IRI.create(Settings.getString("annotation_iri"));
         
         String baseOntology = Settings.getString("base_ontology");
-        writeAnnotations = Settings.getAxiom("write_annotations");
 		//OWLOntologyIRIMapper mapper = new OWLOntologyIRIMapper( m_logicalIRI, m_physicalIRI );
 		//m_manager.addIRIMapper( mapper );
         if (baseOntology != null && !baseOntology.isEmpty()) {
