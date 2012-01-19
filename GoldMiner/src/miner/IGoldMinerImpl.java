@@ -6,6 +6,7 @@ import miner.sparql.Filter;
 import miner.util.CheckpointUtil;
 import miner.util.Settings;
 import miner.util.TextFileFilter;
+import miner.util.ValueNormalizer;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -557,6 +558,9 @@ public class IGoldMinerImpl implements IGoldMiner {
         this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
         HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> hmAxioms =
             new HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple>();
+
+        /* Concept Subsumption: c sub c */
+
         File f = new File(
             Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
@@ -564,6 +568,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("C sub C");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
@@ -573,6 +582,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Concept Subsumption: c and c sub c */
         System.out.println("Subsumption");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
@@ -581,6 +592,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, true);
+
+            ValueNormalizer normalizer = new ValueNormalizer("C and C sub C");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a = this.writer
                     .get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp(),
@@ -591,6 +607,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* c sub exists p.c */
         System.out.println("c sub exists p c");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
@@ -599,6 +617,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("C sub exists P.C");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
@@ -609,6 +632,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* exists p.c sub c */
         System.out.println("exists_p_c_sub_c");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
@@ -617,6 +642,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("exists P.C sub C");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
@@ -627,6 +657,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* exists p.T sub c */
         System.out.println("exists_p_T_sub_c");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[2] + associationRulesSuffix + ".txt");
@@ -635,6 +667,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("exists P.T sub C");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
@@ -645,6 +682,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* exists p^i.T sub c */
         System.out.println("exists_pi_T_sub_c");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
@@ -653,6 +692,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("exists P^i.T");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
@@ -663,6 +707,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* P sub P */
         System.out.println("p_sub_p");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
@@ -671,6 +717,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("P sub P");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -680,6 +731,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Property Chaining: P o Q sub R */
         System.out.println("p_chain_q_sub_r");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
@@ -688,6 +741,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("P o Q sub R");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -697,6 +755,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Property Transitivity: P o P sub P*/
         System.out.println("p_chain_p_sub_p");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
@@ -705,6 +765,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Transitivity");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_chain_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -714,6 +779,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Concept Disjointness */
         System.out.println("c_dis_c");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[6] + associationRulesSuffix + ".txt");
@@ -722,6 +789,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Concept Disjointness");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 //TODO: we are not able to preserve the order of concepts in axiom
                 int ante1 = pa.getAnte1();
@@ -737,11 +809,6 @@ public class IGoldMinerImpl implements IGoldMiner {
                     continue;
                 }
 
-                //TODO: move to config
-                if (pa.getConf() <= 99.8) {
-                    continue;
-                }
-                
                 OWLAxiom a =
                     this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
                 if (a != null) {
@@ -750,6 +817,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Property Disjointness */
         System.out.println("p_dis_p");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
@@ -758,11 +827,13 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Property Disjointness");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 //TODO: move to config
-                if (pa.getConf() <= 99.8) {
-                    continue;
-                }
                 OWLAxiom a =
                     this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
@@ -771,6 +842,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Property Reflexivity */
         System.out.println("p_reflexive");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
@@ -779,6 +852,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Property Reflexivity");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_reflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -788,6 +866,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Property Irreflexivity */
         System.out.println("p_irreflexive");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
@@ -796,6 +876,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Property Irreflexivity");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_irreflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -805,6 +890,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Inverse Property */
         System.out.println("p_inverse_q");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
@@ -813,6 +900,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Inverse Property");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_inverse_q_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -822,6 +914,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Asymmetric property */
         System.out.println("p_asymmetric");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
@@ -830,6 +924,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Property Asymmetry");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_asymmetric_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -839,8 +938,9 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Functional Property */
         System.out.println("p_functional");
-        System.out.println("functional");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[9] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
@@ -848,6 +948,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Property Functionality");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
@@ -857,6 +962,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        /* Property Inverse Functionality */
         System.out.println("p_inverse_functional");
         f = new File(
             Settings.getString("association_rules") + transactionTableNames[10] + associationRulesSuffix + ".txt");
@@ -865,6 +972,11 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+
+            ValueNormalizer normalizer = new ValueNormalizer("Property Inverse Functionality");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
+
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a = this.writer
                     .get_p_inverse_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
