@@ -1,9 +1,11 @@
 package miner.ontology;
 
+import miner.util.ConfidenceValueNormalization;
+
 /**
  * Container for axiom data gained by parsing association rule files
  */
-public class ParsedAxiom {
+public class ParsedAxiom implements ConfidenceValueNormalization.NormalizationTarget {
 	private int ante1;
 	private int ante2;
 	private int cons;
@@ -61,6 +63,16 @@ public class ParsedAxiom {
     
     public SupportConfidenceTuple getSuppConfTuple() {
         return tuple;
+    }
+
+    @Override
+    public double getValue() {
+        return tuple.getConfidence();
+    }
+
+    @Override
+    public void setValue(double value) {
+        tuple.setConfidence(value);
     }
 
     /**
