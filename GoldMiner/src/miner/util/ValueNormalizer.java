@@ -74,20 +74,29 @@ public class ValueNormalizer {
     }
 
     /**
+     * Reports the values of all normalization targets contained in the given collection to the normalizer.
+     *
+     * @param targets collection of targets whose values to report
+     */
+    public void reportValues(Collection<? extends NormalizationTarget> targets) {
+        log.debug("({}) Reporting {} values to normalizer", name, targets.size());
+        for (NormalizationTarget target : targets) {
+
+        }
+        log.debug("({}) Done reporting values", name);
+    }
+
+    /**
      * Normalizes the values contained in the given target. This method directly modifies the single objects in the
      * given collection. Take this into account when your collection is sensitive to such changes!
      *
      * @param collection collection of targets to normalize
-     * @param mode       mode to use for normalization of values
+     *
      */
-    public void normalize(Collection<NormalizationTarget> collection, NormalizationMode mode) {
+    public void normalize(Collection<? extends NormalizationTarget> collection) {
         log.debug("({}) Starting normalization for collection containing {} elements", name, collection.size());
         log.debug("({}) Max value: {}", name, maxValue);
         log.debug("({}) Min value: {}", name, minValue);
-
-        if (mode != NormalizationMode.BOTH) {
-            throw new UnsupportedOperationException("Only normalization mode BOTH is currently supported");
-        }
 
         for (NormalizationTarget target : collection) {
             double scaledValue = scale(target.getValue());
