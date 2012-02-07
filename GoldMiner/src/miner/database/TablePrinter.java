@@ -879,6 +879,7 @@ public class TablePrinter {
         // System.out.println( "TablePrinter.write: "+ sOutFile );
         // write( sOutFile, chunk );
         // System.out.println( "TablePrinter: done ("+ chunk.size() +")" );
+        writer.close();
     }
 
     public void printPropertyChainMembers_Memory(String sOutFile) throws Exception {

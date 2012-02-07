@@ -546,9 +546,10 @@ public class IGoldMinerImpl implements IGoldMiner {
             String line;
             String fileText = "";
             while ((line = in.readLine()) != null) {
-                fileText = fileText + line;
+                fileText = new StringBuilder().append(fileText).append(line).toString();
             }
             rules.add(fileText);
+            in.close();
         }
         return rules;
     }
@@ -833,7 +834,6 @@ public class IGoldMinerImpl implements IGoldMiner {
             normalizer.normalize(axioms);
 
             for (ParsedAxiom pa : axioms) {
-                //TODO: move to config
                 OWLAxiom a =
                     this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {

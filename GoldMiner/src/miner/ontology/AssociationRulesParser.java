@@ -34,10 +34,10 @@ public class AssociationRulesParser {
         BufferedReader in = new BufferedReader(new FileReader(rules));
         String patternRegex;
         if (secondAnte) {
-            patternRegex = "^(\\d+)\\s+<-\\s+(\\d+)\\s+(\\d+)\\s+\\((\\d+(?:\\.\\d+)?),\\s+(\\d+(?:\\.\\d+)?(?:e[+-]\\d+)?)\\)$";
+            patternRegex = "^(\\d+)\\s+<-\\s+(\\d+)\\s+(\\d+)\\s+\\((\\d+(?:\\.\\d+)?(?:e[+-]\\d+)?),\\s+(\\d+(?:\\.\\d+)?(?:e[+-]\\d+)?)\\)$";
         }
         else {
-            patternRegex = "^(\\d+)\\s+<-\\s+(\\d+)\\s+\\((\\d+(?:\\.\\d+)?),\\s+(\\d+(?:\\.\\d+)?(?:e[+-]\\d+)?)\\)$";
+            patternRegex = "^(\\d+)\\s+<-\\s+(\\d+)\\s+\\((\\d+(?:\\.\\d+)?(?:e[+-]\\d+)?),\\s+(\\d+(?:\\.\\d+)?(?:e[+-]\\d+)?)\\)$";
         }
         String line;
         Pattern pattern = Pattern.compile(patternRegex);
@@ -46,10 +46,6 @@ public class AssociationRulesParser {
             Matcher matcher = pattern.matcher(line.trim());
             boolean matches = matcher.matches();
             if (!matches || matcher.groupCount() != 4) {
-                System.out.println("Unable to parse: '" + line + "'");
-                System.out.println("Matches: " + matches);
-                if (matches)
-                    System.out.println("Group Count: " + matcher.groupCount());
                 continue;
             }
             int cons = Integer.parseInt(matcher.group(1));
@@ -69,7 +65,7 @@ public class AssociationRulesParser {
                 axioms.add(new ParsedAxiom(ante, cons, supp, conf));
             }
         }
-
+        in.close();
         return axioms;
     }
 }
