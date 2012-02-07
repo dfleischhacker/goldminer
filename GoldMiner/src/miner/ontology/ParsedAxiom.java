@@ -1,19 +1,19 @@
 package miner.ontology;
 
-public class ParsedAxiom {
-	
+import miner.util.ValueNormalizer;
+
+/**
+ * Container for axiom data gained by parsing association rule files
+ */
+public class ParsedAxiom implements ValueNormalizer.NormalizationTarget {
 	private int ante1;
 	private int ante2;
 	private int cons;
-	private double supp;
-	private double conf;
     private SupportConfidenceTuple tuple;
 
 	public ParsedAxiom(int ante1, int cons, double supp, double conf) {
 		this.ante1= ante1;
 		this.cons = cons;
-		this.supp = supp;
-		this.conf = conf;
         this.tuple = new SupportConfidenceTuple(supp, conf);
 	}
 	
@@ -21,8 +21,6 @@ public class ParsedAxiom {
 		this.ante1= ante1;
 		this.ante2 = ante2;
 		this.cons = cons;
-		this.supp = supp;
-		this.conf = conf;
         this.tuple = new SupportConfidenceTuple(supp, conf);
 	}
 
@@ -48,23 +46,38 @@ public class ParsedAxiom {
 	}
 
 	/**
-	 * @return the supp
+     * Returns the support for this axiom. Actually just wrapping {@code SupportConfidenceTuple.getSupport()}
+	 * @return support for this parsed axiom
 	 */
 	public double getSupp() {
-		return supp;
+		return tuple.getSupport();
 	}
 
 	/**
-	 * @return the conf
+     * Returns the confidence for this axiom. Actually just wrapping {@code SupportConfidenceTuple.getConfidence()}
+	 * @return confidence for this parsed axiom
 	 */
 	public double getConf() {
-		return conf;
+		return tuple.getConfidence();
 	}
     
     public SupportConfidenceTuple getSuppConfTuple() {
         return tuple;
     }
 
+    @Override
+    public double getValue() {
+        return tuple.getConfidence();
+    }
+
+    @Override
+    public void setValue(double value) {
+        tuple.setConfidence(value);
+    }
+
+    /**
+     * Tuple containing support and confidence values both being double values
+     */
     public static class SupportConfidenceTuple {
         private double support;
         private double confidence;
@@ -80,6 +93,14 @@ public class ParsedAxiom {
 
         public double getConfidence() {
             return confidence;
+        }
+
+        public void setSupport(double support) {
+            this.support = support;
+        }
+
+        public void setConfidence(double confidence) {
+            this.confidence = confidence;
         }
     }
 }
