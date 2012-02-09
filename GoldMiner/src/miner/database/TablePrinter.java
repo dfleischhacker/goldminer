@@ -352,8 +352,10 @@ public class TablePrinter {
         String properties[] = getProperties();
         BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         // two hashmaps for each property: domain and range
-        HashMap hmRanges[] = new HashMap[properties.length];
-        HashMap hmDomains[] = new HashMap[properties.length];
+        HashMap<String,Boolean>[] hmRanges = new HashMap[properties.length];
+        HashMap<String,Boolean>[] hmDomains = new HashMap[properties.length];
+
+
         for (int i = 0; i < properties.length; i++) {
             String sProp = properties[i];
             System.out.println("printPropertyRestrictions: " + sProp);
