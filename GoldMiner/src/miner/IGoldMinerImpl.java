@@ -3,10 +3,7 @@ package miner;
 import miner.database.*;
 import miner.ontology.*;
 import miner.sparql.Filter;
-import miner.util.CheckpointUtil;
-import miner.util.Settings;
-import miner.util.TextFileFilter;
-import miner.util.ValueNormalizer;
+import miner.util.*;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -28,8 +25,9 @@ public class IGoldMinerImpl implements IGoldMiner {
     private OntologyWriter writer;
     private Ontology ontology;
     private CheckpointUtil chk;
+    private RandomAxiomChooser rac = new RandomAxiomChooser();
 
-    public IGoldMinerImpl() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException,
+    public IGoldMinerImpl() throws IOException, SQLException, OWLOntologyCreationException,
                                    OWLOntologyStorageException {
         if (!Settings.loaded()) {
             Settings.load();
@@ -48,7 +46,7 @@ public class IGoldMinerImpl implements IGoldMiner {
     }
 
     public IGoldMinerImpl(String ontologyFile)
-        throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException,
+        throws IOException, SQLException, OWLOntologyCreationException,
                OWLOntologyStorageException {
         if (!Settings.loaded()) {
             Settings.load();
@@ -578,7 +576,8 @@ public class IGoldMinerImpl implements IGoldMiner {
                 OWLAxiom a =
                     this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -603,7 +602,8 @@ public class IGoldMinerImpl implements IGoldMiner {
                     .get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp(),
                                               pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -622,13 +622,14 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("C sub exists P.C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
                         .get_c_sub_exists_p_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -647,13 +648,14 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("exists P.C sub C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
                         .get_exists_p_c_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -672,13 +674,14 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("exists P.T sub C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
                         .get_exists_p_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -697,13 +700,14 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("exists P^i.T");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer
                         .get_exists_pi_T_sub_c_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -722,12 +726,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("P sub P");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -746,12 +751,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("P o Q sub R");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -770,12 +776,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Transitivity");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_chain_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -794,7 +801,7 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Concept Disjointness");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 //TODO: we are not able to preserve the order of concepts in axiom
                 int ante1 = pa.getAnte1();
@@ -813,7 +820,8 @@ public class IGoldMinerImpl implements IGoldMiner {
                 OWLAxiom a =
                     this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -832,12 +840,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Property Disjointness");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -856,12 +865,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Property Reflexivity");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_reflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -880,12 +890,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Property Irreflexivity");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_irreflexive_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -904,12 +915,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Inverse Property");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_inverse_q_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -928,12 +940,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Property Asymmetry");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_asymmetric_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -952,12 +965,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Property Functionality");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                     this.writer.get_p_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -976,12 +990,13 @@ public class IGoldMinerImpl implements IGoldMiner {
             ValueNormalizer normalizer = new ValueNormalizer("Property Inverse Functionality");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
-
+            
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a = this.writer
                     .get_p_inverse_functional_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
                 if (a != null) {
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                    rac.add(a, pa.getConf());
+					hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
         }
@@ -1001,7 +1016,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();
         this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
-        Ontology o = this.writer.write(axioms, supportThreshold, confidenceThreshold);
+        Ontology o = this.writer.writeRandomlySelected(rac, confidenceThreshold);
         //o.save();
         this.ontology = o;
         return o;

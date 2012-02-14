@@ -2,6 +2,7 @@ package miner.ontology;
 
 import miner.database.Database;
 import miner.database.SQLFactory;
+import miner.util.RandomAxiomChooser;
 import miner.util.Settings;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -91,6 +92,25 @@ public class OntologyWriter {
         }
         res.getStatement().close();
 	}
+
+    /**
+     * Writes <code>fractionOfAxioms</code> of the axiom contained in <code>rac</code>
+     *
+     * @param rac
+     * @param fractionOfAxioms
+     * @return
+     */
+    public Ontology writeRandomlySelected(RandomAxiomChooser rac, Double fractionOfAxioms)
+            throws OWLOntologyStorageException {
+        int maxNum = (int) Math.ceil(rac.getSize() * fractionOfAxioms);
+
+        for (int i = 0; i < maxNum; i++) {
+            System.out.println("adding axiom " + i);
+            RandomAxiomChooser.AxiomConfidencePair pair = rac.choose();
+            m_ontology.addAxiom(pair.getAxiom());
+        }
+        return this.m_ontology;
+    }
 
     public Ontology write(HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms, double supportThreshold, double confidenceThreshold)
         throws OWLOntologyStorageException {
