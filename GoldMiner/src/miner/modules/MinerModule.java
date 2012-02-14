@@ -8,9 +8,6 @@ import java.util.Set;
  * Defines the interface for a GoldMiner mining module.
  *
  * Each interface encapsulates all steps required to inductively mine OWL axioms from data by using association rules.
- * These steps are:
- *  - setting up the schema for the database
- *  -
  */
 public abstract class MinerModule implements Runnable {
     private MinerModuleConfiguration config;
@@ -90,6 +87,5 @@ public abstract class MinerModule implements Runnable {
      *
      * @param inputFile file containing the association rules to read
      */
-    //TODO
     public abstract Set<Object> readAssociationRules(File inputFile);
 }
