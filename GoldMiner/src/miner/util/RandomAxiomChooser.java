@@ -15,7 +15,6 @@ public class RandomAxiomChooser {
     public static class AxiomConfidencePair {
         private OWLAxiom axiom;
         private double confidence;
-
         public AxiomConfidencePair(OWLAxiom axiom, double confidence) {
             this.axiom = axiom;
             this.confidence = confidence;
@@ -28,8 +27,11 @@ public class RandomAxiomChooser {
         public double getConfidence() {
             return confidence;
         }
+
     }
-    
+
+    private ConfidenceModificationFunctions mod = new ConfidenceModificationFunctions.ArctanModifier(3.77,1.92,2);
+
     private final static Logger log = LoggerFactory.getLogger(RandomAxiomChooser.class);
     Random rand = new Random();
     
@@ -45,8 +47,13 @@ public class RandomAxiomChooser {
     }
 
     public void add(OWLAxiom axiom, double confidence) {
+        if (confidence == 0) {
+            return;
+        }
+        confidence = mod.getValue(confidence);
         log.debug("Add axiom '{}' with confidence ", axiom, confidence);
         axioms.add(new AxiomConfidencePair(axiom, confidence));
+        totalWeight += confidence;
         log.info("Chooser state: Axiom {} , Total Weight {}", this.axioms.size(), totalWeight);
     }
 
@@ -63,7 +70,7 @@ public class RandomAxiomChooser {
         // determine maximum possible scaling factor
         double scalingFactor = (Integer.MAX_VALUE) / totalWeight;
         log.info("Choosing axiom");
-        int randVal = rand.nextInt();
+        int randVal = rand.nextInt() & 0x7FFFFFFF;
         log.info("Random value: {}", randVal);
         int curVal = 0;
         AxiomConfidencePair chosen = null;

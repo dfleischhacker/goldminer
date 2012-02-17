@@ -80,4 +80,11 @@ public class Settings implements Parameter {
     public static boolean loaded() {
         return (m_properties.keySet().size() > 0);
     }
+
+    public static void main(String[] args) throws IOException {
+        Settings.load();
+        String filter = Settings.getString("classesFilter");
+        System.out.format("'%s'\n", filter);
+        System.out.println("http://dbpedia.org/property/formercountry".startsWith(filter));
+    }
 }

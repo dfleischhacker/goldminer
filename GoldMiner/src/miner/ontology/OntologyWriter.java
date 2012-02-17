@@ -103,6 +103,7 @@ public class OntologyWriter {
     public Ontology writeRandomlySelected(RandomAxiomChooser rac, Double fractionOfAxioms)
             throws OWLOntologyStorageException {
         int maxNum = (int) Math.ceil(rac.getSize() * fractionOfAxioms);
+        System.out.println("Trying to add " + fractionOfAxioms + " of " + rac.getSize() + " axioms: " + maxNum);
 
         for (int i = 0; i < maxNum; i++) {
             System.out.println("adding axiom " + i);
@@ -147,13 +148,13 @@ public class OntologyWriter {
 
 	public OWLAxiom get_c_sub_c_Axioms(int iCons, int iAnte, double dSupp, double conf) throws SQLException {
 		// assumption: only one confidence value per axiom
-		OWLAxiom axiom = m_ontology.get_c_sub_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ), dSupp, conf );
+		OWLAxiom axiom = m_ontology.get_c_sub_c_Axiom(getClassURI(iAnte), getClassURI(iCons), dSupp, conf);
 		return axiom;
 	}
 
 	 public OWLAxiom get_c_dis_c_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_c_dis_c_Axiom( getClassURI( iAnte ), getClassURI( iCons ), supp, conf );
+			OWLAxiom axiom = m_ontology.get_c_dis_c_Axiom(getClassURI(iAnte), getClassURI(iCons), supp, conf);
 			return axiom;
 		}
 
@@ -164,7 +165,8 @@ public class OntologyWriter {
 		}
 
 	 public OWLAxiom get_p_dis_p_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
-		 OWLAxiom axiom = m_ontology.get_p_dis_p_Axiom(getPropertyURI( iAnte ), getDisjointPropertyURI( iCons ), supp, conf);
+		 OWLAxiom axiom = m_ontology.get_p_dis_p_Axiom(getPropertyURI(iAnte), getDisjointPropertyURI(iCons), supp,
+                                                       conf);
 		 return axiom;
 	 }
 
@@ -174,19 +176,24 @@ public class OntologyWriter {
 	 }
 
 	 public OWLAxiom get_p_irreflexive_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
-		 OWLAxiom axiom = m_ontology.getPropertyIrreflexivityAxiom(iAnte + "", getDisjointPropertyURI(iCons), supp, conf);
+		 OWLAxiom axiom = m_ontology.getPropertyIrreflexivityAxiom(iAnte + "", getDisjointPropertyURI(iCons), supp,
+                                                                   conf);
 		 return axiom;
 	 }
 
 	 public OWLAxiom get_c_and_c_sub_c_Axioms(int iAnte1, int iAnte2, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_c_and_c_sub_c_Axiom( getClassURI( iAnte1 ), getClassURI(iAnte2), getClassURI( iCons ), supp, conf );
+			OWLAxiom axiom = m_ontology.get_c_and_c_sub_c_Axiom(getClassURI(iAnte1), getClassURI(iAnte2),
+                                                                getClassURI(iCons), supp, conf);
 			return axiom;
 	}
 
-	 public OWLAxiom get_exists_p_c_sub_c_Axioms(int iPropExists, int iCons, double supp, double conf) throws SQLException {
+	 public OWLAxiom get_exists_p_c_sub_c_Axioms(int iPropExists, int iCons, double supp, double conf) throws
+             SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_exists_p_c_sub_c_Axiom( getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), getClassURI( iCons ), supp, conf );
+			OWLAxiom axiom = m_ontology.get_exists_p_c_sub_c_Axiom(getPropertyURIFromExistsProperty(iPropExists),
+                                                                   getClassURIFromExistsProperty(iPropExists),
+                                                                   getClassURI(iCons), supp, conf);
 			return axiom;
 	}
 
@@ -198,32 +205,42 @@ public class OntologyWriter {
 
 	 public OWLAxiom get_exists_pi_T_sub_c_Axioms(int iPropExists, int iCons, double supp, double conf) throws SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_exists_pi_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop(iPropExists), getClassURI( iCons ), supp, conf );
+			OWLAxiom axiom = m_ontology.get_exists_pi_T_sub_c_Axiom( getPropertyURIFromExistsPropertyTop
+                                                                             (iPropExists), getClassURI( iCons ),
+                                                                     supp, conf );
 			return axiom;
 	}
 
-	 public OWLAxiom get_c_sub_exists_p_c_Axioms(int iAnte, int iPropExists, double supp, double conf) throws SQLException {
+	 public OWLAxiom get_c_sub_exists_p_c_Axioms(int iAnte, int iPropExists, double supp, double conf) throws
+             SQLException {
 			// assumption: only one confidence value per axiom
-			OWLAxiom axiom = m_ontology.get_c_sub_exists_p_c_Axiom(getClassURI( iAnte ), getPropertyURIFromExistsProperty(iPropExists), getClassURIFromExistsProperty(iPropExists), supp, conf);
+			OWLAxiom axiom = m_ontology.get_c_sub_exists_p_c_Axiom(getClassURI(iAnte),
+                                                                   getPropertyURIFromExistsProperty(iPropExists),
+                                                                   getClassURIFromExistsProperty(iPropExists), supp,
+                                                                   conf);
 			return axiom;
 	}
 	 public OWLAxiom get_p_inverse_q_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
-		 	OWLAxiom axiom = m_ontology.getPropertyInverseAxiom(this.getPropertyURI(iAnte), this.getInversePropertyURI(iCons), supp, conf);
+		 	OWLAxiom axiom = m_ontology.getPropertyInverseAxiom(this.getPropertyURI(iAnte),
+                                                                 this.getInversePropertyURI(iCons), supp, conf);
 		 	return axiom;
 	 }
 
 	 public OWLAxiom get_p_asymmetric_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
-		 	OWLAxiom axiom = m_ontology.getPropertyAsymmetricAxiom(this.getPropertyURI(iAnte), this.getSymmetryPropertyURI( iCons ), supp, conf);
+		 	OWLAxiom axiom = m_ontology.getPropertyAsymmetricAxiom(this.getPropertyURI(iAnte),
+                                                                    this.getSymmetryPropertyURI(iCons), supp, conf);
 		 	return axiom;
 	 }
 
 	 public OWLAxiom get_p_functional_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
-		 OWLAxiom axiom = m_ontology.getPropertyFunctionalAxiom(getPropertyURI(iAnte), getDisjointPropertyURI(iCons), supp, conf);
+		 OWLAxiom axiom = m_ontology.getPropertyFunctionalAxiom(getPropertyURI(iAnte), getDisjointPropertyURI(iCons),
+                                                                supp, conf);
 		 return axiom;
 	 }
 
 	 public OWLAxiom get_p_inverse_functional_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
-		 OWLAxiom axiom = m_ontology.getPropertyInverseFunctionalAxiom(getPropertyURI(iAnte), getSymmetryPropertyURI(iCons), supp, conf);
+		 OWLAxiom axiom = m_ontology.getPropertyInverseFunctionalAxiom(getPropertyURI(iAnte),
+                                                                       getSymmetryPropertyURI(iCons), supp, conf);
 		 return axiom;
 	 }
 
