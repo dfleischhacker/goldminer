@@ -81,6 +81,31 @@ public class SPARQLFactory {
 		return sb.toString();
 	}
 	
+	//get datatype properties
+	public String datatypePropertiesQuery() {
+		StringBuilder sb = new StringBuilder();
+		sb.append( PREFIX + " " );
+		sb.append( "SELECT distinct ?x " );
+		sb.append( "WHERE { " );
+		sb.append( "?s ?x ?o . " );
+		sb.append( "OPTIONAL { ?o a ?z } . " );
+		sb.append( "FILTER(!BOUND(?z)) " );
+		sb.append( " }" );
+		return sb.toString();
+	}
+	
+	public String datatypePropertiesQuery( String sInd ) {
+		StringBuilder sb = new StringBuilder();
+		sb.append( PREFIX + " " );
+		sb.append( "SELECT distinct ?x " );
+		sb.append( "WHERE { " );
+		sb.append( " <" + sInd + "> ?x ?o . " );
+		sb.append( "OPTIONAL { ?o a ?z } . " );
+		sb.append( "FILTER(!BOUND(?z)) " );
+		sb.append( " }" );
+		return sb.toString();
+	}
+	
 	// get properties
 	public String propertiesQuery( String sInd ){
 		StringBuilder sb = new StringBuilder();

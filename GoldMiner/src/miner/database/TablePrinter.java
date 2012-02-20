@@ -10,6 +10,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -37,6 +38,7 @@ public class TablePrinter {
     private HashMap<String, String> m_hmProp2ID;
     private HashMap<String, String> m_hmProp2DisID;
     private HashMap<String, String> m_hmProp2InvID;
+    private HashMap<String, String> m_hmDTProp2ID;
 
     // property cache
     private String[] cachedProperties = null;
@@ -1221,6 +1223,59 @@ public class TablePrinter {
         System.out.println("TablePrinter: done");
         return true;
     }
+    
+    public void printClassProperties(OutputStream output) throws SQLException, IOException {
+    	StringBuilder builder = new StringBuilder();
+    	//BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
+    	String query = this.m_sqlFactory.selectIndividualsQuery();
+    	ResultSet results = this.m_database.query(query);
+    	int iDone = 0;
+    	while(results.next()) {
+    		String sId = results.getString("id");
+    		String sInd = results.getString("uri");
+    		StringBuffer sbLine = new StringBuffer();
+    		ResultsIterator iter = this.m_engine.query(this.m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
+    		while(iter.hasNext()) {
+    			String sClass = iter.next();
+    			String sClassID = getClassID(sClass);
+    			if(sClassID != null) {
+    				sbLine.append(sClassID);
+    				sbLine.append("\t");
+    			}
+    		}
+    		iter = this.m_engine.query(this.m_sparqlFactory.propertiesQuery(sInd), this.classesFilter);
+    		while(iter.hasNext()) {
+    			String sProp = iter.next();
+    			String sPropID = getPropertyID(sProp);
+    			if(sPropID != null) {
+    				sbLine.append(sPropID);
+    				sbLine.append("\t");
+    			}
+    		}
+    		iter = this.m_engine.query(this.m_sparqlFactory.datatypePropertiesQuery(sInd), this.classesFilter);
+    		while(iter.hasNext()) {
+    			String sProp = iter.next();
+    			String sPropID = getDatatypePropertyID(sProp);
+    			if(sPropID != null) {
+    				sbLine.append(sPropID);
+    				sbLine.append("\t");
+    			}
+    		}
+			iDone++;
+			if(sbLine.length() > 0) {
+				System.out.println("TablePrinter.print: " + sInd + " (" + sId + ") -> " + sbLine.toString());
+				builder.append(sbLine.toString());
+				output.write((sbLine.toString() + System.getProperties().getProperty("line.separator")).getBytes());
+				
+				//writer.write(sbLine.toString());
+				//writer.newLine();
+			}
+    	}
+    	results.getStatement().close();
+        //writer.flush();
+        //writer.close();
+        System.out.println("TablePrinter: done (" + iDone + ")");
+    }
 
     public void printClassMembers(String sOutFile) throws SQLException, IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
@@ -1342,6 +1397,20 @@ public class TablePrinter {
             results.getStatement().close();
         }
         return m_hmProp2ID.get(sURI);
+    }
+    
+    public String getDatatypePropertyID(String sURI) throws SQLException {
+    	if(this.m_hmDTProp2ID == null) {
+    		m_hmDTProp2ID = new HashMap<String, String>();
+    		ResultSet results = m_database.query(m_sqlFactory.selectDatatypePropertiesQuery());
+    		while(results.next()) {
+    			String sProp = results.getString("uri");
+    			String sID = results.getString("id");
+    			m_hmDTProp2ID.put(sProp, sID);
+    		}
+    		results.getStatement().close();
+    	}
+    	return m_hmDTProp2ID.get(sURI);
     }
 
     public String getPropertyDisjointID(String sURI) throws SQLException {

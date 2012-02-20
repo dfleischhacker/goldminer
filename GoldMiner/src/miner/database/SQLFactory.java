@@ -15,6 +15,7 @@ public class SQLFactory {
 		return "DROP TABLE IF EXISTS " +
 				"classes, " +
 				"properties, " +
+				"datatypeProperties, " +
 				"individuals, " +
 				"classes_ex_property, " +
 				"classes_ex_property_top, " +
@@ -97,6 +98,14 @@ public class SQLFactory {
 				");";
 	}
 	
+	public String createDatatypePropertiesTable() {
+		return "CREATE TABLE datatypeProperties (" +
+				"id bigint(20) PRIMARY KEY, " +
+				"uri varchar(255) NOT NULL, " +
+				"name varchar(255) NOT NULL" +
+				");";
+	}
+	
 	public String createPropertyChainsTable() {
 		return "CREATE TABLE property_chains (" +
 				"id bigint(20) PRIMARY KEY, " +
@@ -147,6 +156,10 @@ public class SQLFactory {
 	
 	public String insertPropertyQuery( int iID, String sURI, String sName ){
 		return "INSERT INTO properties VALUES ("+ iID + ", " + (iID + 1) + ", " + (iID + 2) + ", '"+ sURI +"', '"+ sName +"')";
+	}
+	
+	public String insertDatatypePropertyQuery( int id, String uri, String name) {
+		return "INSERT INTO datatypeProperties VALUES (" + id + ", '" + uri + "', '" + name + "')";
 	}
 	
 	public String insertPropertyChainQuery( int iID, String sURI1, String sURI2, String sName1, String sName2 ){
@@ -267,6 +280,10 @@ public class SQLFactory {
 	
 	public String selectPropertiesQuery(){
 		return "SELECT * FROM properties";
+	}
+	
+	public String selectDatatypePropertiesQuery() {
+		return "SELECT * FROM datatypeProperties";
 	}
 	
 	public String selectPropertyChainsQuery(){

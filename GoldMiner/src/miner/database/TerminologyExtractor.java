@@ -94,7 +94,6 @@ public class TerminologyExtractor extends Extractor {
 	public void initPropertiesTable() {
 		String sQuery1 = m_sparqlFactory.propertiesQuery();
 		ResultsIterator iter = m_engine.query( sQuery1, this.filter.getClassesFilter() );
-		int id = 0;
 		while( iter.hasNext() )
 		{
 			String sProp = iter.next();
@@ -103,7 +102,20 @@ public class TerminologyExtractor extends Extractor {
 			this.id = this.id + 2;
 			m_database.execute( sQuery2 );
 		}
-		System.out.println( "done: "+ id );
+		System.out.println( "done: "+ this.id );
+	}
+	
+	public void initDatatypePropertiesTable() {
+		String query = this.m_sparqlFactory.datatypePropertiesQuery();
+		ResultsIterator iter = m_engine.query( query, this.filter.getClassesFilter() );
+		while( iter.hasNext() ) {
+			String sProp = iter.next();
+			String sName = getLocalName( sProp );
+			String query2 = this.m_sqlFactory.insertDatatypePropertyQuery( this.id++, sProp, sName );
+			System.out.println(query2);
+			this.m_database.execute( query2 );
+		}
+		System.out.println( "done: " + this.id );
 	}
 	
 	public void initPropertyChainsTable() throws SQLException {

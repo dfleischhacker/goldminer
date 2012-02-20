@@ -42,6 +42,7 @@ public class ResultsIterator implements Iterator<String> {
 			return false;
 		}
 		try {
+			System.out.println("INFO: " + this.m_sQuery);
 			m_nextChunk = m_engine.execute( m_sQuery +" LIMIT "+ m_iMaxChunkSize +" OFFSET "+ m_iOffset, "x", filter );
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
