@@ -33,7 +33,6 @@ public interface ConfidenceModificationFunctions {
         @Override
         public double getValue(double x) {
             double res = ((Math.atan((a * x - c) * b)) - Math.atan(-c * b)) / (Math.atan((a - c) * b) - Math.atan(-c * b));
-            System.out.format("Scaling %f to %f\n", x, res);
             return res;
         }
     }

@@ -7,12 +7,15 @@ import miner.util.Settings;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
 public class OntologyWriter {
+    private final static Logger log = LoggerFactory.getLogger(OntologyWriter.class);
 
 	private Ontology m_ontology;
 
@@ -106,10 +109,15 @@ public class OntologyWriter {
         System.out.println("Trying to add " + fractionOfAxioms + " of " + rac.getSize() + " axioms: " + maxNum);
 
         for (int i = 0; i < maxNum; i++) {
-            System.out.println("adding axiom " + i);
+            log.trace("adding axiom " + i);
             RandomAxiomChooser.AxiomConfidencePair pair = rac.choose();
+            if (pair == null) {
+                log.warn("No more axioms, done");
+                return m_ontology;
+            }
             m_ontology.addAxiom(pair.getAxiom());
         }
+        rac.done();
         return this.m_ontology;
     }
 
