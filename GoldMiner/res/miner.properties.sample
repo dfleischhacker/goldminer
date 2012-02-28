@@ -12,6 +12,7 @@ association_rules=C:/Users/Jakob/Desktop/
 transaction_tables=C:/Users/Jakob/Desktop/transtab/
 ontology=C:/Users/Jakob/Desktop/ontology.owl
 ontology_logical=http://uni-mannheim.de/ontologies/ontology
+annotation_iri=http://ki.informatik.uni-mannheim.de/gold-miner/annotations
 #endpoint=http://geneid.bio2rdf.org/sparql
 #
 #database=govuk_ordnance
