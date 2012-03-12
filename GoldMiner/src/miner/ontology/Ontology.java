@@ -489,8 +489,16 @@ public class Ontology {
     public IRI getLogicalIRI() {
         return m_logicalIRI;
     }
+    
+    public IRI getPhysicalIRI() {
+    	return this.m_physicalIRI;
+    }
 
     public IRI getAnnotationIRI() {
         return annotationIRI;
+    }
+    
+    public OWLOntology getOntology() {
+    	return this.m_ontology;
     }
 }

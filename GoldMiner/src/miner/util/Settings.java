@@ -23,7 +23,7 @@ public class Settings implements Parameter {
         a_properties = new Properties();
     }
 
-    public final static String MINER_PROP = System.getProperty("user.dir") + "/res/miner.properties.sample";
+    public final static String MINER_PROP = System.getProperty("user.dir") + "/res/miner.properties";
 
     public final static String AXIOMS_PROP = System.getProperty("user.dir") + "/res/axioms.properties";
 
