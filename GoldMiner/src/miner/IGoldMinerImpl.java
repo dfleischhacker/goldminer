@@ -569,7 +569,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("C sub C");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C sub C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -595,7 +595,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, true);
 
-            ValueNormalizer normalizer = new ValueNormalizer("C and C sub C");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C and C sub C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -622,7 +622,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("C sub exists P.C");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C sub exists P.C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -649,7 +649,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("exists P.C sub C");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P.C sub C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -676,7 +676,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("exists P.T sub C");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P.T sub C");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -703,7 +703,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("exists P^i.T");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P^i.T");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -730,7 +730,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("P sub P");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P sub P");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -756,7 +756,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("P o Q sub R");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -783,7 +783,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Transitivity");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Transitivity");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -810,7 +810,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Concept Disjointness");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Concept Disjointness");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -848,7 +848,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Property Disjointness");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Disjointness");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -874,7 +874,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Property Reflexivity");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Reflexivity");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -900,7 +900,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Property Irreflexivity");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Irreflexivity");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -926,7 +926,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Inverse Property");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Inverse Property");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -952,7 +952,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Property Asymmetry");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Asymmetry");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -978,7 +978,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Property Functionality");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Functionality");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -1004,7 +1004,7 @@ public class IGoldMinerImpl implements IGoldMiner {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = new ValueNormalizer("Property Inverse Functionality");
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Inverse Functionality");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 

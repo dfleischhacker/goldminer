@@ -1,11 +1,11 @@
 package miner.ontology;
 
-import miner.util.ValueNormalizer;
+import miner.util.ScalingValueNormalizer;
 
 /**
  * Container for axiom data gained by parsing association rule files
  */
-public class ParsedAxiom implements ValueNormalizer.NormalizationTarget {
+public class ParsedAxiom implements ScalingValueNormalizer.NormalizationTarget {
 	private int ante1;
 	private int ante2;
 	private int cons;

@@ -33,7 +33,8 @@ public class RandomAxiomChooser {
 
     private BufferedWriter writer;
     private BufferedWriter addWriter;
-    private ConfidenceModificationFunctions mod = new ConfidenceModificationFunctions.ArctanModifier(3.77,1.92,2);
+    private ConfidenceModificationFunction mod = new ConfidenceModificationFunction.NoopModifier();
+            //ArctanModifier(3.77,1.92,2);
 
     private final static Logger log = LoggerFactory.getLogger(RandomAxiomChooser.class);
     Random rand = new Random();
