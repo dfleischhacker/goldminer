@@ -1,6 +1,5 @@
 package miner.main;
 
-import miner.IGoldMiner;
 import miner.IGoldMinerImpl;
 import miner.ontology.Ontology;
 import miner.ontology.ParsedAxiom;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 
 public class ParseRulesAndCreateOntology {
 
-	private static IGoldMiner goldMiner;
+	private static IGoldMinerImpl goldMiner;
 
 	public static void main(String[] args) {
 		try {

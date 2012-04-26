@@ -26,7 +26,7 @@ public class ValueNormalizerFactory {
      * @return a no-op value normalizer
      */
     public static ValueNormalizer noOpNormalizer(String name) {
-        return new NoopNormalizer();
+        return new NoopNormalizer(name);
     }
 
     /**
@@ -63,6 +63,8 @@ public class ValueNormalizerFactory {
     }
 
     private static class NoopNormalizer implements ValueNormalizer {
+
+        public NoopNormalizer(String name) {}
 
         @Override
         public void reportValue(NormalizationTarget target) {

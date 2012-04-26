@@ -103,4 +103,36 @@ public class ParsedAxiom implements ScalingValueNormalizer.NormalizationTarget {
             this.confidence = confidence;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ParsedAxiom that = (ParsedAxiom) o;
+
+        if (ante1 != that.ante1) {
+            return false;
+        }
+        if (ante2 != that.ante2) {
+            return false;
+        }
+        if (cons != that.cons) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = ante1;
+        result = 31 * result + ante2;
+        result = 31 * result + cons;
+        return result;
+    }
 }

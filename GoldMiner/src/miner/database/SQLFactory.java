@@ -375,7 +375,8 @@ public class SQLFactory {
 	}
 	
 	public String selectURIFromPropertyChainsTrans(int id) {
-		return "SELECT uri FROM property_chains_trans WHERE id='" + id + "'";
+		return "SELECT uri FROM property_chains_trans WHERE id='" + id + "' UNION SELECT uri FROM " +
+                "properties WHERE id='" + id + "'";
 	}
 	
 	// axioms

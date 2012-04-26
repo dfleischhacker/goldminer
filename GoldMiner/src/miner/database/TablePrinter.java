@@ -434,11 +434,11 @@ public class TablePrinter {
     public void printPropertyChainMembersTrans_new(String outFile) throws SQLException, IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));
         String properties[] = this.getProperties();
-        HashMap<String, HashMap<String, String>> propertyChains = this.getPropertyChains_new();
+        //HashMap<String, HashMap<String, String>> propertyChains = this.getPropertyChains_new();
         HashMap<String, HashMap<String, String>> propertyChainsTrans = this.getPropertyChainsTrans();
         HashMap<String, List<String>>[] hmProp = new HashMap[properties.length];
-        HashMap<String, HashMap<String, List<String>>> hmPropChain =
-            new HashMap<String, HashMap<String, List<String>>>();
+        //HashMap<String, HashMap<String, List<String>>> hmPropChain =
+        //    new HashMap<String, HashMap<String, List<String>>>();
         HashMap<String, HashMap<String, List<String>>> hmPropChainTrans =
             new HashMap<String, HashMap<String, List<String>>>();
         for (int i = 0; i < properties.length; i++) {
@@ -457,7 +457,7 @@ public class TablePrinter {
             }
             hmProp[i] = hmInds;
         }
-        for (String id : propertyChains.keySet()) {
+        /*for (String id : propertyChains.keySet()) {
             String prop1 = propertyChains.get(id).keySet().iterator().next();
             String prop2 = propertyChains.get(id).values().iterator().next();
             HashMap<String, List<String>> propChainInds = new HashMap<String, List<String>>();
@@ -475,7 +475,7 @@ public class TablePrinter {
                 inds.add(sPair[1]);
             }
             hmPropChain.put(id, propChainInds);
-        }
+        }*/
         for (String id : propertyChainsTrans.keySet()) {
             String prop1 = propertyChainsTrans.get(id).keySet().iterator().next();
             String prop2 = propertyChainsTrans.get(id).values().iterator().next();
@@ -508,14 +508,14 @@ public class TablePrinter {
                     }
                 }
             }
-            for (String id : hmPropChain.keySet()) {
+            /*for (String id : hmPropChain.keySet()) {
                 List<String> list = hmPropChain.get(id).get(sInd1);
                 if (list != null) {
                     if (list.contains(sInd2)) {
                         sbLine.append(id).append("\t");
                     }
                 }
-            }
+            }*/
             for (String id : hmPropChainTrans.keySet()) {
                 List<String> list = hmPropChainTrans.get(id).get(sInd1);
                 if (list != null) {

@@ -1,19 +1,14 @@
 package miner.modules;
 
+import miner.database.*;
+import org.semanticweb.owlapi.model.OWLAxiom;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.Set;
-
-import miner.database.Database;
-import miner.database.IndividualsExtractor;
-import miner.database.SQLFactory;
-import miner.database.Setup;
-import miner.database.TablePrinter;
-import miner.database.TerminologyExtractor;
 
 public class ClassPropertiesModule extends MinerModule {
 	
@@ -39,7 +34,6 @@ public class ClassPropertiesModule extends MinerModule {
 		}
 	}
 
-	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 		
@@ -99,7 +93,7 @@ public class ClassPropertiesModule extends MinerModule {
 	}
 
 	@Override
-	public Set<Object> readAssociationRules(File inputFile) {
+	public Set<OWLAxiom> readAssociationRules(File inputFile) {
 		// TODO Auto-generated method stub
 		return null;
 	}

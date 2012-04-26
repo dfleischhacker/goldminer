@@ -1,6 +1,5 @@
 package test;
 
-import miner.IGoldMiner;
 import miner.IGoldMinerImpl;
 import miner.ontology.Ontology;
 import miner.ontology.ParsedAxiom;
@@ -17,7 +16,7 @@ import java.util.HashMap;
 
 public class CompleteWorkflowTest {
 	
-	private IGoldMiner goldMiner;
+	private IGoldMinerImpl goldMiner;
 	
 	/**
 	 * Requires complete and correct miner.properties and axioms.properties.

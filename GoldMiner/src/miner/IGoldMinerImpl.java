@@ -1,20 +1,27 @@
 package miner;
 
 import miner.database.*;
+import miner.modules.MinerModuleConfiguration;
+import miner.modules.MinerModuleException;
+import miner.modules.PropertyDisjointnessModule;
 import miner.ontology.*;
 import miner.sparql.Filter;
 import miner.util.*;
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class IGoldMinerImpl implements IGoldMiner {
+public class IGoldMinerImpl {
 
     private static final String[] transactionTableNames =
             {"classmembers", "existspropertymembers", "propertyrestrictions1", "propertyrestrictions2",
@@ -89,7 +96,6 @@ public class IGoldMinerImpl implements IGoldMiner {
     private boolean p_inverse_functional;
     private boolean writeAnnotations;
 
-    @Override
     public boolean disconnect() {
         try {
             this.database.close();
@@ -100,7 +106,6 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
     }
 
-    @Override
     public boolean setupDatabase() throws SQLException {
         if (chk.reached("setupdatabase")) {
             return true;
@@ -193,7 +198,6 @@ public class IGoldMinerImpl implements IGoldMiner {
 
     }
 
-    @Override
     public boolean terminologyAcquisition() throws SQLException {
         if ((this.c_sub_c ||
                 this.c_and_c_sub_c ||
@@ -249,7 +253,6 @@ public class IGoldMinerImpl implements IGoldMiner {
         return true;
     }
 
-    @Override
     public boolean connect(String url, String user, String password) {
         try {
             this.database = Database.instance(url, user, password);
@@ -260,7 +263,6 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
     }
 
-    @Override
     public void selectAxioms() {
         this.c_sub_c = Settings.getAxiom("c_sub_c");
         this.c_and_c_sub_c = Settings.getAxiom("c_and_c_sub_c");
@@ -282,7 +284,6 @@ public class IGoldMinerImpl implements IGoldMiner {
         this.writeAnnotations = Settings.getAxiom("write_annotations");
     }
 
-    @Override
     public boolean sparqlSetup(String endpoint, Filter filter, String graph,
                                int chunk) {
         if (!chk.reached("terminologyextract")) {
@@ -296,7 +297,6 @@ public class IGoldMinerImpl implements IGoldMiner {
         return false;
     }
 
-    @Override
     public void createTransactionTables() throws IOException,
             SQLException {
         if ((this.c_sub_c || this.c_and_c_sub_c) && !chk.reached("classmembers")) {
@@ -380,7 +380,6 @@ public class IGoldMinerImpl implements IGoldMiner {
         f.createNewFile();
     }
 
-    @Override
     public void mineAssociationRules() throws IOException {
         File file = new File(Settings.getString("transaction_tables"));
         File[] files = this.removeFiles(file.listFiles(new TextFileFilter()));
@@ -530,12 +529,10 @@ public class IGoldMinerImpl implements IGoldMiner {
         }
     }
 
-    @Override
     public void mineAssociationRules(AssociationRulesMiner miner) {
         miner.execute();
     }
 
-    @Override
     public List<String> getAssociationRules() throws IOException {
         List<String> rules = new ArrayList<String>();
         File file = new File(Settings.getString("association_rules"));
@@ -553,10 +550,19 @@ public class IGoldMinerImpl implements IGoldMiner {
         return rules;
     }
 
-    @Override
     public HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> parseAssociationRules()
             throws IOException, SQLException {
         this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
+
+        // inititalize module config
+        MinerModuleConfiguration moduleConfig = new MinerModuleConfiguration();
+        moduleConfig.setWriteAnnotations(writeAnnotations);
+        moduleConfig.setDataFactory(ontology.getOntology().getOWLOntologyManager().getOWLDataFactory());
+        moduleConfig.setConfidenceAnnotationUri(IRI.create(Settings.getString("annotation_iri") + "#confidence"));
+        moduleConfig.setSupportAnnotationUri(IRI.create(Settings.getString("annotation_iri") + "#support"));
+        moduleConfig.setDbConnection(database.getConnection());
+        moduleConfig.setParser(parser);
+
         HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> hmAxioms =
                 new HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple>();
 
@@ -748,31 +754,33 @@ public class IGoldMinerImpl implements IGoldMiner {
         System.out.println("Number of Axioms: " + hmAxioms.size());
 
         /* Property Chaining: P o Q sub R */
-        System.out.println("p_chain_q_sub_r");
-        f = new File(
-                Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
-        if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-        } else {
-            List<ParsedAxiom> axioms = this.parser.parse(f, false);
+        if (p_chain_q_sub_r) {
+            System.out.println("p_chain_q_sub_r");
+            f = new File(
+                    Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+            if (!f.exists()) {
+                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            } else {
+                List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
-            normalizer.reportValues(axioms);
-            normalizer.normalize(axioms);
+                ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
+                normalizer.reportValues(axioms);
+                normalizer.normalize(axioms);
 
-            for (ParsedAxiom pa : axioms) {
-                OWLAxiom a =
-                        this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
-                                                               pa.getConf());
-                if (a != null) {
-                    if (pa.getSupp() != 0.0) {
-                        rac.add(a, pa.getConf());
+                for (ParsedAxiom pa : axioms) {
+                    OWLAxiom a =
+                            this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
+                                                                   pa.getConf());
+                    if (a != null) {
+                        if (pa.getSupp() != 0.0) {
+                            rac.add(a, pa.getConf());
+                        }
+                        hmAxioms.put(a, pa.getSuppConfTuple());
                     }
-                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
+            System.out.println("Number of Axioms: " + hmAxioms.size());
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
 
         /* Property Transitivity: P o P sub P*/
         System.out.println("p_chain_p_sub_p");
@@ -815,6 +823,7 @@ public class IGoldMinerImpl implements IGoldMiner {
             normalizer.normalize(axioms);
 
             for (ParsedAxiom pa : axioms) {
+                //TODO: probably wrong due to different way of naming negated concepts
                 //TODO: we are not able to preserve the order of concepts in axiom
                 int ante1 = pa.getAnte1();
                 int cons = pa.getCons();
@@ -840,30 +849,23 @@ public class IGoldMinerImpl implements IGoldMiner {
         System.out.println("Number of Axioms: " + hmAxioms.size());
 
         /* Property Disjointness */
-        System.out.println("p_dis_p");
-        f = new File(
-                Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
-        if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
-        } else {
-            List<ParsedAxiom> axioms = this.parser.parse(f, false);
-
-            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Disjointness");
-            normalizer.reportValues(axioms);
-            normalizer.normalize(axioms);
-
-            for (ParsedAxiom pa : axioms) {
-                OWLAxiom a =
-                        this.writer.get_p_dis_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(), pa.getConf());
-                if (a != null) {
-                    if (pa.getSupp() != 0.0) {
-                        rac.add(a, pa.getConf());
-                    }
-                    hmAxioms.put(a, pa.getSuppConfTuple());
-                }
+        try {
+            System.out.println("p_dis_p");
+            PropertyDisjointnessModule propertyDisjointnessModule = new PropertyDisjointnessModule(moduleConfig);
+            f = new File(
+                    Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+            if (!f.exists()) {
+                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            } else {
+                // TODO: adjust to actual method signature
+                propertyDisjointnessModule.readAssociationRules(f, hmAxioms);
             }
+            System.out.println("Number of Axioms: " + hmAxioms.size());
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        catch (MinerModuleException e) {
+            System.err.println("Unable to mine object property disjointness");
+            e.printStackTrace();
+        }
 
         /* Property Reflexivity */
         System.out.println("p_reflexive");
@@ -873,6 +875,7 @@ public class IGoldMinerImpl implements IGoldMiner {
             System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            System.out.println("Parsed axioms: " + axioms.size());
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Reflexivity");
             normalizer.reportValues(axioms);
@@ -899,6 +902,7 @@ public class IGoldMinerImpl implements IGoldMiner {
             System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
+            System.out.println("Parsed axioms: " + axioms.size());
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Irreflexivity");
             normalizer.reportValues(axioms);
@@ -1020,6 +1024,8 @@ public class IGoldMinerImpl implements IGoldMiner {
             }
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
+
+        writer.writeLists(hmAxioms, new File(Settings.getString("axiom_list_dir")));
         return hmAxioms;
     }
 
@@ -1029,19 +1035,17 @@ public class IGoldMinerImpl implements IGoldMiner {
         this.ontology.save();
     }
 
-    @Override
     public Ontology createOntology(HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms,
                                    double supportThreshold, double confidenceThreshold)
             throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();
         this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
-        Ontology o = this.writer.writeRandomlySelected(rac, confidenceThreshold);
+        Ontology o = this.writer.write(axioms, supportThreshold, confidenceThreshold);
         //o.save();
         this.ontology = o;
         return o;
     }
 
-    @Override
     public Ontology greedyDebug(Ontology ontology) throws OWLOntologyStorageException {
         return OntologyDebugger.greedyWrite(ontology);
     }

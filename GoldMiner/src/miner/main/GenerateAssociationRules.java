@@ -1,6 +1,5 @@
 package miner.main;
 
-import miner.IGoldMiner;
 import miner.IGoldMinerImpl;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -11,7 +10,7 @@ import java.sql.SQLException;
 
 public class GenerateAssociationRules {
 	
-	private static IGoldMiner goldMiner;
+	private static IGoldMinerImpl goldMiner;
 
 	public static void main(String[] args) {
 		try {

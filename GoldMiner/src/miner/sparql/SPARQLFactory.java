@@ -1,10 +1,5 @@
 package miner.sparql;
 
-import java.util.*;
-
-import miner.util.*;
-
-
 public class SPARQLFactory {
 	
 	private String m_sFilter = null;
@@ -333,14 +328,11 @@ public class SPARQLFactory {
 		sb.append( " }" );
 		return sb.toString();
 	}
-	
+
+    //TODO: optimize by filtering on server?
 	public String getPairProperty(String sInd) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT distinct ?x WHERE {");
-		sb.append(" <" + sInd + "> ?x <" + sInd + ">.");
-		sb.append(" }");
-		return sb.toString();
-	}
+        return String.format("SELECT distinct ?x WHERE { <%s> ?x <%s> }", sInd, sInd);
+    }
 	
 	// get property chains connecting the two individuals
 	public String individualPropertyChainsQuery( String sInd1, String sInd2 ){

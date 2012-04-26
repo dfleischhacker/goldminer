@@ -1,38 +1,30 @@
 package miner.database;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import java.util.*;
+import miner.util.Parameter;
+import miner.util.Settings;
 
-import miner.util.*;
+import java.sql.*;
 
 
 public class Database {
 	
-	private Connection m_connection;
+	private Connection connection;
 
-	private static Database m_instance;
+	private static Database instance;
 	
 
 	public static Database instance() throws SQLException {
-		if( m_instance == null ){
-			m_instance = new Database();
+		if( instance == null ){
+			instance = new Database();
 		}
-		return m_instance;
+		return instance;
 	}
 	
 	private Database(String url, String username, String password) throws SQLException {
 		try {
 			DriverManager.registerDriver( new com.mysql.jdbc.Driver() );
 			System.out.println( "connection: "+ username +"@"+ url );
-			m_connection = DriverManager.getConnection( url, username, password );
+			connection = DriverManager.getConnection( url, username, password );
 		}
 		catch ( SQLException ex )
 		{
@@ -45,12 +37,12 @@ public class Database {
 
 	private Database() throws SQLException {
 		try {
-			String sDatabase = Settings.getString( Parameter.DATABASE );
-			String sUser = Settings.getString( Parameter.USER );
-			String sPassword = Settings.getString( Parameter.PASSWORD );
+			String database = Settings.getString( Parameter.DATABASE );
+			String user = Settings.getString( Parameter.USER );
+			String password = Settings.getString( Parameter.PASSWORD );
 			DriverManager.registerDriver( new com.mysql.jdbc.Driver() );
-			System.out.println( "connection: "+ sUser +"@"+ sDatabase );
-			m_connection = DriverManager.getConnection( sDatabase, sUser, sPassword );
+			System.out.println( "connection: "+ user +"@"+ database );
+			connection = DriverManager.getConnection( database, user, password );
 		}
 		catch ( SQLException ex )
 		{
@@ -63,24 +55,24 @@ public class Database {
 
 	
 	public static Database instance(String url, String username, String password) throws SQLException {
-		if( m_instance == null ){
-			m_instance = new Database(url, username, password);
+		if( instance == null ){
+			instance = new Database(url, username, password);
 		}
-		return m_instance;
+		return instance;
 	}
 	
 	public void close() throws SQLException  {
-		m_connection.close();
+		connection.close();
 	}
 	
-	public ResultSet query( String sQuery ){
-		// System.out.println( "Database.query: "+ sQuery );
+	public ResultSet query( String query ){
+		System.out.println( "Database.query: "+ query );
 		Statement stmt = null;
 		ResultSet results = null;
 		try {
-			stmt = m_connection.createStatement();
+			stmt = connection.createStatement();
             stmt.setFetchSize(5000);
-			results = stmt.executeQuery( sQuery );
+			results = stmt.executeQuery( query );
 			return results;
 		} 
 		catch( SQLException ex ){
@@ -111,13 +103,13 @@ public class Database {
 		return null;
 	}
 		
-	public boolean execute( String sUpdate ){
-		// System.out.println( "Database.execute: "+ sUpdate );
+	public boolean execute( String update ){
+		// System.out.println( "Database.execute: "+ update );
 		Statement stmt = null;
 		ResultSet results = null;
 		try {
-			stmt = m_connection.createStatement();
-			stmt.executeUpdate( sUpdate );
+			stmt = connection.createStatement();
+			stmt.executeUpdate( update );
 		} 
 		catch( SQLException ex ){
 			System.out.println( "SQLException: " + ex.getMessage() );
@@ -147,4 +139,19 @@ public class Database {
 		}
 		return true;
 	}
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public static void main(String[] args) throws SQLException {
+        Database d = Database.instance("jdbc:mysql://ede.informatik.uni-mannheim.de:3306/gold_minerEswc2012", "gold", "gold");
+        for (int i = 0; i < 1000; i++) {
+            ResultSet res = d.query("SELECT uri FROM property_chains_trans WHERE id='176999' UNION SELECT uri FROM properties WHERE " +
+                                            "id='176999'");
+            if (res.next()) {
+                System.out.println(res.getString("uri"));
+            }
+        }
+    }
 }

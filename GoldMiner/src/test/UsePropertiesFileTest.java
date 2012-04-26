@@ -12,13 +12,12 @@ import org.junit.Test;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
-import miner.IGoldMiner;
 import miner.IGoldMinerImpl;
 
 
 public class UsePropertiesFileTest {
 
-	private IGoldMiner goldMiner;
+	private IGoldMinerImpl goldMiner;
 	
 	@Before
 	public void connect() throws FileNotFoundException, IOException, SQLException, OWLOntologyCreationException, OWLOntologyStorageException {
