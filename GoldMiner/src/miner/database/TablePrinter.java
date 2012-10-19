@@ -1366,7 +1366,12 @@ public class TablePrinter {
         //TODO: make it right(TM)
         getClassID("");
         ArrayList<String> classIds = new ArrayList<String>(new HashSet<String>(m_hmClass2ID.values()));
-        Collections.sort(classIds);
+        Collections.sort(classIds, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return Integer.compare(Integer.parseInt(o1), Integer.parseInt(o2));
+            }
+        });
 
         // read individuals from database
         String sQuery1 = sqlFactory.selectIndividualsQuery();
