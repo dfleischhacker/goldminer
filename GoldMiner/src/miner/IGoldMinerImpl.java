@@ -673,8 +673,8 @@ public class IGoldMinerImpl {
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
 
-        /* exists p.T sub c */
-        System.out.println("exists_p_T_sub_c");
+        /* Object Property Domain: exists p.T sub c */
+        System.out.println("Object Property Domain: exists_p_T_sub_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[2] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
@@ -700,8 +700,8 @@ public class IGoldMinerImpl {
         }
         System.out.println("Number of Axioms: " + hmAxioms.size());
 
-        /* exists p^i.T sub c */
-        System.out.println("exists_pi_T_sub_c");
+        /* Object Property Range: exists p^i.T sub c */
+        System.out.println("Object Property Range: exists_pi_T_sub_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
