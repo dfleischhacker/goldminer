@@ -170,7 +170,7 @@ public class OntologyWriter {
                 typeWriter = writers.get(typeName);
             }
 
-            typeWriter.write(String.format("%s|confidence:%f|support:%f\n",
+            typeWriter.write(String.format("%s|confidence:%1.10f|support:%1.10f\n",
                                            pair.getKey().getAxiomWithoutAnnotations().toString(),
                                            pair.getValue().getConfidence(), pair.getValue().getSupport()));
         }
