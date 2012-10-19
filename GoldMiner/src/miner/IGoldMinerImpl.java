@@ -828,11 +828,17 @@ public class IGoldMinerImpl {
                 int ante1 = pa.getAnte1();
                 int cons = pa.getCons();
 
-                if (ante1 >= 1000 && cons < 1000) {
-                    ante1 -= 1000;
-                } else if (ante1 < 1000 && cons >= 1000) {
+//                if (ante1 >= 1000 && cons < 1000) {
+//                    ante1 -= 1000;
+//                } else if (ante1 < 1000 && cons >= 1000) {
+//                    cons -= 1000;
+//                } else {
+//                    continue;
+//                }
+                if (cons >= 1000 && ante1 < 1000) {
                     cons -= 1000;
-                } else {
+                }
+                else {
                     continue;
                 }
 
