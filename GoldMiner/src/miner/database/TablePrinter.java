@@ -354,6 +354,9 @@ public class TablePrinter {
     }
 
     public void printPropertyRestrictions(String sOutFile, int iInverse) throws SQLException, IOException {
+        // iInverse:
+        //      0 --> Domain
+        //      1 --> Range
         String properties[] = getProperties();
         BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         // two hashmaps for each property: domain and range
@@ -598,19 +601,19 @@ public class TablePrinter {
         HashMap<String, List<String>>[] hm = new HashMap[properties.length];
         for (int i = 0; i < properties.length; i++) {
             String sProp = properties[i];
-            HashMap<String, List<String>> hmInds = new HashMap<String, List<String>>();
+            HashMap<String, List<String>> individualsInDomain = new HashMap<String, List<String>>();
             ResultPairsIterator iter =
                     queryEngine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
                 String sPair[] = iter.next();
-                List<String> inds = hmInds.get(sPair[0]);
+                List<String> inds = individualsInDomain.get(sPair[0]);
                 if (inds == null) {
                     inds = new ArrayList<String>();
-                    hmInds.put(sPair[0], inds);
+                    individualsInDomain.put(sPair[0], inds);
                 }
                 inds.add(sPair[1]);
             }
-            hm[i] = hmInds;
+            hm[i] = individualsInDomain;
         }
         String sQuery = sqlFactory.selectIndividualsQuery();
         ResultSet results = m_database.query(sQuery);
