@@ -6,7 +6,9 @@ GOLD Miner is a tool for Statistical Schema Induction as proposed by Völker and
 Fleischhacker and Völker [2][3].
 
 [1] Johanna Völker and Mathias Niepert. Statistical Schema Induction. The Semantic Web: Research and Applications : 8th Extended Semantic Web Conference, ESWC 2011, Heraklion, Crete, Greece, Proceedings, Part I, 2011.
+
 [2] Daniel Fleischhacker and Johanna Völker. Inductive Learning of Disjointness Axioms. On the Move to Meaningful Internet Systems: OTM 2011 : Confederated International Conferences: CoopIS, DOA-SVI, and ODBASE 2011, Hersonissos, Crete, Greece, Proceedings, Part II, 2011.
+
 [3] Daniel Fleischhacker, Johanna Völker and Heiner Stuckenschmidt. Mining RDF Data for Property Axioms. On the Move to Meaningful Internet Systems: OTM 2012 : Confederated International Conferences: CoopIS, DOA-SVI, and ODBASE 2012. Proceedings, Part II, 2012.
 
 ## Usage
