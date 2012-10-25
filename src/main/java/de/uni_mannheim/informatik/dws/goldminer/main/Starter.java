@@ -30,13 +30,21 @@ public class Starter {
         mineParser.setDefault("func", new MineAssociationRules());
         Subparser parseParser = subparsers.addParser("parse").help("Parse association rules and create ontology");
         parseParser.setDefault("func", new ParseRulesAndCreateOntology());
+        Subparser licenseParser = subparsers.addParser("license").help("Print license information");
+        licenseParser.setDefault("func", new LicenseInformation());
+        licenseParser.setDefault("subparser", "license");
         parseParser.addArgument("--confidence").type(Double.class).metavar("conf").setDefault(0.0);
         parseParser.addArgument("--support").type(Double.class).metavar("supp").setDefault(0.0);
         parseParser.addArgument("--ontology").type(String.class).metavar("file").setDefault("");
 
         try {
+            System.out.println("GOLD Miner  Copyright (C) 2011-2012 GOLD Miner Developers\n" +
+                    "This is free software with ABSOLUTELY NO WARRANTY.\n" +
+                    "For details use the 'license' command.");
             Namespace n = parser.parseArgs(args);
-            Settings.load(n.getString("minercfg"), n.getString("axiomcfg"));
+            if (n.getString("subparser") == null) {
+                Settings.load(n.getString("minercfg"), n.getString("axiomcfg"));
+            }
             ((SubcommandModule) n.get("func")).runSubcommand(n);
         }
         catch (ArgumentParserException e) {
