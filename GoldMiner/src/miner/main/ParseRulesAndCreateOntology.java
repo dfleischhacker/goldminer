@@ -2,7 +2,7 @@ package miner.main;
 
 import miner.IGoldMinerImpl;
 import miner.ontology.Ontology;
-import miner.ontology.ParsedAxiom;
+import miner.util.SupportConfidenceTuple;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -35,7 +35,7 @@ public class ParseRulesAndCreateOntology {
             else {
                 goldMiner = new IGoldMinerImpl(ontology);
             }
-            HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms = goldMiner.parseAssociationRules();
+            HashMap<OWLAxiom, SupportConfidenceTuple> axioms = goldMiner.parseAssociationRules();
             System.out.println("Total number of axioms: " + axioms.size());
             Ontology o = goldMiner.createOntology(axioms, supportThreshold, confidenceThreshold);
             //o = goldMiner.greedyDebug(o);

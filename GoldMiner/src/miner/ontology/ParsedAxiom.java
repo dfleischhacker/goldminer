@@ -1,6 +1,7 @@
 package miner.ontology;
 
 import miner.util.ScalingValueNormalizer;
+import miner.util.SupportConfidenceTuple;
 
 /**
  * Container for axiom data gained by parsing association rule files
@@ -75,34 +76,7 @@ public class ParsedAxiom implements ScalingValueNormalizer.NormalizationTarget {
         tuple.setConfidence(value);
     }
 
-    /**
-     * Tuple containing support and confidence values both being double values
-     */
-    public static class SupportConfidenceTuple {
-        private double support;
-        private double confidence;
 
-        private SupportConfidenceTuple(double support, double confidence) {
-            this.support = support;
-            this.confidence = confidence;
-        }
-
-        public double getSupport() {
-            return support;
-        }
-
-        public double getConfidence() {
-            return confidence;
-        }
-
-        public void setSupport(double support) {
-            this.support = support;
-        }
-
-        public void setConfidence(double confidence) {
-            this.confidence = confidence;
-        }
-    }
 
     @Override
     public boolean equals(Object o) {

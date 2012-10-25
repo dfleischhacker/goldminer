@@ -186,7 +186,7 @@ public class IGoldMinerImpl {
             property_chains_trans = false;
         }
         if (this.setup.setupSchema(classes, individuals, properties, classes_ex_property, classes_ex_property_top,
-                                   individual_pairs, individual_pairs_trans, property_chains, property_chains_trans)) {
+                individual_pairs, individual_pairs_trans, property_chains, property_chains_trans)) {
             chk.reach("setupdatabase");
             return true;
         }
@@ -285,7 +285,7 @@ public class IGoldMinerImpl {
     }
 
     public boolean sparqlSetup(String endpoint, Filter filter, String graph,
-                               int chunk) {
+            int chunk) {
         if (!chk.reached("terminologyextract")) {
             this.terminologyExtractor = new TerminologyExtractor(this.database, endpoint, graph, chunk, filter);
             chk.reach("terminologyextract");
@@ -331,7 +331,7 @@ public class IGoldMinerImpl {
             this.deleteFile(4);
             this.tablePrinter
                     .printPropertyMembers(Settings.getString("transaction_tables") + transactionTableNames[4] + "" +
-                                                  ".txt");
+                            ".txt");
             chk.reach("propertymembers");
         }
         if ((this.p_chain_q_sub_r || this.p_chain_p_sub_p) && !chk.reached("propertychainmembers")) {
@@ -390,7 +390,7 @@ public class IGoldMinerImpl {
             int index = f.getName().lastIndexOf(".");
             File targetFile = new File(
                     Settings.getString("association_rules") + f.getName().substring(0,
-                                                                                    index) + associationRulesSuffix +
+                            index) + associationRulesSuffix +
                             ".txt");
             System.out.println(targetFile.toString());
             System.out.println(targetFile.createNewFile());
@@ -550,7 +550,7 @@ public class IGoldMinerImpl {
         return rules;
     }
 
-    public HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> parseAssociationRules()
+    public HashMap<OWLAxiom, SupportConfidenceTuple> parseAssociationRules()
             throws IOException, SQLException {
         this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
 
@@ -563,8 +563,8 @@ public class IGoldMinerImpl {
         moduleConfig.setDbConnection(database.getConnection());
         moduleConfig.setParser(parser);
 
-        HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> hmAxioms =
-                new HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple>();
+        HashMap<OWLAxiom, SupportConfidenceTuple> hmAxioms =
+                new HashMap<OWLAxiom, SupportConfidenceTuple>();
 
         /* Concept Subsumption: c sub c */
 
@@ -608,7 +608,7 @@ public class IGoldMinerImpl {
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a = this.writer
                         .get_c_and_c_sub_c_Axioms(pa.getAnte1(), pa.getAnte2(), pa.getCons(), pa.getSupp(),
-                                                  pa.getConf());
+                                pa.getConf());
                 if (a != null) {
                     if (pa.getSupp() != 0.0) {
                         rac.add(a, pa.getConf());
@@ -757,7 +757,8 @@ public class IGoldMinerImpl {
         if (p_chain_q_sub_r) {
             System.out.println("p_chain_q_sub_r");
             f = new File(
-                    Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+                    Settings.getString(
+                            "association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
             if (!f.exists()) {
                 System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
             } else {
@@ -770,7 +771,7 @@ public class IGoldMinerImpl {
                 for (ParsedAxiom pa : axioms) {
                     OWLAxiom a =
                             this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
-                                                                   pa.getConf());
+                                    pa.getConf());
                     if (a != null) {
                         if (pa.getSupp() != 0.0) {
                             rac.add(a, pa.getConf());
@@ -798,7 +799,7 @@ public class IGoldMinerImpl {
             for (ParsedAxiom pa : axioms) {
                 OWLAxiom a =
                         this.writer.get_p_chain_p_sub_p_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
-                                                               pa.getConf());
+                                pa.getConf());
                 if (a != null) {
                     if (pa.getSupp() != 0.0) {
                         rac.add(a, pa.getConf());
@@ -822,33 +823,42 @@ public class IGoldMinerImpl {
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
+            HashMap<ConceptIdPair, SupportConfidenceTuple> firstOccurence = new HashMap<ConceptIdPair,
+                    SupportConfidenceTuple>();
             for (ParsedAxiom pa : axioms) {
                 //TODO: probably wrong due to different way of naming negated concepts
                 //TODO: we are not able to preserve the order of concepts in axiom
                 int ante1 = pa.getAnte1();
                 int cons = pa.getCons();
 
-//                if (ante1 >= 1000 && cons < 1000) {
-//                    ante1 -= 1000;
-//                } else if (ante1 < 1000 && cons >= 1000) {
-//                    cons -= 1000;
-//                } else {
-//                    continue;
-//                }
                 if (cons >= 1000 && ante1 < 1000) {
                     cons -= 1000;
-                }
-                else {
+                } else {
                     continue;
                 }
 
-                OWLAxiom a =
-                        this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
-                if (a != null) {
+
+                ConceptIdPair pair = new ConceptIdPair(this.writer.getClassURI(ante1), this.writer.getClassURI(cons));
+                if (firstOccurence.containsKey(pair)) {
+                    OWLAxiom a = null;
+                    SupportConfidenceTuple supportConfidenceTuple = firstOccurence.get(pair);
+                    System.out.println(
+                            "Current: " + pa.getConf() + ", Prev: " + supportConfidenceTuple.getConfidence() + "\n");
+                    if (pa.getConf() < supportConfidenceTuple.getConfidence()) {
+                        System.out.println("Take Current");
+                        a = this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
+                    }
+                    else {
+                        System.out.println("Take Previous");
+                        a = this.writer.get_c_dis_c_Axioms(ante1, cons, supportConfidenceTuple.getSupport(),
+                                supportConfidenceTuple.getConfidence());
+                    }
+                    hmAxioms.put(a.getAxiomWithoutAnnotations(), pa.getSuppConfTuple());
                     if (pa.getSupp() != 0.0) {
                         rac.add(a, pa.getConf());
                     }
-                    hmAxioms.put(a, pa.getSuppConfTuple());
+                } else {
+                    firstOccurence.put(pair, pa.getSuppConfTuple());
                 }
             }
         }
@@ -859,7 +869,8 @@ public class IGoldMinerImpl {
             System.out.println("p_dis_p");
             PropertyDisjointnessModule propertyDisjointnessModule = new PropertyDisjointnessModule(moduleConfig);
             f = new File(
-                    Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+                    Settings.getString(
+                            "association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
             if (!f.exists()) {
                 System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
             } else {
@@ -1014,7 +1025,8 @@ public class IGoldMinerImpl {
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Inverse Functionality");
+            ValueNormalizer normalizer = ValueNormalizerFactory
+                    .getDefaultNormalizerInstance("Property Inverse Functionality");
             normalizer.reportValues(axioms);
             normalizer.normalize(axioms);
 
@@ -1041,8 +1053,8 @@ public class IGoldMinerImpl {
         this.ontology.save();
     }
 
-    public Ontology createOntology(HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms,
-                                   double supportThreshold, double confidenceThreshold)
+    public Ontology createOntology(HashMap<OWLAxiom, SupportConfidenceTuple> axioms,
+            double supportThreshold, double confidenceThreshold)
             throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();
         this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);

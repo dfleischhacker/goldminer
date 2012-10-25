@@ -1,6 +1,7 @@
 package miner.modules;
 
 import miner.ontology.ParsedAxiom;
+import miner.util.SupportConfidenceTuple;
 import miner.util.ValueNormalizer;
 import miner.util.ValueNormalizerFactory;
 import org.semanticweb.owlapi.model.*;
@@ -105,12 +106,12 @@ public class PropertyDisjointnessModule extends MinerModule {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    @Override
+
     public Set<OWLAxiom> readAssociationRules(File inputFile) throws MinerModuleException {
         return Collections.emptySet();
     }
 
-    public void readAssociationRules(File inputFile, HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> map)
+    public void readAssociationRules(File inputFile, HashMap<OWLAxiom, SupportConfidenceTuple> map)
             throws MinerModuleException {
         List<ParsedAxiom> axioms;
 

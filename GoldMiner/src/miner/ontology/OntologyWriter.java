@@ -4,6 +4,7 @@ import miner.database.Database;
 import miner.database.SQLFactory;
 import miner.util.RandomAxiomChooser;
 import miner.util.Settings;
+import miner.util.SupportConfidenceTuple;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
@@ -68,41 +69,42 @@ public class OntologyWriter {
 
         res.close();
 
-        res = stmt.executeQuery(m_sqlFactory.selectPropertiesQuery());
-
-        while (res.next()) {
-            String uri = res.getString("uri");
-            int id = res.getInt("id");
-            int disjId = res.getInt("disjointID");
-            int symId = res.getInt("symmetryId");
-
-            propertyURICache.put(id, uri);
-            disjointPropertyURICache.put(disjId, uri);
-            symmetryPropertyURICache.put(symId, uri);
-        }
-        res.close();
-
-        res = stmt.executeQuery(m_sqlFactory.selectURIsFromExistsQuery());
-
-        while (res.next()) {
-            int id = res.getInt("id");
-            String propUri = res.getString("prop_uri");
-            String classUri = res.getString("class_uri");
-
-            propertyURIFromExistsCache.put(id, propUri);
-            classURIFromExistsCache.put(id, classUri);
-        }
-        res.close();
-
-        res = stmt.executeQuery(m_sqlFactory.selectURIsFromExistsTopQuery());
-
-        while (res.next()) {
-            int id = res.getInt("id");
-            String uri = res.getString("uri");
-
-            propertyURIFromExistsPropertyTopCache.put(id, uri);
-        }
-        res.close();
+//        if ()
+//        res = stmt.executeQuery(m_sqlFactory.selectPropertiesQuery());
+//
+//        while (res.next()) {
+//            String uri = res.getString("uri");
+//            int id = res.getInt("id");
+//            int disjId = res.getInt("disjointID");
+//            int symId = res.getInt("symmetryId");
+//
+//            propertyURICache.put(id, uri);
+//            disjointPropertyURICache.put(disjId, uri);
+//            symmetryPropertyURICache.put(symId, uri);
+//        }
+//        res.close();
+//
+//        res = stmt.executeQuery(m_sqlFactory.selectURIsFromExistsQuery());
+//
+//        while (res.next()) {
+//            int id = res.getInt("id");
+//            String propUri = res.getString("prop_uri");
+//            String classUri = res.getString("class_uri");
+//
+//            propertyURIFromExistsCache.put(id, propUri);
+//            classURIFromExistsCache.put(id, classUri);
+//        }
+//        res.close();
+//
+//        res = stmt.executeQuery(m_sqlFactory.selectURIsFromExistsTopQuery());
+//
+//        while (res.next()) {
+//            int id = res.getInt("id");
+//            String uri = res.getString("uri");
+//
+//            propertyURIFromExistsPropertyTopCache.put(id, uri);
+//        }
+//        res.close();
         stmt.close();
     }
 
@@ -131,14 +133,14 @@ public class OntologyWriter {
         return this.m_ontology;
     }
 
-    public Ontology write(HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms, double supportThreshold,
+    public Ontology write(HashMap<OWLAxiom, SupportConfidenceTuple> axioms, double supportThreshold,
                           double confidenceThreshold)
             throws OWLOntologyStorageException {
 
         //List<OWLAxiom> axioms = getAxioms();
         //System.out.println( "axioms: "+ axioms.size() );
         int i = 0;
-        for (Map.Entry<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> entry : axioms.entrySet()) {
+        for (Map.Entry<OWLAxiom, SupportConfidenceTuple> entry : axioms.entrySet()) {
             if (entry.getValue().getSupport() > supportThreshold &&
                     entry.getValue().getConfidence() > confidenceThreshold) {
 
@@ -150,7 +152,7 @@ public class OntologyWriter {
         return this.m_ontology;
     }
 
-    public void writeLists(HashMap<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> axioms, File storageDir)
+    public void writeLists(HashMap<OWLAxiom,SupportConfidenceTuple> axioms, File storageDir)
             throws IOException {
         if (!storageDir.exists()) {
             if (!storageDir.mkdirs()) {
@@ -158,7 +160,7 @@ public class OntologyWriter {
             }
         }
 
-        for (Map.Entry<OWLAxiom, ParsedAxiom.SupportConfidenceTuple> pair : axioms.entrySet()) {
+        for (Map.Entry<OWLAxiom, SupportConfidenceTuple> pair : axioms.entrySet()) {
             String typeName = pair.getKey().getAxiomType().getName().replaceAll("[^A-Za-z0-9]+", "_");
 
             BufferedWriter typeWriter;
