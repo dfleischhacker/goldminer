@@ -11,17 +11,18 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class GoldMiner {
+
+    public static Logger log = LoggerFactory.getLogger(GoldMiner.class);
 
     private static final String[] transactionTableNames =
             {"classmembers", "existspropertymembers", "propertyrestrictions1", "propertyrestrictions2",
@@ -388,23 +389,19 @@ public class GoldMiner {
         this.deleteFiles(ruleFiles);
         for (File f : files) {
             int index = f.getName().lastIndexOf(".");
-            File targetFile = new File(
-                    Settings.getString("association_rules") + f.getName().substring(0,
-                            index) + associationRulesSuffix +
-                            ".txt");
-            System.out.println(targetFile.toString());
-            System.out.println(targetFile.createNewFile());
-            ruleFiles = ruleFile.listFiles(new TextFileFilter());
-            String exec = Settings.getString("apriori") +
-                    "apriori" +
-                    " -tr -m2 -n3 " +
-                    f.getPath() +
-                    " " +
-                    Settings.getString("association_rules") +
-                    f.getName().substring(0, index) +
-                    associationRulesSuffix +
-                    ".txt";
-            Runtime.getRuntime().exec(exec);
+            ProcessBuilder p = new ProcessBuilder(Settings.getString("apriori"),
+                    "-tr", "-s-1", "-c0", "-m2", "-n2", "-v (%20s, %30c)",
+                    f.getPath(),
+                    Settings.getString("association_rules") + f.getName()
+                                                               .substring(0, index) + associationRulesSuffix + ".txt");
+            p.redirectOutput(ProcessBuilder.Redirect.PIPE);
+            Process process = p.start();
+            String line;
+            BufferedReader input = new BufferedReader (new InputStreamReader(process.getInputStream()));
+            while ((line = input.readLine()) != null) {
+                log.debug(line);
+            }
+            input.close();
         }
     }
 
@@ -496,9 +493,6 @@ public class GoldMiner {
                 x++;
             }
         }
-        for (File f : result) {
-            System.out.println(f.getName());
-        }
         return result;
     }
 
@@ -571,7 +565,7 @@ public class GoldMiner {
         File f = new File(
                 Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: {}! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -590,14 +584,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Concept Subsumption: c and c sub c */
-        System.out.println("Subsumption");
+        log.debug("Subsumption");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, true);
 
@@ -617,14 +611,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* c sub exists p.c */
-        System.out.println("c sub exists p c");
+        log.debug("c sub exists p c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -644,14 +638,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* exists p.c sub c */
         System.out.println("exists_p_c_sub_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -671,14 +665,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Object Property Domain: exists p.T sub c */
-        System.out.println("Object Property Domain: exists_p_T_sub_c");
+        log.debug("Object Property Domain: exists_p_T_sub_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[2] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -698,14 +692,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Object Property Range: exists p^i.T sub c */
         System.out.println("Object Property Range: exists_pi_T_sub_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -725,14 +719,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* P sub P */
-        System.out.println("p_sub_p");
+        log.debug("p_sub_p");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -751,16 +745,16 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Chaining: P o Q sub R */
         if (p_chain_q_sub_r) {
-            System.out.println("p_chain_q_sub_r");
+            log.debug("p_chain_q_sub_r");
             f = new File(
                     Settings.getString(
                             "association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
             if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+                log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
             } else {
                 List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -780,15 +774,15 @@ public class GoldMiner {
                     }
                 }
             }
-            System.out.println("Number of Axioms: " + hmAxioms.size());
+            log.debug("Number of Axioms: {}", hmAxioms.size());
         }
 
         /* Property Transitivity: P o P sub P*/
-        System.out.println("p_chain_p_sub_p");
+        log.debug("p_chain_p_sub_p");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -808,14 +802,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Concept Disjointness */
-        System.out.println("c_dis_c");
+        log.debug("c_dis_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[6] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -842,14 +836,9 @@ public class GoldMiner {
                 if (firstOccurence.containsKey(pair)) {
                     OWLAxiom a = null;
                     SupportConfidenceTuple supportConfidenceTuple = firstOccurence.get(pair);
-                    System.out.println(
-                            "Current: " + pa.getConf() + ", Prev: " + supportConfidenceTuple.getConfidence() + "\n");
                     if (pa.getConf() < supportConfidenceTuple.getConfidence()) {
-                        System.out.println("Take Current");
                         a = this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
-                    }
-                    else {
-                        System.out.println("Take Previous");
+                    } else {
                         a = this.writer.get_c_dis_c_Axioms(ante1, cons, supportConfidenceTuple.getSupport(),
                                 supportConfidenceTuple.getConfidence());
                     }
@@ -862,17 +851,17 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Disjointness */
         try {
-            System.out.println("p_dis_p");
+            log.debug("p_dis_p");
             PropertyDisjointnessModule propertyDisjointnessModule = new PropertyDisjointnessModule(moduleConfig);
             f = new File(
                     Settings.getString(
                             "association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
             if (!f.exists()) {
-                System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+                log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
             } else {
                 // TODO: adjust to actual method signature
                 propertyDisjointnessModule.readAssociationRules(f, hmAxioms);
@@ -885,14 +874,14 @@ public class GoldMiner {
         }
 
         /* Property Reflexivity */
-        System.out.println("p_reflexive");
+        log.debug("p_reflexive");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
-            System.out.println("Parsed axioms: " + axioms.size());
+            log.debug("Parsed axioms: {}", axioms.size());
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Reflexivity");
             normalizer.reportValues(axioms);
@@ -909,17 +898,17 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Irreflexivity */
-        System.out.println("p_irreflexive");
+        log.debug("p_irreflexive");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
-            System.out.println("Parsed axioms: " + axioms.size());
+            log.debug("Parsed axioms: {}", axioms.size());
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Irreflexivity");
             normalizer.reportValues(axioms);
@@ -936,14 +925,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Inverse Property */
-        System.out.println("p_inverse_q");
+        log.debug("p_inverse_q");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -962,14 +951,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Asymmetric property */
-        System.out.println("p_asymmetric");
+        log.debug("p_asymmetric");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -988,14 +977,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Functional Property */
-        System.out.println("p_functional");
+        log.debug("p_functional");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[9] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -1014,14 +1003,14 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Inverse Functionality */
-        System.out.println("p_inverse_functional");
+        log.debug("p_inverse_functional");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[10] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
-            System.err.println("Unable to read: " + f.getAbsolutePath() + " ! Skipping...");
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -1041,8 +1030,9 @@ public class GoldMiner {
                 }
             }
         }
-        System.out.println("Number of Axioms: " + hmAxioms.size());
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
+        log.info("Writing axiom lists into directory '{}'", Settings.getString("axiom_list_dir"));
         writer.writeLists(hmAxioms, new File(Settings.getString("axiom_list_dir")));
         return hmAxioms;
     }
