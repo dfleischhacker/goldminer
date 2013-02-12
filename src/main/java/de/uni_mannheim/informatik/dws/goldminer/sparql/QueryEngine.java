@@ -65,7 +65,7 @@ public class QueryEngine {
 	}
 
 	protected List<String> execute( String queryString, String sVar, String filter ) throws UnsupportedEncodingException, IOException {
-		System.out.println( "QueryEngine.query: "+ queryString +"\n" );
+		logger.debug( "QueryEngine.query: {}", queryString);
 		List<String> set = new ArrayList<String>();
 		Query query = QueryFactory.create(queryString);
 		QueryExecution qe = null;
