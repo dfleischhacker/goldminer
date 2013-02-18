@@ -641,7 +641,7 @@ public class GoldMiner {
         log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* exists p.c sub c */
-        System.out.println("exists_p_c_sub_c");
+        log.debug("exists_p_c_sub_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
@@ -695,7 +695,7 @@ public class GoldMiner {
         log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Object Property Range: exists p^i.T sub c */
-        System.out.println("Object Property Range: exists_pi_T_sub_c");
+        log.debug("Object Property Range: exists_pi_T_sub_c");
         f = new File(
                 Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
@@ -866,10 +866,10 @@ public class GoldMiner {
                 // TODO: adjust to actual method signature
                 propertyDisjointnessModule.readAssociationRules(f, hmAxioms);
             }
-            System.out.println("Number of Axioms: " + hmAxioms.size());
+            log.debug("Number of Axioms: " + hmAxioms.size());
         }
         catch (MinerModuleException e) {
-            System.err.println("Unable to mine object property disjointness");
+            log.error("Unable to mine object property disjointness");
             e.printStackTrace();
         }
 

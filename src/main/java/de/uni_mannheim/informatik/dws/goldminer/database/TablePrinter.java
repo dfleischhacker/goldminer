@@ -5,6 +5,10 @@ import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultPairsIterator;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultsIterator;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.SPARQLFactory;
 import de.uni_mannheim.informatik.dws.goldminer.util.Settings;
+import hu.ssh.progressbar.ProgressBar;
+import hu.ssh.progressbar.console.ConsoleProgressBar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.sql.Connection;
@@ -15,6 +19,7 @@ import java.util.*;
 
 
 public class TablePrinter {
+    public static final Logger log = LoggerFactory.getLogger(TablePrinter.class);
     // SPARQL
 
     private QueryEngine queryEngine;
@@ -58,17 +63,6 @@ public class TablePrinter {
 
     public static void main(String args[]) throws SQLException, FileNotFoundException, IOException {
         Settings.load();
-        //TablePrinter printer = new TablePrinter();
-        //printer.printClassMembers( "instanceof.txt" );
-        // printer.printPropertyMembers( "bible_property.txt" );
-        // printer.printExistsPropertyMembers( "bible_ex_property.txt", Integer.parseInt( args[0] ) );
-        //
-        // printer.printPropertyChainMembers_final( "bible_property_chain.txt", Integer.parseInt( args[0] ) );
-        // printer.printPropertyRestrictions( "bible_domain.txt", 0 );
-        // printer.printPropertyRestrictions( "bible_range.txt", 1 );
-        //
-        // printer.printExistsPropertyNonMembers( "dbpedia_ex_property.txt", Integer.parseInt( args[0] ) );
-        // printer.printPropertyChainMembersTrans( "dbpedia_property_trans.txt" );
     }
 
     public TablePrinter() throws SQLException, FileNotFoundException, IOException {
@@ -104,13 +98,11 @@ public class TablePrinter {
                     new HashMap<String, HashMap<String, Boolean>>();
             ResultPairsIterator iter =
                     queryEngine.queryPairs(m_sparqlFactory.propertyChainExtensionQuery(sProp, sProp),
-                                           this.individualsFilter);
-            // System.out.println( "\nproperty chain extension: "+ sProp );
+                            this.individualsFilter);
             int iPairs = 0;
             while (iter.hasNext()) {
                 iPairs++;
                 String sPair[] = iter.next();
-                // System.out.println( sPair[0] +" / "+ sPair[1] );
                 HashMap<String, Boolean> hmRanges = hmChainDomain2Ranges.get(sPair[0]);
                 if (hmRanges == null) {
                     hmRanges = new HashMap<String, Boolean>();
@@ -122,7 +114,6 @@ public class TablePrinter {
                 hmRanges.put(sPair[1], true);
             }
             chains.put(iID, hmChainDomain2Ranges);
-            System.out.println("printPropertyChainMembers( " + sProp + " ) ... " + iPairs + " -> " + iAllPairs);
         }
         results1.getStatement().close();
         // properties
@@ -138,12 +129,10 @@ public class TablePrinter {
                     new HashMap<String, HashMap<String, Boolean>>();
             ResultPairsIterator iter =
                     queryEngine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
-            // System.out.println( "\nproperty extension: "+ sProp );
             int iPairs = 0;
             while (iter.hasNext()) {
                 iPairs++;
                 String sPair[] = iter.next();
-                // System.out.println( sPair[0] +" / "+ sPair[1] );
                 HashMap<String, Boolean> hmRanges = hmPropDomain2Ranges.get(sPair[0]);
                 if (hmRanges == null) {
                     hmRanges = new HashMap<String, Boolean>();
@@ -155,7 +144,6 @@ public class TablePrinter {
                 hmRanges.put(sPair[1], true);
             }
             properties.put(iID, hmPropDomain2Ranges);
-            System.out.println("printPropertyMembers( " + sProp + " ) ... " + iPairs + " -> " + iAllPairs);
         }
         results2.getStatement().close();
         String sQuery = sqlFactory.selectIndividualPairsTransQuery();
@@ -181,12 +169,9 @@ public class TablePrinter {
                     sbLine.append(iPropID).append("\t");
                 }
             }
-            System.out.println(
-                    "TablePrinter.print: " + sIndURI1 + " / " + sIndURI2 + " (" + iIndPairID + ") -> " + sbLine
-                            .toString());
+            log.debug("TablePrinter.print: {} / {} ({}) -> {}", sIndURI1, sIndURI2, iIndPairID, sbLine);
         }
         results3.getStatement().close();
-        System.out.println("done");
     }
 
     public void printPropertyChainMembers_final(String sOutFile, int iStart) throws Exception {
@@ -220,8 +205,7 @@ public class TablePrinter {
                 hmRanges.put(sPair[1], true);
             }
             chains.put(iID, hmChainDomain2Ranges);
-            System.out.println(
-                    "printPropertyChainMembers( " + sProp1 + ", " + sProp2 + " ) ... " + iPairs + " -> " + iAllPairs);
+            log.debug("printPropertyChainMembers( {}, {}) ... {} -> {}", sProp1, sProp2, iPairs, iAllPairs);
         }
         results1.getStatement().close();
         String sQuery = sqlFactory.selectIndividualPairsExtQuery(iStart, iStart + 1000000);
@@ -258,7 +242,7 @@ public class TablePrinter {
             }
             if (sbLine.length() > 0) {
                 System.out.println("TablePrinter.print: " + sIndURI1 + " / " + sIndURI2 + " (" + iIndPairID + ") -> " +
-                                           sbLine.toString());
+                        sbLine.toString());
                 // chunk.add( sbLine.toString() );
             }
             //}
@@ -490,7 +474,7 @@ public class TablePrinter {
             HashMap<String, List<String>> propChainTransInds = new HashMap<String, List<String>>();
             ResultPairsIterator iter =
                     queryEngine.queryPairs(m_sparqlFactory.propertyChainExtensionQuery(prop1, prop2),
-                                           this.individualsFilter);
+                            this.individualsFilter);
             while (iter.hasNext()) {
                 String sPair[] = iter.next();
                 List<String> inds = propChainTransInds.get(sPair[0]);
@@ -823,7 +807,8 @@ public class TablePrinter {
 
     /**
      * Writes the transaction table for property reflexivity which contains lines for each pair of individuals a and b
-     *      (a == b)? (a p1 b)? (a p2 b)? ...
+     * (a == b)? (a p1 b)? (a p2 b)? ...
+     *
      * @param outFile
      * @throws java.sql.SQLException
      * @throws java.io.IOException
@@ -841,7 +826,7 @@ public class TablePrinter {
             // write same instances mark
             sb.append(String.format("0\t%s\t", SAME_INSTANCE));
             HashSet<String> usedProperties = new HashSet<String>();
-            String [] allProperties = getProperties();
+            String[] allProperties = getProperties();
             while (iter.hasNext()) {
                 usedProperties.add(iter.next());
             }
@@ -849,8 +834,7 @@ public class TablePrinter {
             for (String prop : allProperties) {
                 if (usedProperties.contains(prop)) {
                     sb.append(String.format("%s\t", getPropertyID(prop)));
-                }
-                else {
+                } else {
                     sb.append(String.format("%s\t", getPropertyDisjointID(prop)));
                 }
             }
@@ -897,7 +881,7 @@ public class TablePrinter {
                 for (String sProp2 : hmSecond.keySet()) {
                     ResultsIterator iter2 = queryEngine
                             .query(m_sparqlFactory.propertyChainsQuery(sInd1, sProp1, sProp2, sInd2),
-                                   this.classesFilter);
+                                    this.classesFilter);
                     if (iter2.hasNext()) {
                         String sChainID = hmSecond.get(sProp2);
                         System.out.println(sChainID + " = " + sProp1 + " / " + sProp2);
@@ -997,7 +981,7 @@ public class TablePrinter {
                 // properties
                 ResultsIterator iter =
                         queryEngine.query(m_sparqlFactory.individualPropertiesQuery(sIndURI1, sIndURI2),
-                                          this.classesFilter);
+                                this.classesFilter);
                 while (iter.hasNext()) {
                     String sProp = iter.next();
                     String sPropID = getPropertyID(sProp);
