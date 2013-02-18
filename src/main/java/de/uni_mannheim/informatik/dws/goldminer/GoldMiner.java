@@ -392,12 +392,14 @@ public class GoldMiner {
             ProcessBuilder p = new ProcessBuilder(Settings.getString("apriori"),
                     "-tr", "-s-1", "-c0", "-m2", "-n2", "-v (%20s, %30c)",
                     f.getPath(),
-                    Settings.getString("association_rules") + f.getName()
-                                                               .substring(0, index) + associationRulesSuffix + ".txt");
+                    new File(Settings.getString("association_rules")).getAbsolutePath() + f.getName()
+                                                                                           .substring(0,
+                                                                                                   index) +
+                            associationRulesSuffix + ".txt");
             p.redirectOutput(ProcessBuilder.Redirect.PIPE);
             Process process = p.start();
             String line;
-            BufferedReader input = new BufferedReader (new InputStreamReader(process.getInputStream()));
+            BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
             while ((line = input.readLine()) != null) {
                 log.debug(line);
             }
@@ -589,7 +591,9 @@ public class GoldMiner {
         /* Concept Subsumption: c and c sub c */
         log.debug("Subsumption");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[0] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -616,7 +620,9 @@ public class GoldMiner {
         /* c sub exists p.c */
         log.debug("c sub exists p c");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[1] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -643,7 +649,9 @@ public class GoldMiner {
         /* exists p.c sub c */
         log.debug("exists_p_c_sub_c");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[1] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[1] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -670,7 +678,9 @@ public class GoldMiner {
         /* Object Property Domain: exists p.T sub c */
         log.debug("Object Property Domain: exists_p_T_sub_c");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[2] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[2] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -697,7 +707,9 @@ public class GoldMiner {
         /* Object Property Range: exists p^i.T sub c */
         log.debug("Object Property Range: exists_pi_T_sub_c");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[3] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[3] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -724,7 +736,9 @@ public class GoldMiner {
         /* P sub P */
         log.debug("p_sub_p");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[4] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -780,7 +794,9 @@ public class GoldMiner {
         /* Property Transitivity: P o P sub P*/
         log.debug("p_chain_p_sub_p");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[5] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -807,7 +823,9 @@ public class GoldMiner {
         /* Concept Disjointness */
         log.debug("c_dis_c");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[6] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[6] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -876,7 +894,9 @@ public class GoldMiner {
         /* Property Reflexivity */
         log.debug("p_reflexive");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[7] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -903,7 +923,9 @@ public class GoldMiner {
         /* Property Irreflexivity */
         log.debug("p_irreflexive");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[7] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[7] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -930,7 +952,9 @@ public class GoldMiner {
         /* Inverse Property */
         log.debug("p_inverse_q");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[8] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -956,7 +980,9 @@ public class GoldMiner {
         /* Asymmetric property */
         log.debug("p_asymmetric");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[8] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[8] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -982,7 +1008,9 @@ public class GoldMiner {
         /* Functional Property */
         log.debug("p_functional");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[9] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[9] + associationRulesSuffix + "" +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
@@ -1008,7 +1036,9 @@ public class GoldMiner {
         /* Property Inverse Functionality */
         log.debug("p_inverse_functional");
         f = new File(
-                Settings.getString("association_rules") + transactionTableNames[10] + associationRulesSuffix + ".txt");
+                Settings.getString(
+                        "association_rules") + File.separator + transactionTableNames[10] + associationRulesSuffix +
+                        ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         } else {
