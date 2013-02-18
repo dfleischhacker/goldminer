@@ -4,11 +4,11 @@
 
     <groupId>de.uni-mannheim.informatik.dws.goldminer</groupId>
     <artifactId>gold-miner</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>GOLD Miner</name>
-    <url>https://github.com/dfleischhacker/gold-miner</url>
+    <url>http://code.google.com/p/gold-miner/</url>
 
     <build>
         <plugins>
