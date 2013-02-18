@@ -4,7 +4,7 @@
 
     <groupId>de.uni-mannheim.informatik.dws.goldminer</groupId>
     <artifactId>gold-miner</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>GOLD Miner</name>
@@ -101,6 +101,11 @@
     </repositories>
 
     <distributionManagement>
+        <repository>
+            <name>LSKI Releases Repository</name>
+            <id>lski-releases</id>
+            <url>https://breda.informatik.uni-mannheim.de/nexus/content/repositories/releases</url>
+        </repository>
         <snapshotRepository>
             <name>LSKI Snapshot Repository</name>
             <id>lski-snapshots</id>
