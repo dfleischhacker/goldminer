@@ -3,8 +3,6 @@ package de.uni_mannheim.informatik.dws.goldminer.ontology;
 
 import de.uni_mannheim.informatik.dws.goldminer.database.Database;
 import de.uni_mannheim.informatik.dws.goldminer.database.SQLFactory;
-import de.uni_mannheim.informatik.dws.goldminer.util.Parameter;
-import de.uni_mannheim.informatik.dws.goldminer.util.Settings;
 import org.semanticweb.owlapi.model.OWLAxiom;
 
 import java.io.File;
@@ -25,7 +23,6 @@ public class ResultSetup {
 	
 	public ResultSetup(Database d) throws Exception {
 		m_ontology = new Ontology();
-		String sDir = Settings.getString(Parameter.MINER_HOME);
 		m_ontology.load( new File( "ontology_nosupp.owl" ));
 		m_sqlFactory = new SQLFactory();
 		m_database = d;
