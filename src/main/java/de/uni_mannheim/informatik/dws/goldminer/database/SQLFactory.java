@@ -272,6 +272,10 @@ public class SQLFactory {
         return "SELECT * FROM individuals";
     }
 
+    public String countIndividualsQuery() {
+        return "SELECT COUNT(DISTINCT id) FROM individuals";
+    }
+
     public String selectIndividualsQuery(int iStart, int iEnd) {
         return "SELECT * FROM individuals WHERE id >= " + iStart + " AND id < " + iEnd;
     }

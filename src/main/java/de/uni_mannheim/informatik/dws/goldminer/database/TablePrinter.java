@@ -1378,8 +1378,19 @@ public class TablePrinter {
 
         // read individuals from database
         String sQuery1 = sqlFactory.selectIndividualsQuery();
+        ResultSet countRes = m_database.query(sqlFactory.countIndividualsQuery());
+
+        int individualCount = 0;
+
+        while (countRes.next()) {
+            individualCount = countRes.getInt(1);
+        }
+
         ResultSet results = m_database.query(sQuery1);
         int iDone = 0;
+        ProgressBar progressBar = ConsoleProgressBar.on(System.out).withReplacers(
+                ConsoleProgressBar.getDefaultReplacers(40)).withTotalSteps(individualCount);
+        progressBar.start();
         while (results.next()) {
             String sId = results.getString("id");
             String sInd = results.getString("uri");
@@ -1408,7 +1419,9 @@ public class TablePrinter {
                 writer.write(sbLine.toString());
                 writer.newLine();
             }
+            progressBar.tickOne();
         }
+        progressBar.complete();
         results.getStatement().close();
         System.out.println("TablePrinter.write: " + sOutFile);
         writer.flush();
