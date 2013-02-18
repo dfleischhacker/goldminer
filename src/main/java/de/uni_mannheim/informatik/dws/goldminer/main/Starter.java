@@ -18,10 +18,10 @@ public class Starter {
                                                .description("Tool for Statistical Schema Induction");
         parser.addArgument("--minercfg").metavar("file").type(String.class)
               .help("File to read miner configuration from")
-              .setDefault(System.getProperty("user.dir") + "/res/miner.properties");
+              .setDefault(System.getProperty("user.dir") + "/miner.properties");
         parser.addArgument("--axiomcfg").metavar("file").type(String.class)
               .help("File to read axiom configuration from")
-              .setDefault(System.getProperty("user.dir") + "/res/axiom.properties");
+              .setDefault(System.getProperty("user.dir") + "/axiom.properties");
 
         Subparsers subparsers = parser.addSubparsers().title("subcommands").description("valid subcommands");
         Subparser generateParser = subparsers.addParser("generate").help("Generate transaction tables");
@@ -36,6 +36,12 @@ public class Starter {
         parseParser.addArgument("--confidence").type(Double.class).metavar("conf").setDefault(0.0);
         parseParser.addArgument("--support").type(Double.class).metavar("supp").setDefault(0.0);
         parseParser.addArgument("--ontology").type(String.class).metavar("file").setDefault("");
+        Subparser configStubParser = subparsers.addParser("genconfig")
+                                               .help("Writes stubs for the configuration files to the files specified" +
+                                                       " by the --axiomcfg and --minercfg parameters or (if not " +
+                                                       "specified) into the current directory");
+        configStubParser.setDefault("func", new GenerateConfigStubs());
+        configStubParser.setDefault("subparser", "configStub");
 
         try {
             System.out.println("GOLD Miner  Copyright (C) 2011-2012 GOLD Miner Developers\n" +
