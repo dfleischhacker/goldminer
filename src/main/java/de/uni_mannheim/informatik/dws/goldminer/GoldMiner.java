@@ -392,7 +392,7 @@ public class GoldMiner {
             ProcessBuilder p = new ProcessBuilder(Settings.getString("apriori"),
                     "-tr", "-s-1", "-c0", "-m2", "-n2", "-v (%20s, %30c)",
                     f.getPath(),
-                    new File(Settings.getString("association_rules")).getAbsolutePath() + f.getName()
+                    new File(Settings.getString("association_rules")).getAbsolutePath() + File.separator + f.getName()
                                                                                            .substring(0,
                                                                                                    index) +
                             associationRulesSuffix + ".txt");
