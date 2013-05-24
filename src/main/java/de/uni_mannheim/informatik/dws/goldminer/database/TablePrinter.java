@@ -21,49 +21,29 @@ import java.util.*;
 public class TablePrinter {
     public static final Logger log = LoggerFactory.getLogger(TablePrinter.class);
     // SPARQL
-
-    private QueryEngine queryEngine;
-
-    private SPARQLFactory m_sparqlFactory;
-
+    private static final int SAME_INSTANCE = 2000001;
+    private static final int DIFFERENT_INSTANCE = 2000002;
     // DATABASE
-
-    private Database m_database;
-
-    private SQLFactory sqlFactory;
-
+    private QueryEngine queryEngine;
+    private SPARQLFactory m_sparqlFactory;
     // caching of (atomic) class ids
-
-    private HashMap<String, String> m_hmClass2ID;
-
+    private Database m_database;
     // caching of property ids
-
+    private SQLFactory sqlFactory;
+    private HashMap<String, String> m_hmClass2ID;
     private HashMap<String, String> m_hmProp2ID;
     private HashMap<String, String> m_hmProp2DisID;
     private HashMap<String, String> m_hmProp2InvID;
+    // caching of (complex) exists property ids
     private HashMap<String, String> m_hmDTProp2ID;
-
+    // caching of property chain ids
     // property cache
     private String[] cachedProperties = null;
-
-    // caching of (complex) exists property ids
-
     private HashMap<String, HashMap<String, String>> m_hmProp2Class2ID;
-
-    // caching of property chain ids
-
     private HashMap<String, HashMap<String, String>> m_hmProp2Prop2ID;
-
     private String classesFilter;
-
     private String individualsFilter;
-    private static final int SAME_INSTANCE = 2000001;
-    private static final int DIFFERENT_INSTANCE = 2000002;
 
-
-    public static void main(String args[]) throws SQLException, FileNotFoundException, IOException {
-        Settings.load();
-    }
 
     public TablePrinter() throws SQLException, FileNotFoundException, IOException {
         if (!Settings.loaded()) {
@@ -82,6 +62,10 @@ public class TablePrinter {
         m_sparqlFactory = new SPARQLFactory();
         m_database = d;
         sqlFactory = new SQLFactory();
+    }
+
+    public static void main(String args[]) throws SQLException, FileNotFoundException, IOException {
+        Settings.load();
     }
 
     public void printPropertyChainMembersTrans(String sOutFile) throws SQLException {
@@ -679,7 +663,8 @@ public class TablePrinter {
                                 String sPropID2 = this.getPropertySymmetryID(properties[i]);
                                 sbLine.append(sPropID2).append("\t");
                             }
-                        } else {
+                        }
+                        else {
                             String sPropID2 = this.getPropertySymmetryID(properties[i]);
                             sbLine.append(sPropID2).append("\t");
                         }
@@ -745,11 +730,13 @@ public class TablePrinter {
                     if (bExt != null) {
                         String sPropID = getPropertyID(properties[i]);
                         sbLine.append(sPropID).append("\t");
-                    } else {
+                    }
+                    else {
                         String sPropID = getPropertyDisjointID(properties[i]);
                         sbLine.append(sPropID).append("\t");
                     }
-                } else {
+                }
+                else {
                     String sPropID = getPropertyDisjointID(properties[i]);
                     sbLine.append(sPropID).append("\t");
                 }
@@ -834,7 +821,8 @@ public class TablePrinter {
             for (String prop : allProperties) {
                 if (usedProperties.contains(prop)) {
                     sb.append(String.format("%s\t", getPropertyID(prop)));
-                } else {
+                }
+                else {
                     sb.append(String.format("%s\t", getPropertyDisjointID(prop)));
                 }
             }
@@ -1347,7 +1335,43 @@ public class TablePrinter {
         System.out.println("TablePrinter: done (" + iDone + ")");
     }
 
+    private HashMap<String, HashSet<String>> getYagoMapping() throws IOException, SQLException {
+        HashMap<String, HashSet<String>> yagoToDBpedia = new HashMap<String, HashSet<String>>();
+        String mappingFile = Settings.getString("yago_to_dbpedia_mapping");
+        Float yagoConfidenceThreshold = Float.valueOf(Settings.getString("yago_threshold"));
+        BufferedReader reader = new BufferedReader(new FileReader(mappingFile));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] elems = line.trim().split("\t");
+            if (elems.length != 3) {
+                continue;
+            }
+            float confidence = Float.valueOf(elems[2]);
+            if (confidence < yagoConfidenceThreshold) {
+                continue;
+            }
+
+            String yagoClass = elems[0];
+            String dbpediaClass = elems[1];
+
+            if (!yagoToDBpedia.containsKey(yagoClass)) {
+                yagoToDBpedia.put(yagoClass, new HashSet<String>());
+            }
+            yagoToDBpedia.get(yagoClass).add(getClassID(String.format("http://dbpedia.org/ontology/%s", dbpediaClass)));
+        }
+
+        return yagoToDBpedia;
+    }
+
     public void printDisjointClassMembers(String sOutFile) throws SQLException, IOException {
+        boolean enrichWithYago = Settings.getBoolean("enrich_with_yago");
+        HashMap<String, HashSet<String>> yagoToDBpedia;
+        if (enrichWithYago) {
+            yagoToDBpedia = getYagoMapping();
+        }
+        else {
+            yagoToDBpedia = new HashMap<String, HashSet<String>>();
+        }
         BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         // assure that we have the class ID resolver initialized
         //TODO: make it right(TM)
@@ -1356,7 +1380,7 @@ public class TablePrinter {
         Collections.sort(classIds, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                return Integer.valueOf(Integer.parseInt(o1)).compareTo(Integer.valueOf(Integer.parseInt(o2)));
+                return Integer.valueOf(Integer.parseInt(o1)).compareTo(Integer.parseInt(o2));
             }
         });
 
@@ -1369,6 +1393,7 @@ public class TablePrinter {
         while (countRes.next()) {
             individualCount = countRes.getInt(1);
         }
+        countRes.getStatement().close();
 
         ResultSet results = m_database.query(sQuery1);
         int iDone = 0;
@@ -1376,22 +1401,35 @@ public class TablePrinter {
                 ConsoleProgressBar.getDefaultReplacers(40)).withTotalSteps(individualCount);
         progressBar.start();
         while (results.next()) {
-            String sId = results.getString("id");
-            String sInd = results.getString("uri");
+            String classUri = results.getString("uri");
             StringBuilder sbLine = new StringBuilder();
             // get individual classes
-            ResultsIterator iter = queryEngine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
+            ResultsIterator iter = queryEngine
+                    .query(m_sparqlFactory.individualClassesQuery(classUri), this.classesFilter);
             HashSet<String> classMemberships = new HashSet<String>();
             while (iter.hasNext()) {
                 String sClass = iter.next();
-                String sClassID = getClassID(sClass);
-                classMemberships.add(sClassID);
+                if (enrichWithYago && sClass.startsWith("http://dbpedia.org/class/yago/")) {
+                    HashSet<String> additionalYagoClasses = yagoToDBpedia
+                            .get(sClass.replace("http://dbpedia.org/class/yago/", ""));
+                    if (additionalYagoClasses == null) {
+                        continue;
+                    }
+                    classMemberships.addAll(additionalYagoClasses);
+                }
+                else {
+                    String sClassID = getClassID(sClass);
+                    if (sClassID != null) {
+                        classMemberships.add(sClassID);
+                    }
+                }
             }
             for (String classId : classIds) {
                 if (classMemberships.contains(classId)) {
                     sbLine.append(classId);
                     sbLine.append("\t");
-                } else {
+                }
+                else {
                     //TODO: do not hard-code offset
                     sbLine.append(String.valueOf(Integer.parseInt(classId) + 1000));
                     sbLine.append("\t");
