@@ -1,6 +1,6 @@
 .idea/*
 .idea/
 *.iml
-*/target/*
+target/*
 .gradle/*
 *.properties
