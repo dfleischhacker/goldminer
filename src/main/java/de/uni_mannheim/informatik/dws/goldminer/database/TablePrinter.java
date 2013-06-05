@@ -1360,6 +1360,34 @@ public class TablePrinter {
         return yagoToDBpedia;
     }
 
+    private HashMap<String, HashSet<String>> getYagoMappingAsURI() throws IOException, SQLException {
+        HashMap<String, HashSet<String>> yagoToDBpedia = new HashMap<String, HashSet<String>>();
+        String mappingFile = Settings.getString("yago_to_dbpedia_mapping");
+        Float yagoConfidenceThreshold = Float.valueOf(Settings.getString("yago_threshold"));
+        BufferedReader reader = new BufferedReader(new FileReader(mappingFile));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] elems = line.trim().split("\t");
+            if (elems.length != 3) {
+                continue;
+            }
+            float confidence = Float.valueOf(elems[2]);
+            if (confidence < yagoConfidenceThreshold) {
+                continue;
+            }
+
+            String yagoClass = elems[0];
+            String dbpediaClass = elems[1];
+
+            if (!yagoToDBpedia.containsKey(yagoClass)) {
+                yagoToDBpedia.put(yagoClass, new HashSet<String>());
+            }
+            yagoToDBpedia.get(yagoClass).add(String.format("http://dbpedia.org/ontology/%s", dbpediaClass));
+        }
+
+        return yagoToDBpedia;
+    }
+
     public void printDisjointClassMembers(String sOutFile) throws SQLException, IOException {
         boolean enrichWithYago = Settings.getBoolean("enrich_with_yago");
         HashMap<String, HashSet<String>> yagoToDBpedia;
@@ -1451,12 +1479,7 @@ public class TablePrinter {
     public void saveYagoAssignments() throws SQLException, IOException {
         boolean enrichWithYago = Settings.getBoolean("enrich_with_yago");
         HashMap<String, HashSet<String>> yagoToDBpedia;
-        if (enrichWithYago) {
-            yagoToDBpedia = getYagoMapping();
-        }
-        else {
-            yagoToDBpedia = new HashMap<String, HashSet<String>>();
-        }
+        yagoToDBpedia = getYagoMappingAsURI();
         getClassID("");
         ArrayList<String> classIds = new ArrayList<String>(new HashSet<String>(m_hmClass2ID.values()));
         Collections.sort(classIds, new Comparator<String>() {
@@ -1514,12 +1537,13 @@ public class TablePrinter {
                 }
             }
 
-            allYagoClasses.removeAll(classMemberships);
-
             for (String yagoClass : allYagoClasses) {
+                if (classMemberships.contains(getClassID(yagoClass))) {
+                    continue;
+                }
                 saveClassMembershipStatement.setString(1, individualUri);
                 try {
-                    saveClassMembershipStatement.setInt(2, Integer.valueOf(yagoClass));
+                    saveClassMembershipStatement.setString(2, yagoClass);
                 }
                 catch (NumberFormatException e) {
                     System.out.println("Unable to convert: " + yagoClass);
