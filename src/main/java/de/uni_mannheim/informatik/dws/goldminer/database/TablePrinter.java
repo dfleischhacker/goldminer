@@ -11,10 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 
@@ -1449,6 +1446,92 @@ public class TablePrinter {
         writer.flush();
         writer.close();
         System.out.println("TablePrinter: done (" + iDone + ")");
+    }
+
+    public void saveYagoAssignments() throws SQLException, IOException {
+        boolean enrichWithYago = Settings.getBoolean("enrich_with_yago");
+        HashMap<String, HashSet<String>> yagoToDBpedia;
+        if (enrichWithYago) {
+            yagoToDBpedia = getYagoMapping();
+        }
+        else {
+            yagoToDBpedia = new HashMap<String, HashSet<String>>();
+        }
+        getClassID("");
+        ArrayList<String> classIds = new ArrayList<String>(new HashSet<String>(m_hmClass2ID.values()));
+        Collections.sort(classIds, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return Integer.valueOf(Integer.parseInt(o1)).compareTo(Integer.parseInt(o2));
+            }
+        });
+
+        // read individuals from database
+        ResultSet countRes = m_database.query(sqlFactory.countIndividualsQuery());
+
+        int individualCount = 0;
+
+        while (countRes.next()) {
+            individualCount = countRes.getInt(1);
+        }
+        countRes.getStatement().close();
+
+        String allIndividualsQuery = sqlFactory.selectIndividualsQuery();
+        ResultSet allIndividuals = m_database.query(allIndividualsQuery);
+        ProgressBar progressBar = ConsoleProgressBar.on(System.out).withReplacers(
+                ConsoleProgressBar.getDefaultReplacers(40)).withTotalSteps(individualCount);
+        progressBar.start();
+
+        Connection conn = Database.instance().getConnection();
+        PreparedStatement saveClassMembershipStatement = conn
+                .prepareStatement("INSERT INTO yagoClasses(`individualUri`,`classId`)  VALUES (?,?)");
+
+        // iterate all
+        while (allIndividuals.next()) {
+            String individualUri = allIndividuals.getString("uri");
+            // get individual classes
+            ResultsIterator classesIter = queryEngine
+                    .query(m_sparqlFactory.individualClassesQuery(individualUri), this.classesFilter);
+            HashSet<String> classMemberships = new HashSet<String>();
+            HashSet<String> allYagoClasses = new HashSet<String>();
+            while (classesIter.hasNext()) {
+                String sClass = classesIter.next();
+                if (enrichWithYago && sClass.startsWith("http://dbpedia.org/class/yago/")) {
+                    HashSet<String> additionalYagoClasses = yagoToDBpedia
+                            .get(sClass.replace("http://dbpedia.org/class/yago/", ""));
+                    if (additionalYagoClasses == null) {
+                        continue;
+                    }
+                    else {
+                        allYagoClasses.addAll(additionalYagoClasses);
+                    }
+                }
+                else {
+                    String sClassID = getClassID(sClass);
+                    if (sClassID != null) {
+                        classMemberships.add(sClassID);
+                    }
+                }
+            }
+
+            allYagoClasses.removeAll(classMemberships);
+
+            for (String yagoClass : allYagoClasses) {
+                saveClassMembershipStatement.setString(1, individualUri);
+                try {
+                    saveClassMembershipStatement.setInt(2, Integer.valueOf(yagoClass));
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Unable to convert: " + yagoClass);
+                    continue;
+                }
+                saveClassMembershipStatement.execute();
+            }
+            progressBar.tickOne();
+        }
+        progressBar.complete();
+        saveClassMembershipStatement.close();
+        allIndividuals.getStatement().close();
     }
 
     public String getClassID(String sURI) throws SQLException {

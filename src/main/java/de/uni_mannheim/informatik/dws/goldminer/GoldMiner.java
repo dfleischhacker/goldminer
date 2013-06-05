@@ -1087,4 +1087,8 @@ public class GoldMiner {
     public Ontology greedyDebug(Ontology ontology) throws OWLOntologyStorageException {
         return OntologyDebugger.greedyWrite(ontology);
     }
+
+    public void saveYagoClasses() throws IOException, SQLException {
+        this.tablePrinter.saveYagoAssignments();
+    }
 }
