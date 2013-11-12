@@ -40,35 +40,35 @@ public class Setup {
 			String classesQuery = this.m_sqlFactory.createClassesTable();
 			result = this.m_database.execute(classesQuery) && result;
 		}
-		if(individuals && result) {
+		if(individuals) {
 			String individualsQuery = this.m_sqlFactory.createIndividualsTable();
 			result = this.m_database.execute(individualsQuery) && result;
 		}
-		if(properties && result) {
+		if(properties) {
 			String propertiesQuery = this.m_sqlFactory.createPropertiesTable();
 			result = this.m_database.execute(propertiesQuery);
 		}
-		if(classes_ex_property && result) {
+		if(classes_ex_property) {
 			String classesExPropertyQuery = this.m_sqlFactory.createClassesExPropertyTable();
 			result = this.m_database.execute(classesExPropertyQuery);
 		}
-		if(classes_ex_property_top && result) {
+		if(classes_ex_property_top) {
 			String classesExPropertyTopQuery = this.m_sqlFactory.createClassesExPropertyTopTable();
 			result = this.m_database.execute(classesExPropertyTopQuery);
 		}
-		if(individual_pairs && result) {
+		if(individual_pairs) {
 			String individualPairsQuery = this.m_sqlFactory.createIndividualPairsTable();
 			result = this.m_database.execute(individualPairsQuery);
 		}
-		if(individual_pairs_trans && result) {
+		if(individual_pairs_trans) {
 			String individualPairsTransQuery = this.m_sqlFactory.createIndividualPairsTransTable();
 			result = this.m_database.execute(individualPairsTransQuery);
 		}
-		if(property_chains && result) {
+		if(property_chains) {
 			String propertyChainsQuery = this.m_sqlFactory.createPropertyChainsTable();
 			result = this.m_database.execute(propertyChainsQuery);
 		}
-		if(property_chains_trans && result) {
+		if(property_chains_trans) {
 			String propertyChainsTransQuery = this.m_sqlFactory.createPropertyChainsTransTable();
 			result = this.m_database.execute(propertyChainsTransQuery);
 		}
