@@ -307,13 +307,19 @@ public class IndividualsExtractor extends Extractor {
             System.out.println("Setup.initIndividuals( " + sClass + " ) ... " + iClassInd + " -> " + hmURI2Name.size());
         }
         int id = 0;
+        m_database.setAutoCommit(false);
         for (String sInd : hmURI2Name.keySet()) {
             String sName = hmURI2Name.get(sInd);
             String sQuery2 = m_sqlFactory.insertIndividualQuery(id, sInd, sName);
-            System.out.println("\nQUERY: " + sQuery2);
+            //System.out.println("\nQUERY: " + sQuery2);
+
             m_database.execute(sQuery2);
             id++;
+            if (id % 1000 == 0) {
+                m_database.commit();
+            }
         }
+        m_database.setAutoCommit(true);
         System.out.println("done: " + id);
     }
 
