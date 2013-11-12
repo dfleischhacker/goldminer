@@ -144,6 +144,24 @@ public class Database {
         return connection;
     }
 
+    public void setAutoCommit(boolean autoCommit) {
+        try {
+            connection.setAutoCommit(autoCommit);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void commit() {
+        try {
+            connection.commit();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
     public static void main(String[] args) throws SQLException {
         Database d = Database.instance("jdbc:mysql://ede.informatik.uni-mannheim.de:3306/gold_minerEswc2012", "gold", "gold");
         for (int i = 0; i < 1000; i++) {
