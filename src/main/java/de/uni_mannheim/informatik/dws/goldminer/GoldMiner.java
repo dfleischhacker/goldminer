@@ -385,6 +385,9 @@ public class GoldMiner {
         File file = new File(Settings.getString("transaction_tables"));
         File[] files = this.removeFiles(file.listFiles(new TextFileFilter()));
         File ruleFile = new File(Settings.getString("association_rules"));
+        if (!ruleFile.exists()) {
+            ruleFile.mkdirs();
+        }
         File[] ruleFiles = ruleFile.listFiles(new TextFileFilter());
         this.deleteFiles(ruleFiles);
         for (File f : files) {
@@ -1063,7 +1066,11 @@ public class GoldMiner {
         log.debug("Number of Axioms: {}", hmAxioms.size());
 
         log.info("Writing axiom lists into directory '{}'", Settings.getString("axiom_list_dir"));
-        writer.writeLists(hmAxioms, new File(Settings.getString("axiom_list_dir")));
+        File axiomListDir = new File(Settings.getString("axiom_list_dir"));
+        if (!axiomListDir.exists()) {
+            axiomListDir.mkdirs();
+        }
+        writer.writeLists(hmAxioms, axiomListDir.getAbsoluteFile());
         return hmAxioms;
     }
 
