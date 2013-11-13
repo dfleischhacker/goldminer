@@ -142,12 +142,12 @@ public class Setup {
 				int id1 = getIndividualID( sURI1 );
 				int id2 = getIndividualID( sURI2 );
 				String query = m_sqlFactory.insertIndividualPairQuery( sURI1, sURI2, sName1, sName2, id1, id2 );
-				m_database.execute( query );
+				database.execute( query );
 			}
 			System.out.println( "Setup.initIndividualPairs( "+ sProp +" ) ... "+ iPropPairs );
 		}
 		// property chains
-		ResultSet results = m_database.query( m_sqlFactory.selectPropertyChainsQuery() );
+		ResultSet results = database.query( m_sqlFactory.selectPropertyChainsQuery() );
 		while( results.next() )
 		{
 			String sProp1 = results.getString( "uri1" );
@@ -164,7 +164,7 @@ public class Setup {
 				String sName2 = getLocalName( sURI2 );
 				int id1 = getIndividualID( sURI1 );
 				int id2 = getIndividualID( sURI2 );
-				m_database.execute( m_sqlFactory.insertIndividualPairExtQuery( sURI1, sURI2, sName1, sName2, id1, id2 ) );
+				database.execute( m_sqlFactory.insertIndividualPairExtQuery( sURI1, sURI2, sName1, sName2, id1, id2 ) );
 			}
 			System.out.println( "Setup.initIndividualPairs( "+ sProp1 +", "+ sProp2 +" ) ... "+ iChainPairs );
 		}
@@ -172,7 +172,7 @@ public class Setup {
 	} */
 	
 	/* public void copyIndividualPairs2Ext() throws Exception {
-		ResultSet results = m_database.query( m_sqlFactory.selectIndividualPairsQuery() );
+		ResultSet results = database.query( m_sqlFactory.selectIndividualPairsQuery() );
 		while( results.next() )
 		{
 			int id = results.getInt( "id" );
@@ -182,7 +182,7 @@ public class Setup {
 			String sName2 = results.getString( "name2" );
 			System.out.println( id +" - "+ sName1 +" - "+ sName2 );
 			String sInsert = m_sqlFactory.insertIndividualPairExtQuery( id, sURI1, sURI2, sName1, sName2 );
-			m_database.execute( sInsert );
+			database.execute( sInsert );
 		}
 		System.out.println( "done" );
 	} */
@@ -190,7 +190,7 @@ public class Setup {
 	/* public void initPropertiesTable() throws Exception {
 		HashMap<String,String> hmURI2Name = new HashMap<String,String>();
 		String sQuery1 = m_sqlFactory.selectIndividualsQuery();
-		ResultSet results = m_database.query( sQuery1 );
+		ResultSet results = database.query( sQuery1 );
 		while( results.next() )
 		{
 			String sInd = results.getString( "uri" );
@@ -212,7 +212,7 @@ public class Setup {
 		{
 			String sName = hmURI2Name.get( sProp );
 			String sQuery = m_sqlFactory.insertPropertyQuery( id++, sProp, sName );
-			m_database.execute( sQuery );
+			database.execute( sQuery );
 		}
 		System.out.println( "done: "+ id );
 	} */	

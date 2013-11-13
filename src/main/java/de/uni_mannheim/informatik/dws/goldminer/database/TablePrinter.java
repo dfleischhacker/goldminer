@@ -739,8 +739,8 @@ public class TablePrinter {
                 }
             }
             if (sbLine.length() > 0) {
-                System.out.println(
-                        "TablePrinter.print: 1=" + sInd1 + " 2=" + sInd2 + " (" + sId + ") -> " + sbLine.toString());
+                //System.out.println(
+                //        "TablePrinter.print: 1=" + sInd1 + " 2=" + sInd2 + " (" + sId + ") -> " + sbLine.toString());
                 writer.write(sbLine.toString());
                 writer.newLine();
             }
@@ -750,44 +750,6 @@ public class TablePrinter {
         writer.close();
         System.out.println("TablePrinter: done");
     }
-
-//    public void printPropertyReflexivity(String sOutFile) throws SQLException, IOException {
-//        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
-//        String query = sqlFactory.selectIndividualsQuery();
-//        ResultSet results = m_database.query(query);
-//        while (results.next()) {
-//            String[] properties = this.getProperties();
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("0\t");
-//            ResultsIterator iter =
-//                    queryEngine
-//                            .query(m_sparqlFactory.getPairProperty(results.getString("uri")), this.individualsFilter);
-//            while (iter.hasNext()) {
-//                String s = iter.next();
-//                sb.append(this.getPropertyID(s)).append("\t");
-//                for (int i = 0; i < properties.length; i++) {
-//                    if (properties[i].equals(s)) {
-//                        properties[i] = "";
-//                    }
-//                }
-//            }
-//            for (int i = 0; i < properties.length; i++) {
-//                if (!properties[i].equals("")) {
-//                    sb.append(this.getPropertyDisjointID(properties[i]));
-//                    if (i != (properties.length - 1)) {
-//                        sb.append("\t");
-//                    }
-//                }
-//            }
-//            if (sb.length() > 0) {
-//                writer.write(sb.toString());
-//                writer.newLine();
-//            }
-//        }
-//        results.getStatement().close();
-//        writer.flush();
-//        writer.close();
-//    }
 
     /**
      * Writes the transaction table for property reflexivity which contains lines for each pair of individuals a and b
@@ -1002,7 +964,7 @@ public class TablePrinter {
     /* public boolean printExistsPropertyMembers_Memory( int iStart, int iEnd, String sOutFile, String properties[],
     HashMap hmProp2Ext ) throws Exception {
          String sQuery1 = sqlFactory.selectIndividualsQuery( iStart, iEnd );
-         ResultSet results = m_database.query( sQuery1 );
+         ResultSet results = database.query( sQuery1 );
          ArrayList<String> chunk = new ArrayList<String>();
          while( results.next() )
          {

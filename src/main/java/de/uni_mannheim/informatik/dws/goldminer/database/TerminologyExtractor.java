@@ -25,7 +25,7 @@ public class TerminologyExtractor extends Extractor {
 	}
 
 	public void initDisjointnessTable() throws Exception {
-		ResultSet results = m_database.query( m_sqlFactory.selectDisjointnessQuery() );
+		ResultSet results = database.query( m_sqlFactory.selectDisjointnessQuery() );
 		while( results.next() )
 		{
 			int i1 = results.getInt( "cons" );
@@ -42,20 +42,20 @@ public class TerminologyExtractor extends Extractor {
 				iCount = 0;
 			}
 			String sUpdate = m_sqlFactory.updateDisjointnessQuery( i1, i2, iCount );
-			m_database.execute( sUpdate );
+			database.execute( sUpdate );
 		}
 		System.out.println( "done" );
 	}
 	
 	public void initPropertyChainsTransTable() throws SQLException {
-		ResultSet results = m_database.query( m_sqlFactory.selectPropertiesQuery() );
+		ResultSet results = database.query( m_sqlFactory.selectPropertiesQuery() );
 		while( results.next() )
 		{
 			String sProp = results.getString( "uri" );
 			String sName = results.getString( "name" );
 			int iID = results.getInt( "id" );
 			String sInsert = m_sqlFactory.insertPropertyChainTransQuery( this.id++, sProp, sName );
-			m_database.execute( sInsert );
+			database.execute( sInsert );
 		}
 		System.out.println( "done" );
 	}
@@ -64,7 +64,7 @@ public class TerminologyExtractor extends Extractor {
 		String properties[] = getProperties();
 		// read classes from database
 		String sQuery1 = m_sqlFactory.selectClassesQuery();
-		ResultSet results1 = m_database.query( sQuery1 );
+		ResultSet results1 = database.query( sQuery1 );
 		int id = 1000;
 		while( results1.next() )
 		{
@@ -81,7 +81,7 @@ public class TerminologyExtractor extends Extractor {
 				String sClassName = getLocalName( sClass );
 				String sPropName = getLocalName( sProp );
 				String sQuery3 = m_sqlFactory.insertClassExistsPropertyQuery( this.id++, sProp, sClass, sPropName, sClassName );
-				m_database.execute( sQuery3 );
+				database.execute( sQuery3 );
 				id++;
 			}
 		}
@@ -97,7 +97,7 @@ public class TerminologyExtractor extends Extractor {
 			String sName = getLocalName( sProp );
 			String sQuery2 = m_sqlFactory.insertPropertyQuery( this.id++, sProp, sName );
 			this.id = this.id + 2;
-			m_database.execute( sQuery2 );
+			database.execute( sQuery2 );
 		}
 		System.out.println( "done: "+ this.id );
 	}
@@ -110,7 +110,7 @@ public class TerminologyExtractor extends Extractor {
 			String sName = getLocalName( sProp );
 			String query2 = this.m_sqlFactory.insertDatatypePropertyQuery( this.id++, sProp, sName );
 			System.out.println(query2);
-			this.m_database.execute( query2 );
+			this.database.execute( query2 );
 		}
 		System.out.println( "done: " + this.id );
 	}
@@ -148,7 +148,7 @@ public class TerminologyExtractor extends Extractor {
 						String sName1 = getLocalName( sURI1 );
 						String sName2 = getLocalName( sURI2 );
 						String sInsertQuery = m_sqlFactory.insertPropertyChainQuery( this.id++, sURI1, sURI2, sName1, sName2 );
-						m_database.execute( sInsertQuery );
+						database.execute( sInsertQuery );
 						break;
 					}
 				}
@@ -159,7 +159,7 @@ public class TerminologyExtractor extends Extractor {
 	
 	public void initPropertyTopTable() throws SQLException {
 		String sQuery = m_sqlFactory.selectPropertiesQuery();
-		ResultSet results = m_database.query( sQuery );
+		ResultSet results = database.query( sQuery );
 		while( results.next() )
 		{
 			String sPropURI = results.getString( "uri" );
@@ -169,8 +169,8 @@ public class TerminologyExtractor extends Extractor {
 			int iInvTopID = iPropID + 2000;
 			String sInsert1 = m_sqlFactory.insertPropertyTopQuery( this.id++, 0, sPropURI, sPropName );
 			String sInsert2 = m_sqlFactory.insertPropertyTopQuery( this.id++, 1, sPropURI, sPropName );
-			m_database.execute( sInsert1 );
-			m_database.execute( sInsert2 );
+			database.execute( sInsert1 );
+			database.execute( sInsert2 );
 		}
 		System.out.println( "Setup.initPropertyTopTable: done" );
 	}
@@ -188,14 +188,14 @@ public class TerminologyExtractor extends Extractor {
 			// int iSize = m_engine.count( sCountClassIndQuery );
 			System.out.println( sClass +" ... " );
 			String sQuery = m_sqlFactory.insertClassQuery( this.id++, sClass, sName );
-			m_database.execute( sQuery );
+			database.execute( sQuery );
 		}
 		System.out.println( "done: "+ id );
 	}
 	
 	public String getClassURI( int iID ) throws Exception {
 		String sQuery = m_sqlFactory.selectClassURIQuery( iID );
-		ResultSet results = m_database.query( sQuery );
+		ResultSet results = database.query( sQuery );
 		if( results.next() ){
 			return results.getString( "uri" );
 		}
@@ -205,7 +205,7 @@ public class TerminologyExtractor extends Extractor {
 	public String getClassID( String sURI ) throws Exception {
 		sURI = checkURISyntax( sURI );
 		String sQuery = m_sqlFactory.selectClassIDQuery( sURI );
-		ResultSet results = m_database.query( sQuery );
+		ResultSet results = database.query( sQuery );
 		if( results.next() ){
 			return results.getString( "id" );
 		}

@@ -47,7 +47,7 @@ public class IndividualsExtractor extends Extractor {
             System.out.println("Setup.initIndividualPairsTrans( " + sProp + " ) ... " + iPropPairs + " -> " + iPairs);
         }
         // property chains
-        ResultSet results = m_database.query(m_sqlFactory.selectPropertyChainsQuery());
+        ResultSet results = database.query(m_sqlFactory.selectPropertyChainsQuery());
         while (results.next()) {
             String sProp1 = results.getString("uri1");
             String sProp2 = results.getString("uri2");
@@ -75,16 +75,21 @@ public class IndividualsExtractor extends Extractor {
             }
         }
         int id = 0;
+        database.setAutoCommit(false);
         // individual_pairs
         for (String sInd1 : hmURIs.keySet()) {
             HashMap<String, Boolean> hm = hmURIs.get(sInd1);
             for (String sInd2 : hm.keySet()) {
                 String sName1 = getLocalName(sInd1);
                 String sName2 = getLocalName(sInd2);
-                m_database.execute(m_sqlFactory.insertIndividualPairTransQuery(id, sInd1, sInd2, sName1, sName2));
+                database.execute(m_sqlFactory.insertIndividualPairTransQuery(id, sInd1, sInd2, sName1, sName2));
                 id++;
+                if (id % 1000 == 0) {
+                    database.commit();
+                }
             }
         }
+        database.setAutoCommit(true);
         System.out.println("done: " + id);
     }
 
@@ -115,7 +120,7 @@ public class IndividualsExtractor extends Extractor {
             System.out.println("Setup.initIndividualPairs( " + sProp + " ) ... " + iPropPairs + " -> " + iPairs);
         }
         // property chains
-        ResultSet results = m_database.query(m_sqlFactory.selectPropertyChainsQuery());
+        ResultSet results = database.query(m_sqlFactory.selectPropertyChainsQuery());
         while (results.next()) {
             String sProp1 = results.getString("uri1");
             String sProp2 = results.getString("uri2");
@@ -147,8 +152,8 @@ public class IndividualsExtractor extends Extractor {
                 String sName2 = getLocalName(sInd2);
                 boolean bExt = hm.get(sInd2);
                 if (!bExt) {
-                    m_database.execute(m_sqlFactory.insertIndividualPairQuery(id, sInd1, sInd2, sName1, sName2));
-                    m_database.execute(m_sqlFactory.insertIndividualPairExtQuery(id, sInd1, sInd2, sName1, sName2));
+                    database.execute(m_sqlFactory.insertIndividualPairQuery(id, sInd1, sInd2, sName1, sName2));
+                    database.execute(m_sqlFactory.insertIndividualPairExtQuery(id, sInd1, sInd2, sName1, sName2));
                     id++;
                 }
             }
@@ -161,7 +166,7 @@ public class IndividualsExtractor extends Extractor {
                 String sName2 = getLocalName(sInd2);
                 boolean bExt = hm.get(sInd2);
                 if (bExt) {
-                    m_database.execute(m_sqlFactory.insertIndividualPairExtQuery(id, sInd1, sInd2, sName1, sName2));
+                    database.execute(m_sqlFactory.insertIndividualPairExtQuery(id, sInd1, sInd2, sName1, sName2));
                     id++;
                 }
             }
@@ -173,7 +178,7 @@ public class IndividualsExtractor extends Extractor {
         HashMap<String, Integer> hmURI2Ext = new HashMap<String, Integer>();
         // class
         String sQuery1 = m_sqlFactory.selectClassesQuery();
-        ResultSet results1 = m_database.query(sQuery1);
+        ResultSet results1 = database.query(sQuery1);
         while (results1.next()) {
             String sClass = results1.getString("uri");
             ResultsIterator iter = m_engine
@@ -188,7 +193,7 @@ public class IndividualsExtractor extends Extractor {
         }
         // exists property class
         String sQuery2 = m_sqlFactory.selectClassesExtQuery();
-        ResultSet results2 = m_database.query(sQuery2);
+        ResultSet results2 = database.query(sQuery2);
         while (results2.next()) {
             String sClass = results2.getString("class_uri");
             String sProp = results2.getString("prop_uri");
@@ -205,7 +210,7 @@ public class IndividualsExtractor extends Extractor {
         }
         // exists property top, exists inverse property top
         String sQuery3 = m_sqlFactory.selectPropertiesQuery();
-        ResultSet results3 = m_database.query(sQuery1);
+        ResultSet results3 = database.query(sQuery1);
         while (results3.next()) {
             String sProp = results3.getString("uri");
             ResultsIterator iter1 = m_engine
@@ -230,16 +235,16 @@ public class IndividualsExtractor extends Extractor {
             int iExt = hmURI2Ext.get(sInd);
             String sName = getLocalName(sInd);
             if (iExt == 1) {
-                m_database.execute(m_sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
+                database.execute(m_sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
             }
             else if (iExt == 2) {
-                m_database.execute(m_sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
-                m_database.execute(m_sqlFactory.insertIndividualExtQuery(id, sInd, sName));
+                database.execute(m_sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
+                database.execute(m_sqlFactory.insertIndividualExtQuery(id, sInd, sName));
             }
             else if (iExt == 3) {
-                m_database.execute(m_sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
-                m_database.execute(m_sqlFactory.insertIndividualExtQuery(id, sInd, sName));
-                m_database.execute(m_sqlFactory.insertIndividualQuery(id, sInd, sName));
+                database.execute(m_sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
+                database.execute(m_sqlFactory.insertIndividualExtQuery(id, sInd, sName));
+                database.execute(m_sqlFactory.insertIndividualQuery(id, sInd, sName));
             }
             id++;
         }
@@ -250,7 +255,7 @@ public class IndividualsExtractor extends Extractor {
         HashMap<String, HashMap<String, Boolean>> hmURIs = new HashMap<String, HashMap<String, Boolean>>();
         // read properties from database
         String sQuery1 = m_sqlFactory.selectPropertiesQuery();
-        ResultSet results = m_database.query(sQuery1);
+        ResultSet results = database.query(sQuery1);
         int iPairs = 0;
         while (results.next()) {
             String sProp = results.getString("uri");
@@ -273,6 +278,7 @@ public class IndividualsExtractor extends Extractor {
             System.out.println("Setup.initIndividualPairs( " + sProp + " ) ... " + iPropPairs + " -> " + iPairs);
         }
         int id = 0;
+        database.setAutoCommit(false);
         for (String sInd1 : hmURIs.keySet()) {
             HashMap<String, Boolean> hm = hmURIs.get(sInd1);
             for (String sInd2 : hm.keySet()) {
@@ -281,17 +287,21 @@ public class IndividualsExtractor extends Extractor {
                 // String sCountIndPropertiesQuery = m_sparqlFactory.countPropertiesQuery( sInd1, sInd2 );
                 // int iCount = m_engine.count( sCountIndPropertiesQuery );
                 String sQuery2 = m_sqlFactory.insertIndividualPairQuery(id, sInd1, sInd2, sName1, sName2);
-                m_database.execute(sQuery2);
+                database.execute(sQuery2);
                 id++;
+                if (id % 1000 == 0) {
+                    database.commit();
+                }
             }
         }
+        database.setAutoCommit(true);
     }
 
     public void initIndividualsTable() throws SQLException {
         HashMap<String, String> hmURI2Name = new HashMap<String, String>();
         // read classes from database
         String sQuery1 = m_sqlFactory.selectClassesQuery();
-        ResultSet results = m_database.query(sQuery1);
+        ResultSet results = database.query(sQuery1);
         while (results.next()) {
             String sClass = results.getString("uri");
             int iClassID = results.getInt("id");
@@ -307,26 +317,26 @@ public class IndividualsExtractor extends Extractor {
             System.out.println("Setup.initIndividuals( " + sClass + " ) ... " + iClassInd + " -> " + hmURI2Name.size());
         }
         int id = 0;
-        m_database.setAutoCommit(false);
+        database.setAutoCommit(false);
         for (String sInd : hmURI2Name.keySet()) {
             String sName = hmURI2Name.get(sInd);
             String sQuery2 = m_sqlFactory.insertIndividualQuery(id, sInd, sName);
             //System.out.println("\nQUERY: " + sQuery2);
 
-            m_database.execute(sQuery2);
+            database.execute(sQuery2);
             id++;
             if (id % 1000 == 0) {
-                m_database.commit();
+                database.commit();
             }
         }
-        m_database.setAutoCommit(true);
+        database.setAutoCommit(true);
         System.out.println("done: " + id);
     }
 
     public int getIndividualID(String sURI) throws Exception {
         sURI = checkURISyntax(sURI);
         String sQuery = m_sqlFactory.selectIndividualIDQuery(sURI);
-        ResultSet results = m_database.query(sQuery);
+        ResultSet results = database.query(sQuery);
         if (results.next()) {
             return results.getInt("id");
         }
