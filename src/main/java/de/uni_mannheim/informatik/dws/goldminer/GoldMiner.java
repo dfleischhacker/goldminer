@@ -860,7 +860,7 @@ public class GoldMiner {
                         a = this.writer.get_c_dis_c_Axioms(ante1, cons, supportConfidenceTuple.getSupport(),
                                 supportConfidenceTuple.getConfidence());
                     }
-                    hmAxioms.put(a.getAxiomWithoutAnnotations(), pa.getSuppConfTuple());
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                     if (pa.getSupp() != 0.0) {
                         rac.add(a, pa.getConf());
                     }
