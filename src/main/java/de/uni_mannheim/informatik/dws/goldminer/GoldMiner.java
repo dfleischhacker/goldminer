@@ -151,7 +151,9 @@ public class GoldMiner {
                 this.p_inverse_q ||
                 this.p_asymmetric ||
                 this.p_functional ||
-                this.p_inverse_functional) {
+                this.p_inverse_functional ||
+                this.exists_p_T_sub_c ||
+                this.exists_pi_T_sub_c) {
             properties = true;
         } else {
             properties = false;
