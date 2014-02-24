@@ -195,7 +195,8 @@ public class TerminologyExtractor extends Extractor {
                 database.commit();
             }
         }
-        database.setAutoCommit(false);
+        database.commit();
+        database.setAutoCommit(true);
 		System.out.println( "Setup.initPropertyTopTable: done" );
 	}
 	
