@@ -64,13 +64,32 @@ public class Database {
 	public void close() throws SQLException  {
 		connection.close();
 	}
+
+    public void assureConnected() throws SQLException {
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet results = stmt.executeQuery("select 1");
+            results.close();
+            stmt.close();
+        } catch (SQLException e) {
+            String state = e.getSQLState();
+            if (state.equals("08S01")) {
+                // try to reconnect
+                String database = Settings.getString(Parameter.DATABASE);
+                String user = Settings.getString( Parameter.USER );
+                String password = Settings.getString( Parameter.PASSWORD );
+                connection = DriverManager.getConnection( database, user, password );
+            }
+        }
+    }
 	
 	public ResultSet query( String query ){
-		System.out.println( "Database.query: "+ query );
-		Statement stmt = null;
-		ResultSet results = null;
-		try {
-			stmt = connection.createStatement();
+		System.out.println("Database.query: " + query);
+        Statement stmt = null;
+        ResultSet results = null;
+        try {
+            assureConnected();
+            stmt = connection.createStatement();
             stmt.setFetchSize(5000);
 			results = stmt.executeQuery( query );
 			return results;
@@ -108,10 +127,11 @@ public class Database {
 		Statement stmt = null;
 		ResultSet results = null;
 		try {
-			stmt = connection.createStatement();
-			stmt.executeUpdate( update );
-		} 
-		catch( SQLException ex ){
+            assureConnected();
+            stmt = connection.createStatement();
+            stmt.executeUpdate(update);
+        } 
+	catch( SQLException ex ){
 			System.out.println( "SQLException: " + ex.getMessage() );
 			System.out.println( "SQLState: " + ex.getSQLState() );
 			System.out.println( "VendorError: " + ex.getErrorCode() );
@@ -142,6 +162,24 @@ public class Database {
 
     public Connection getConnection() {
         return connection;
+    }
+
+    public void setAutoCommit(boolean autoCommit) {
+        try {
+            connection.setAutoCommit(autoCommit);
+        }
+        catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void commit() {
+        try {
+            connection.commit();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     public static void main(String[] args) throws SQLException {

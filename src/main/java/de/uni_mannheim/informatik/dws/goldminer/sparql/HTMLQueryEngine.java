@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class HTMLQueryEngine extends QueryEngine {
+public class HTMLQueryEngine extends SPARQLQueryEngine {
 
 	public HTMLQueryEngine(String endpoint, String graph, int chunk) {
 		super(endpoint, graph, chunk);

@@ -1,9 +1,6 @@
 package de.uni_mannheim.informatik.dws.goldminer.database;
 
-import de.uni_mannheim.informatik.dws.goldminer.sparql.QueryEngine;
-import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultPairsIterator;
-import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultsIterator;
-import de.uni_mannheim.informatik.dws.goldminer.sparql.SPARQLFactory;
+import de.uni_mannheim.informatik.dws.goldminer.sparql.*;
 import de.uni_mannheim.informatik.dws.goldminer.util.Settings;
 import hu.ssh.progressbar.ProgressBar;
 import hu.ssh.progressbar.console.ConsoleProgressBar;
@@ -11,59 +8,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 
 public class TablePrinter {
     public static final Logger log = LoggerFactory.getLogger(TablePrinter.class);
     // SPARQL
-
-    private QueryEngine queryEngine;
-
-    private SPARQLFactory m_sparqlFactory;
-
+    private static final int SAME_INSTANCE = 2000001;
+    private static final int DIFFERENT_INSTANCE = 2000002;
     // DATABASE
-
-    private Database m_database;
-
-    private SQLFactory sqlFactory;
-
+    private QueryEngine queryEngine;
+    private SPARQLFactory m_sparqlFactory;
     // caching of (atomic) class ids
-
-    private HashMap<String, String> m_hmClass2ID;
-
+    private Database m_database;
     // caching of property ids
-
+    private SQLFactory sqlFactory;
+    private HashMap<String, String> m_hmClass2ID;
     private HashMap<String, String> m_hmProp2ID;
     private HashMap<String, String> m_hmProp2DisID;
     private HashMap<String, String> m_hmProp2InvID;
+    // caching of (complex) exists property ids
     private HashMap<String, String> m_hmDTProp2ID;
-
+    // caching of property chain ids
     // property cache
     private String[] cachedProperties = null;
-
-    // caching of (complex) exists property ids
-
     private HashMap<String, HashMap<String, String>> m_hmProp2Class2ID;
-
-    // caching of property chain ids
-
     private HashMap<String, HashMap<String, String>> m_hmProp2Prop2ID;
-
     private String classesFilter;
-
     private String individualsFilter;
-    private static final int SAME_INSTANCE = 2000001;
-    private static final int DIFFERENT_INSTANCE = 2000002;
 
-
-    public static void main(String args[]) throws SQLException, FileNotFoundException, IOException {
-        Settings.load();
-    }
 
     public TablePrinter() throws SQLException, FileNotFoundException, IOException {
         if (!Settings.loaded()) {
@@ -71,17 +45,21 @@ public class TablePrinter {
         }
         this.classesFilter = Settings.getString("classesFilter");
         this.individualsFilter = Settings.getString("individualsFilter");
-        queryEngine = new QueryEngine();
+        queryEngine = QueryEngine.createEngine();
         m_sparqlFactory = new SPARQLFactory();
         m_database = Database.instance();
         sqlFactory = new SQLFactory();
     }
 
     public TablePrinter(Database d, String endpoint, String graph, int chunk) throws SQLException {
-        queryEngine = new QueryEngine(endpoint, graph, chunk);
+        queryEngine = QueryEngine.createEngine(endpoint, graph, chunk);
         m_sparqlFactory = new SPARQLFactory();
         m_database = d;
         sqlFactory = new SQLFactory();
+    }
+
+    public static void main(String args[]) throws SQLException, FileNotFoundException, IOException {
+        Settings.load();
     }
 
     public void printPropertyChainMembersTrans(String sOutFile) throws SQLException {
@@ -679,7 +657,8 @@ public class TablePrinter {
                                 String sPropID2 = this.getPropertySymmetryID(properties[i]);
                                 sbLine.append(sPropID2).append("\t");
                             }
-                        } else {
+                        }
+                        else {
                             String sPropID2 = this.getPropertySymmetryID(properties[i]);
                             sbLine.append(sPropID2).append("\t");
                         }
@@ -745,18 +724,20 @@ public class TablePrinter {
                     if (bExt != null) {
                         String sPropID = getPropertyID(properties[i]);
                         sbLine.append(sPropID).append("\t");
-                    } else {
+                    }
+                    else {
                         String sPropID = getPropertyDisjointID(properties[i]);
                         sbLine.append(sPropID).append("\t");
                     }
-                } else {
+                }
+                else {
                     String sPropID = getPropertyDisjointID(properties[i]);
                     sbLine.append(sPropID).append("\t");
                 }
             }
             if (sbLine.length() > 0) {
-                System.out.println(
-                        "TablePrinter.print: 1=" + sInd1 + " 2=" + sInd2 + " (" + sId + ") -> " + sbLine.toString());
+                //System.out.println(
+                //        "TablePrinter.print: 1=" + sInd1 + " 2=" + sInd2 + " (" + sId + ") -> " + sbLine.toString());
                 writer.write(sbLine.toString());
                 writer.newLine();
             }
@@ -766,44 +747,6 @@ public class TablePrinter {
         writer.close();
         System.out.println("TablePrinter: done");
     }
-
-//    public void printPropertyReflexivity(String sOutFile) throws SQLException, IOException {
-//        BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
-//        String query = sqlFactory.selectIndividualsQuery();
-//        ResultSet results = m_database.query(query);
-//        while (results.next()) {
-//            String[] properties = this.getProperties();
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("0\t");
-//            ResultsIterator iter =
-//                    queryEngine
-//                            .query(m_sparqlFactory.getPairProperty(results.getString("uri")), this.individualsFilter);
-//            while (iter.hasNext()) {
-//                String s = iter.next();
-//                sb.append(this.getPropertyID(s)).append("\t");
-//                for (int i = 0; i < properties.length; i++) {
-//                    if (properties[i].equals(s)) {
-//                        properties[i] = "";
-//                    }
-//                }
-//            }
-//            for (int i = 0; i < properties.length; i++) {
-//                if (!properties[i].equals("")) {
-//                    sb.append(this.getPropertyDisjointID(properties[i]));
-//                    if (i != (properties.length - 1)) {
-//                        sb.append("\t");
-//                    }
-//                }
-//            }
-//            if (sb.length() > 0) {
-//                writer.write(sb.toString());
-//                writer.newLine();
-//            }
-//        }
-//        results.getStatement().close();
-//        writer.flush();
-//        writer.close();
-//    }
 
     /**
      * Writes the transaction table for property reflexivity which contains lines for each pair of individuals a and b
@@ -834,7 +777,8 @@ public class TablePrinter {
             for (String prop : allProperties) {
                 if (usedProperties.contains(prop)) {
                     sb.append(String.format("%s\t", getPropertyID(prop)));
-                } else {
+                }
+                else {
                     sb.append(String.format("%s\t", getPropertyDisjointID(prop)));
                 }
             }
@@ -1017,7 +961,7 @@ public class TablePrinter {
     /* public boolean printExistsPropertyMembers_Memory( int iStart, int iEnd, String sOutFile, String properties[],
     HashMap hmProp2Ext ) throws Exception {
          String sQuery1 = sqlFactory.selectIndividualsQuery( iStart, iEnd );
-         ResultSet results = m_database.query( sQuery1 );
+         ResultSet results = database.query( sQuery1 );
          ArrayList<String> chunk = new ArrayList<String>();
          while( results.next() )
          {
@@ -1347,7 +1291,71 @@ public class TablePrinter {
         System.out.println("TablePrinter: done (" + iDone + ")");
     }
 
+    private HashMap<String, HashSet<String>> getYagoMapping() throws IOException, SQLException {
+        HashMap<String, HashSet<String>> yagoToDBpedia = new HashMap<String, HashSet<String>>();
+        String mappingFile = Settings.getString("yago_to_dbpedia_mapping");
+        Float yagoConfidenceThreshold = Float.valueOf(Settings.getString("yago_threshold"));
+        BufferedReader reader = new BufferedReader(new FileReader(mappingFile));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] elems = line.trim().split("\t");
+            if (elems.length != 3) {
+                continue;
+            }
+            float confidence = Float.valueOf(elems[2]);
+            if (confidence < yagoConfidenceThreshold) {
+                continue;
+            }
+
+            String yagoClass = elems[0];
+            String dbpediaClass = elems[1];
+
+            if (!yagoToDBpedia.containsKey(yagoClass)) {
+                yagoToDBpedia.put(yagoClass, new HashSet<String>());
+            }
+            yagoToDBpedia.get(yagoClass).add(getClassID(String.format("http://dbpedia.org/ontology/%s", dbpediaClass)));
+        }
+
+        return yagoToDBpedia;
+    }
+
+    private HashMap<String, HashSet<String>> getYagoMappingAsURI() throws IOException, SQLException {
+        HashMap<String, HashSet<String>> yagoToDBpedia = new HashMap<String, HashSet<String>>();
+        String mappingFile = Settings.getString("yago_to_dbpedia_mapping");
+        Float yagoConfidenceThreshold = Float.valueOf(Settings.getString("yago_threshold"));
+        BufferedReader reader = new BufferedReader(new FileReader(mappingFile));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] elems = line.trim().split("\t");
+            if (elems.length != 3) {
+                continue;
+            }
+            float confidence = Float.valueOf(elems[2]);
+            if (confidence < yagoConfidenceThreshold) {
+                continue;
+            }
+
+            String yagoClass = elems[0];
+            String dbpediaClass = elems[1];
+
+            if (!yagoToDBpedia.containsKey(yagoClass)) {
+                yagoToDBpedia.put(yagoClass, new HashSet<String>());
+            }
+            yagoToDBpedia.get(yagoClass).add(String.format("http://dbpedia.org/ontology/%s", dbpediaClass));
+        }
+
+        return yagoToDBpedia;
+    }
+
     public void printDisjointClassMembers(String sOutFile) throws SQLException, IOException {
+        boolean enrichWithYago = Settings.getBoolean("enrich_with_yago");
+        HashMap<String, HashSet<String>> yagoToDBpedia;
+        if (enrichWithYago) {
+            yagoToDBpedia = getYagoMapping();
+        }
+        else {
+            yagoToDBpedia = new HashMap<String, HashSet<String>>();
+        }
         BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         // assure that we have the class ID resolver initialized
         //TODO: make it right(TM)
@@ -1356,7 +1364,7 @@ public class TablePrinter {
         Collections.sort(classIds, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                return Integer.valueOf(Integer.parseInt(o1)).compareTo(Integer.valueOf(Integer.parseInt(o2)));
+                return Integer.valueOf(Integer.parseInt(o1)).compareTo(Integer.parseInt(o2));
             }
         });
 
@@ -1369,6 +1377,7 @@ public class TablePrinter {
         while (countRes.next()) {
             individualCount = countRes.getInt(1);
         }
+        countRes.getStatement().close();
 
         ResultSet results = m_database.query(sQuery1);
         int iDone = 0;
@@ -1376,22 +1385,35 @@ public class TablePrinter {
                 ConsoleProgressBar.getDefaultReplacers(40)).withTotalSteps(individualCount);
         progressBar.start();
         while (results.next()) {
-            String sId = results.getString("id");
-            String sInd = results.getString("uri");
+            String classUri = results.getString("uri");
             StringBuilder sbLine = new StringBuilder();
             // get individual classes
-            ResultsIterator iter = queryEngine.query(m_sparqlFactory.individualClassesQuery(sInd), this.classesFilter);
+            ResultsIterator iter = queryEngine
+                    .query(m_sparqlFactory.individualClassesQuery(classUri), this.classesFilter);
             HashSet<String> classMemberships = new HashSet<String>();
             while (iter.hasNext()) {
                 String sClass = iter.next();
-                String sClassID = getClassID(sClass);
-                classMemberships.add(sClassID);
+                if (enrichWithYago && sClass.startsWith("http://dbpedia.org/class/yago/")) {
+                    HashSet<String> additionalYagoClasses = yagoToDBpedia
+                            .get(sClass.replace("http://dbpedia.org/class/yago/", ""));
+                    if (additionalYagoClasses == null) {
+                        continue;
+                    }
+                    classMemberships.addAll(additionalYagoClasses);
+                }
+                else {
+                    String sClassID = getClassID(sClass);
+                    if (sClassID != null) {
+                        classMemberships.add(sClassID);
+                    }
+                }
             }
             for (String classId : classIds) {
                 if (classMemberships.contains(classId)) {
                     sbLine.append(classId);
                     sbLine.append("\t");
-                } else {
+                }
+                else {
                     //TODO: do not hard-code offset
                     sbLine.append(String.valueOf(Integer.parseInt(classId) + 1000));
                     sbLine.append("\t");
@@ -1411,6 +1433,88 @@ public class TablePrinter {
         writer.flush();
         writer.close();
         System.out.println("TablePrinter: done (" + iDone + ")");
+    }
+
+    public void saveYagoAssignments() throws SQLException, IOException {
+        boolean enrichWithYago = Settings.getBoolean("enrich_with_yago");
+        HashMap<String, HashSet<String>> yagoToDBpedia;
+        yagoToDBpedia = getYagoMappingAsURI();
+        getClassID("");
+        ArrayList<String> classIds = new ArrayList<String>(new HashSet<String>(m_hmClass2ID.values()));
+        Collections.sort(classIds, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return Integer.valueOf(Integer.parseInt(o1)).compareTo(Integer.parseInt(o2));
+            }
+        });
+
+        // read individuals from database
+        ResultSet countRes = m_database.query(sqlFactory.countIndividualsQuery());
+
+        int individualCount = 0;
+
+        while (countRes.next()) {
+            individualCount = countRes.getInt(1);
+        }
+        countRes.getStatement().close();
+
+        String allIndividualsQuery = sqlFactory.selectIndividualsQuery();
+        ResultSet allIndividuals = m_database.query(allIndividualsQuery);
+        ProgressBar progressBar = ConsoleProgressBar.on(System.out).withReplacers(
+                ConsoleProgressBar.getDefaultReplacers(40)).withTotalSteps(individualCount);
+        progressBar.start();
+
+        Connection conn = Database.instance().getConnection();
+        PreparedStatement saveClassMembershipStatement = conn
+                .prepareStatement("INSERT INTO yagoClasses(`individualUri`,`classId`)  VALUES (?,?)");
+
+        // iterate all
+        while (allIndividuals.next()) {
+            String individualUri = allIndividuals.getString("uri");
+            // get individual classes
+            ResultsIterator classesIter = queryEngine
+                    .query(m_sparqlFactory.individualClassesQuery(individualUri), this.classesFilter);
+            HashSet<String> classMemberships = new HashSet<String>();
+            HashSet<String> allYagoClasses = new HashSet<String>();
+            while (classesIter.hasNext()) {
+                String sClass = classesIter.next();
+                if (enrichWithYago && sClass.startsWith("http://dbpedia.org/class/yago/")) {
+                    HashSet<String> additionalYagoClasses = yagoToDBpedia
+                            .get(sClass.replace("http://dbpedia.org/class/yago/", ""));
+                    if (additionalYagoClasses == null) {
+                        continue;
+                    }
+                    else {
+                        allYagoClasses.addAll(additionalYagoClasses);
+                    }
+                }
+                else {
+                    String sClassID = getClassID(sClass);
+                    if (sClassID != null) {
+                        classMemberships.add(sClassID);
+                    }
+                }
+            }
+
+            for (String yagoClass : allYagoClasses) {
+                if (classMemberships.contains(getClassID(yagoClass))) {
+                    continue;
+                }
+                saveClassMembershipStatement.setString(1, individualUri);
+                try {
+                    saveClassMembershipStatement.setString(2, yagoClass);
+                }
+                catch (NumberFormatException e) {
+                    System.out.println("Unable to convert: " + yagoClass);
+                    continue;
+                }
+                saveClassMembershipStatement.execute();
+            }
+            progressBar.tickOne();
+        }
+        progressBar.complete();
+        saveClassMembershipStatement.close();
+        allIndividuals.getStatement().close();
     }
 
     public String getClassID(String sURI) throws SQLException {

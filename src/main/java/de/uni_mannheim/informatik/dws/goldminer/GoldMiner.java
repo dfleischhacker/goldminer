@@ -151,7 +151,9 @@ public class GoldMiner {
                 this.p_inverse_q ||
                 this.p_asymmetric ||
                 this.p_functional ||
-                this.p_inverse_functional) {
+                this.p_inverse_functional ||
+                this.exists_p_T_sub_c ||
+                this.exists_pi_T_sub_c) {
             properties = true;
         } else {
             properties = false;
@@ -385,6 +387,9 @@ public class GoldMiner {
         File file = new File(Settings.getString("transaction_tables"));
         File[] files = this.removeFiles(file.listFiles(new TextFileFilter()));
         File ruleFile = new File(Settings.getString("association_rules"));
+        if (!ruleFile.exists()) {
+            ruleFile.mkdirs();
+        }
         File[] ruleFiles = ruleFile.listFiles(new TextFileFilter());
         this.deleteFiles(ruleFiles);
         for (File f : files) {
@@ -392,7 +397,7 @@ public class GoldMiner {
             ProcessBuilder p = new ProcessBuilder(Settings.getString("apriori"),
                     "-tr", "-s-1", "-c0", "-m2", "-n2", "-v (%20s, %30c)",
                     f.getPath(),
-                    new File(Settings.getString("association_rules")).getAbsolutePath() + f.getName()
+                    new File(Settings.getString("association_rules")).getAbsolutePath() + File.separator + f.getName()
                                                                                            .substring(0,
                                                                                                    index) +
                             associationRulesSuffix + ".txt");
@@ -1063,7 +1068,11 @@ public class GoldMiner {
         log.debug("Number of Axioms: {}", hmAxioms.size());
 
         log.info("Writing axiom lists into directory '{}'", Settings.getString("axiom_list_dir"));
-        writer.writeLists(hmAxioms, new File(Settings.getString("axiom_list_dir")));
+        File axiomListDir = new File(Settings.getString("axiom_list_dir"));
+        if (!axiomListDir.exists()) {
+            axiomListDir.mkdirs();
+        }
+        writer.writeLists(hmAxioms, axiomListDir.getAbsoluteFile());
         return hmAxioms;
     }
 
@@ -1086,5 +1095,9 @@ public class GoldMiner {
 
     public Ontology greedyDebug(Ontology ontology) throws OWLOntologyStorageException {
         return OntologyDebugger.greedyWrite(ontology);
+    }
+
+    public void saveYagoClasses() throws IOException, SQLException {
+        this.tablePrinter.saveYagoAssignments();
     }
 }
