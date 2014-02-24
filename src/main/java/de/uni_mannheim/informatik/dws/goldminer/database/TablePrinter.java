@@ -1,9 +1,6 @@
 package de.uni_mannheim.informatik.dws.goldminer.database;
 
-import de.uni_mannheim.informatik.dws.goldminer.sparql.QueryEngine;
-import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultPairsIterator;
-import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultsIterator;
-import de.uni_mannheim.informatik.dws.goldminer.sparql.SPARQLFactory;
+import de.uni_mannheim.informatik.dws.goldminer.sparql.*;
 import de.uni_mannheim.informatik.dws.goldminer.util.Settings;
 import hu.ssh.progressbar.ProgressBar;
 import hu.ssh.progressbar.console.ConsoleProgressBar;
@@ -48,14 +45,14 @@ public class TablePrinter {
         }
         this.classesFilter = Settings.getString("classesFilter");
         this.individualsFilter = Settings.getString("individualsFilter");
-        queryEngine = new QueryEngine();
+        queryEngine = QueryEngine.createEngine();
         m_sparqlFactory = new SPARQLFactory();
         m_database = Database.instance();
         sqlFactory = new SQLFactory();
     }
 
     public TablePrinter(Database d, String endpoint, String graph, int chunk) throws SQLException {
-        queryEngine = new QueryEngine(endpoint, graph, chunk);
+        queryEngine = QueryEngine.createEngine(endpoint, graph, chunk);
         m_sparqlFactory = new SPARQLFactory();
         m_database = d;
         sqlFactory = new SQLFactory();

@@ -3,6 +3,7 @@ package de.uni_mannheim.informatik.dws.goldminer.database;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.Filter;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultPairsIterator;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultsIterator;
+import de.uni_mannheim.informatik.dws.goldminer.sparql.SPARQLResultsIterator;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class TerminologyExtractor extends Extractor {
 	
 	public void initPropertyChainsTransTable() throws SQLException {
 		ResultSet results = database.query( m_sqlFactory.selectPropertiesQuery() );
+        database.setAutoCommit(false);
 		while( results.next() )
 		{
 			String sProp = results.getString( "uri" );
@@ -56,7 +58,11 @@ public class TerminologyExtractor extends Extractor {
 			int iID = results.getInt( "id" );
 			String sInsert = m_sqlFactory.insertPropertyChainTransQuery( this.id++, sProp, sName );
 			database.execute( sInsert );
-		}
+            if (this.id % 1001 == 0) {
+                database.commit();
+            }
+        }
+        database.setAutoCommit(true);
 		System.out.println( "done" );
 	}
 	
@@ -66,6 +72,7 @@ public class TerminologyExtractor extends Extractor {
 		String sQuery1 = m_sqlFactory.selectClassesQuery();
 		ResultSet results1 = database.query( sQuery1 );
 		int id = 1000;
+        database.setAutoCommit(false);
 		while( results1.next() )
 		{
 			String sClass = results1.getString( "uri" );
@@ -83,14 +90,19 @@ public class TerminologyExtractor extends Extractor {
 				String sQuery3 = m_sqlFactory.insertClassExistsPropertyQuery( this.id++, sProp, sClass, sPropName, sClassName );
 				database.execute( sQuery3 );
 				id++;
-			}
+                if (id % 10000 == 0) {
+                    database.commit();
+                }
+            }
 		}
+        database.setAutoCommit(true);
 		System.out.println( "Done: "+ id );
 	}
 	
 	public void initPropertiesTable() {
 		String sQuery1 = m_sparqlFactory.propertiesQuery();
 		ResultsIterator iter = m_engine.query( sQuery1, this.filter.getClassesFilter() );
+        database.setAutoCommit(false);
 		while( iter.hasNext() )
 		{
 			String sProp = iter.next();
@@ -98,7 +110,11 @@ public class TerminologyExtractor extends Extractor {
 			String sQuery2 = m_sqlFactory.insertPropertyQuery( this.id++, sProp, sName );
 			this.id = this.id + 2;
 			database.execute( sQuery2 );
-		}
+            if (this.id % 1001 == 0 || this.id % 1000 == 500) {
+                database.commit();
+            }
+        }
+        database.setAutoCommit(true);
 		System.out.println( "done: "+ this.id );
 	}
 	
@@ -135,6 +151,7 @@ public class TerminologyExtractor extends Extractor {
 			}
 		}
 		int id = 1000;
+        database.setAutoCommit(false);
 		for( int i=0; i<properties.length; i++ ){
 			for( int j=0; j<properties.length; j++ )
 			{
@@ -149,17 +166,20 @@ public class TerminologyExtractor extends Extractor {
 						String sName2 = getLocalName( sURI2 );
 						String sInsertQuery = m_sqlFactory.insertPropertyChainQuery( this.id++, sURI1, sURI2, sName1, sName2 );
 						database.execute( sInsertQuery );
+                        if ( this.id % 1001 == 0 || this.id % 1000 == 500)
 						break;
 					}
 				}
 			}
 		}
+        database.setAutoCommit(true);
 		System.out.println( "done: "+ id );
 	}
 	
 	public void initPropertyTopTable() throws SQLException {
 		String sQuery = m_sqlFactory.selectPropertiesQuery();
 		ResultSet results = database.query( sQuery );
+        database.setAutoCommit(false);
 		while( results.next() )
 		{
 			String sPropURI = results.getString( "uri" );
@@ -171,7 +191,11 @@ public class TerminologyExtractor extends Extractor {
 			String sInsert2 = m_sqlFactory.insertPropertyTopQuery( this.id++, 1, sPropURI, sPropName );
 			database.execute( sInsert1 );
 			database.execute( sInsert2 );
-		}
+            if (iPropID % 1001 == 0) {
+                database.commit();
+            }
+        }
+        database.setAutoCommit(false);
 		System.out.println( "Setup.initPropertyTopTable: done" );
 	}
 	
@@ -180,6 +204,7 @@ public class TerminologyExtractor extends Extractor {
 		// System.out.println( query );
 		ResultsIterator iter = m_engine.query( query, this.filter.getClassesFilter() );
 		int id = 0;
+        database.setAutoCommit(false);
 		while( iter.hasNext() && !iter.isFailed() )
 		{
 			String sClass = iter.next();
@@ -189,7 +214,11 @@ public class TerminologyExtractor extends Extractor {
 			System.out.println( sClass +" ... " );
 			String sQuery = m_sqlFactory.insertClassQuery( this.id++, sClass, sName );
 			database.execute( sQuery );
-		}
+            if (id % 1000 == 0) {
+                database.commit();
+            }
+        }
+        database.setAutoCommit(true);
 		System.out.println( "done: "+ id );
 	}
 	

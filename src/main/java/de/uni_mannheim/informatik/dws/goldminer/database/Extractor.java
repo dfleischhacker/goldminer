@@ -3,6 +3,7 @@ package de.uni_mannheim.informatik.dws.goldminer.database;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.Filter;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.QueryEngine;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.SPARQLFactory;
+import de.uni_mannheim.informatik.dws.goldminer.sparql.SPARQLQueryEngine;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public abstract class Extractor {
 		this.m_sqlFactory = new SQLFactory();
 		this.database = Database.instance();
 		this.m_sparqlFactory = new SPARQLFactory();
-		this.m_engine = new QueryEngine();
+		this.m_engine = QueryEngine.createEngine();
 		this.filter = new Filter();
 	}
 	
@@ -30,7 +31,7 @@ public abstract class Extractor {
 		this.m_sqlFactory = new SQLFactory();
 		this.database = database;
 		this.m_sparqlFactory = new SPARQLFactory();
-		this.m_engine = new QueryEngine(endpoint, graph, chunk);
+		this.m_engine = QueryEngine.createEngine(endpoint, graph, chunk);
 		this.filter = filter;
 	}
 	
