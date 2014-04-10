@@ -73,7 +73,7 @@ public class Database {
             stmt.close();
         } catch (SQLException e) {
             String state = e.getSQLState();
-            if (state.equals("08S01")) {
+            if (state.equals("08S01") || state.equals("08003")) {
                 // try to reconnect
                 String database = Settings.getString(Parameter.DATABASE);
                 String user = Settings.getString( Parameter.USER );

@@ -100,7 +100,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
             int colId = -1;
             for (int i = 0; i < res.getMetaData().getColumnCount(); i++) {
                 if (res.getMetaData().getColumnName(i + 1).equals(variableName)) {
-                    colId = i;
+                    colId = i + 1;
                     break;
                 }
             }
@@ -143,7 +143,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
             int colId1 = -1;
             for (int i = 0; i < res.getMetaData().getColumnCount(); i++) {
                 if (res.getMetaData().getColumnName(i + 1).equals(variableName1)) {
-                    colId1 = i;
+                    colId1 = i + 1;
                     break;
                 }
             }
@@ -154,7 +154,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
             int colId2 = -1;
             for (int i = 0; i < res.getMetaData().getColumnCount(); i++) {
                 if (res.getMetaData().getColumnName(i + 1).equals(variableName2)) {
-                    colId2 = i;
+                    colId2 = i + 1;
                     break;
                 }
             }
@@ -199,7 +199,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
             int colId = -1;
             for (int i = 0; i < res.getMetaData().getColumnCount(); i++) {
                 if (res.getMetaData().getColumnName(i + 1).equals("count")) {
-                    colId = i;
+                    colId = i + 1;
                     break;
                 }
             }
