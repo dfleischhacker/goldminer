@@ -13,9 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class VirtuosoQueryEngine extends QueryEngine {
+public class SPARQLVirtuosoQueryEngine extends SPARQLQueryEngine {
 
-    private final static Logger logger = LoggerFactory.getLogger(VirtuosoQueryEngine.class);
+    private final static Logger logger = LoggerFactory.getLogger(SPARQLVirtuosoQueryEngine.class);
 
     protected String endpointUri;
 
@@ -23,7 +23,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
 
     private de.uni_mannheim.informatik.dws.dwslib.virtuoso.Query query;
 
-    public VirtuosoQueryEngine() {
+    public SPARQLVirtuosoQueryEngine() {
         endpointUri = Settings.getString(Parameter.ENDPOINT);
         relevantGraph = Settings.getString(Parameter.GRAPH);
         logger.debug("Initialized query engine with: " + endpointUri + " " + relevantGraph);
@@ -38,7 +38,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
         }
     }
 
-    public VirtuosoQueryEngine(String endpoint, String graph) {
+    public SPARQLVirtuosoQueryEngine(String endpoint, String graph) {
         endpointUri = endpoint;
         relevantGraph = graph;
 
@@ -54,7 +54,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
         }
     }
 
-    public VirtuosoQueryEngine(String sEndpoint, int iChunk) {
+    public SPARQLVirtuosoQueryEngine(String sEndpoint, int iChunk) {
         endpointUri = sEndpoint;
 
         logger.debug("Initialized query engine with: " + endpointUri + " " + relevantGraph);
@@ -86,7 +86,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
     }
 
     protected List<String> execute(String queryString, String variableName, String filter) throws UnsupportedEncodingException, IOException {
-        logger.debug("QueryEngine.query: {}", queryString);
+        logger.debug("SPARQLQueryEngine.query: {}", queryString);
 
         List<String> set = new ArrayList<String>();
 
@@ -129,7 +129,7 @@ public class VirtuosoQueryEngine extends QueryEngine {
     }
 
     protected List<String[]> execute(String queryString, String variableName1, String variableName2, String filter) throws Exception {
-        logger.debug("QueryEngine.query: {}", queryString);
+        logger.debug("SPARQLQueryEngine.query: {}", queryString);
 
         List<String[]> set = new ArrayList<String[]>();
 

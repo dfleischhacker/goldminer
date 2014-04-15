@@ -11,7 +11,7 @@ public class VirtuosoResultsPairIterator implements ResultPairsIterator {
     private List<String[]> results;
     private Iterator<String[]> iterator;
 
-    protected VirtuosoResultsPairIterator(VirtuosoQueryEngine engine, String query, String filter){
+    protected VirtuosoResultsPairIterator(SPARQLVirtuosoQueryEngine engine, String query, String filter){
         try {
             results = engine.execute(query, "x", "y", filter);
         }

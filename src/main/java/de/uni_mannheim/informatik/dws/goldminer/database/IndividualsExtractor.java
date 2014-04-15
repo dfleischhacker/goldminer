@@ -17,8 +17,8 @@ public class IndividualsExtractor extends Extractor {
 		super();
 	}
 	
-	public IndividualsExtractor(Database database, String endpoint, String graph, int chunk, Filter filter) {
-		super(database, endpoint, graph, chunk, filter);
+	public IndividualsExtractor(SQLDatabase sqlDatabase, String endpoint, String graph, int chunk, Filter filter) {
+		super(sqlDatabase, endpoint, graph, chunk, filter);
 	}
 
 	public void initIndividualPairsTransTable() throws SQLException {
@@ -29,7 +29,8 @@ public class IndividualsExtractor extends Extractor {
 		for( int i=0; i<properties.length; i++ )
 		{
 			String sProp = properties[i];
-			ResultPairsIterator iter1 = m_engine.queryPairs( m_sparqlFactory.propertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
+			ResultPairsIterator iter1 = sparqlEngine.queryPairs(sparqlFactory.propertyExtensionQuery(sProp),
+                    this.filter.getIndividualsFilter());
 			int iPropPairs = 0;
 			while( iter1.hasNext() ) 
 			{
@@ -49,14 +50,15 @@ public class IndividualsExtractor extends Extractor {
 			System.out.println( "Setup.initIndividualPairsTrans( "+ sProp +" ) ... "+ iPropPairs +" -> "+ iPairs );
 		}
 		// property chains
-		ResultSet results = database.query( m_sqlFactory.selectPropertyChainsQuery() );
+		ResultSet results = sqlDatabase.query(sqlFactory.selectPropertyChainsQuery());
 		while( results.next() )
 		{
 			String sProp1 = results.getString( "uri1" );
 			String sProp2 = results.getString( "uri2" );
 			if( sProp1.equals( sProp2 ) )
 			{
-				ResultPairsIterator iter = m_engine.queryPairs( m_sparqlFactory.propertyChainExtensionQuery( sProp1, sProp2 ), this.filter.getIndividualsFilter() );
+				ResultPairsIterator iter = sparqlEngine.queryPairs(
+                        sparqlFactory.propertyChainExtensionQuery(sProp1, sProp2), this.filter.getIndividualsFilter());
 				int iChainPairs = 0;
 				while( iter.hasNext() )
 				{
@@ -85,7 +87,7 @@ public class IndividualsExtractor extends Extractor {
 			{
 				String sName1 = getLocalName( sInd1 );
 				String sName2 = getLocalName( sInd2 );
-				database.execute( m_sqlFactory.insertIndividualPairTransQuery( id, sInd1, sInd2, sName1, sName2 ) );
+				sqlDatabase.execute(sqlFactory.insertIndividualPairTransQuery(id, sInd1, sInd2, sName1, sName2));
 				id++;
 			}
 		}		
@@ -101,7 +103,8 @@ public class IndividualsExtractor extends Extractor {
 		for( int i=0; i<properties.length; i++ )
 		{
 			String sProp = properties[i];
-			ResultPairsIterator iter1 = m_engine.queryPairs( m_sparqlFactory.propertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
+			ResultPairsIterator iter1 = sparqlEngine.queryPairs(sparqlFactory.propertyExtensionQuery(sProp),
+                    this.filter.getIndividualsFilter());
 			int iPropPairs = 0;
 			while( iter1.hasNext() ) 
 			{
@@ -121,12 +124,13 @@ public class IndividualsExtractor extends Extractor {
 			System.out.println( "Setup.initIndividualPairs( "+ sProp +" ) ... "+ iPropPairs +" -> "+ iPairs );
 		}
 		// property chains
-		ResultSet results = database.query( m_sqlFactory.selectPropertyChainsQuery() );
+		ResultSet results = sqlDatabase.query(sqlFactory.selectPropertyChainsQuery());
 		while( results.next() )
 		{
 			String sProp1 = results.getString( "uri1" );
 			String sProp2 = results.getString( "uri2" );
-			ResultPairsIterator iter = m_engine.queryPairs( m_sparqlFactory.propertyChainExtensionQuery( sProp1, sProp2 ), this.filter.getIndividualsFilter() );
+			ResultPairsIterator iter = sparqlEngine.queryPairs(
+                    sparqlFactory.propertyChainExtensionQuery(sProp1, sProp2), this.filter.getIndividualsFilter());
 			int iChainPairs = 0;
 			while( iter.hasNext() )
 			{
@@ -156,8 +160,8 @@ public class IndividualsExtractor extends Extractor {
 				String sName2 = getLocalName( sInd2 );
 				boolean bExt = hm.get( sInd2 );
 				if( !bExt ){
-					database.execute( m_sqlFactory.insertIndividualPairQuery( id, sInd1, sInd2, sName1, sName2 ) );
-					database.execute( m_sqlFactory.insertIndividualPairExtQuery( id, sInd1, sInd2, sName1, sName2 ) );
+					sqlDatabase.execute(sqlFactory.insertIndividualPairQuery(id, sInd1, sInd2, sName1, sName2));
+					sqlDatabase.execute( sqlFactory.insertIndividualPairExtQuery( id, sInd1, sInd2, sName1, sName2 ) );
 					id++;
 				}
 			}
@@ -172,7 +176,7 @@ public class IndividualsExtractor extends Extractor {
 				String sName2 = getLocalName( sInd2 );
 				boolean bExt = hm.get( sInd2 );
 				if( bExt ){
-					database.execute( m_sqlFactory.insertIndividualPairExtQuery( id, sInd1, sInd2, sName1, sName2 ) );
+					sqlDatabase.execute(sqlFactory.insertIndividualPairExtQuery(id, sInd1, sInd2, sName1, sName2));
 					id++;
 				}
 			}
@@ -183,12 +187,13 @@ public class IndividualsExtractor extends Extractor {
 	public void initIndividualsTables() throws Exception {
 		HashMap<String,Integer> hmURI2Ext = new HashMap<String,Integer>();
 		// class
-		String sQuery1 = m_sqlFactory.selectClassesQuery();
-		ResultSet results1 = database.query( sQuery1 );
+		String sQuery1 = sqlFactory.selectClassesQuery();
+		ResultSet results1 = sqlDatabase.query( sQuery1 );
 		while( results1.next() )
 		{
 			String sClass = results1.getString( "uri" );
-			ResultsIterator iter = m_engine.query( m_sparqlFactory.classExtensionQuery( sClass ), this.filter.getIndividualsFilter() );
+			ResultsIterator iter = sparqlEngine.query(sparqlFactory.classExtensionQuery(sClass),
+                    this.filter.getIndividualsFilter());
 			int iClassInd = 0;
 			while( iter.hasNext() ) 
 			{
@@ -199,13 +204,14 @@ public class IndividualsExtractor extends Extractor {
 			System.out.println( "Setup.initIndividuals( "+ sClass +" ) ... "+ iClassInd +" -> "+ hmURI2Ext.size() );
 		}
 		// exists property class
-		String sQuery2 = m_sqlFactory.selectClassesExtQuery();
-		ResultSet results2 = database.query( sQuery2 );
+		String sQuery2 = sqlFactory.selectClassesExtQuery();
+		ResultSet results2 = sqlDatabase.query( sQuery2 );
 		while( results2.next() )
 		{
 			String sClass = results2.getString( "class_uri" );
 			String sProp = results2.getString( "prop_uri" );
-			ResultsIterator iter = m_engine.query( m_sparqlFactory.existsPropertyExtensionQuery( sProp, sClass ), this.filter.getIndividualsFilter() );
+			ResultsIterator iter = sparqlEngine.query(sparqlFactory.existsPropertyExtensionQuery(sProp, sClass),
+                    this.filter.getIndividualsFilter());
 			int iClassInd = 0;
 			while( iter.hasNext() ) 
 			{
@@ -216,12 +222,13 @@ public class IndividualsExtractor extends Extractor {
 			System.out.println( "Setup.initIndividuals( "+ sProp +", "+ sClass +" ) ... "+ iClassInd +" -> "+ hmURI2Ext.size() );
 		}
 		// exists property top, exists inverse property top
-		String sQuery3 = m_sqlFactory.selectPropertiesQuery();
-		ResultSet results3 = database.query( sQuery1 );
+		String sQuery3 = sqlFactory.selectPropertiesQuery();
+		ResultSet results3 = sqlDatabase.query( sQuery1 );
 		while( results3.next() )
 		{
 			String sProp = results3.getString( "uri" );
-			ResultsIterator iter1 = m_engine.query( m_sparqlFactory.existsPropertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
+			ResultsIterator iter1 = sparqlEngine.query(sparqlFactory.existsPropertyExtensionQuery(sProp),
+                    this.filter.getIndividualsFilter());
 			int iClassInd = 0;
 			while( iter1.hasNext() ) 
 			{
@@ -229,7 +236,7 @@ public class IndividualsExtractor extends Extractor {
 				String sInd = iter1.next();
 				hmURI2Ext.put( sInd, 1 );
 			}
-			ResultsIterator iter2 = m_engine.query( m_sparqlFactory.existsInversePropertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
+			ResultsIterator iter2 = sparqlEngine.query( sparqlFactory.existsInversePropertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
 			while( iter2.hasNext() ) 
 			{
 				iClassInd++;
@@ -244,16 +251,16 @@ public class IndividualsExtractor extends Extractor {
 			int iExt = hmURI2Ext.get( sInd );
 			String sName = getLocalName( sInd );
 			if( iExt == 1 ){
-				database.execute( m_sqlFactory.insertIndividualExtExtQuery( id, sInd, sName ) );
+				sqlDatabase.execute(sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
 			}
 			else if( iExt == 2 ){
-				database.execute( m_sqlFactory.insertIndividualExtExtQuery( id, sInd, sName ) );
-				database.execute( m_sqlFactory.insertIndividualExtQuery( id, sInd, sName ) );
+				sqlDatabase.execute(sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
+				sqlDatabase.execute( sqlFactory.insertIndividualExtQuery( id, sInd, sName ) );
 			}
 			else if( iExt == 3 ){
-				database.execute( m_sqlFactory.insertIndividualExtExtQuery( id, sInd, sName ) );
-				database.execute( m_sqlFactory.insertIndividualExtQuery( id, sInd, sName ) );
-				database.execute( m_sqlFactory.insertIndividualQuery( id, sInd, sName ) );
+				sqlDatabase.execute(sqlFactory.insertIndividualExtExtQuery(id, sInd, sName));
+				sqlDatabase.execute( sqlFactory.insertIndividualExtQuery( id, sInd, sName ) );
+				sqlDatabase.execute(sqlFactory.insertIndividualQuery(id, sInd, sName));
 			}
 			id++;													 
 		}
@@ -263,13 +270,14 @@ public class IndividualsExtractor extends Extractor {
 	public void initIndividualPairsTable() throws SQLException {
 		HashMap<String,HashMap<String,Boolean>> hmURIs = new HashMap<String,HashMap<String,Boolean>>();
 		// read properties from database
-		String sQuery1 = m_sqlFactory.selectPropertiesQuery();
-		ResultSet results = database.query( sQuery1 );
+		String sQuery1 = sqlFactory.selectPropertiesQuery();
+		ResultSet results = sqlDatabase.query( sQuery1 );
 		int iPairs = 0;
 		while( results.next() )
 		{
 			String sProp = results.getString( "uri" );
-			ResultPairsIterator iter = m_engine.queryPairs( m_sparqlFactory.propertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
+			ResultPairsIterator iter = sparqlEngine.queryPairs(sparqlFactory.propertyExtensionQuery(sProp),
+                    this.filter.getIndividualsFilter());
 			int iPropPairs = 0;
 			while( iter.hasNext() ) 
 			{
@@ -296,10 +304,10 @@ public class IndividualsExtractor extends Extractor {
 			{
 				String sName1 = getLocalName( sInd1 );
 				String sName2 = getLocalName( sInd2 );
-				// String sCountIndPropertiesQuery = m_sparqlFactory.countPropertiesQuery( sInd1, sInd2 );
-				// int iCount = m_engine.count( sCountIndPropertiesQuery );
-				String sQuery2 = m_sqlFactory.insertIndividualPairQuery( id, sInd1, sInd2, sName1, sName2 );
-				database.execute( sQuery2 );
+				// String sCountIndPropertiesQuery = sparqlFactory.countPropertiesQuery( sInd1, sInd2 );
+				// int iCount = sparqlEngine.count( sCountIndPropertiesQuery );
+				String sQuery2 = sqlFactory.insertIndividualPairQuery( id, sInd1, sInd2, sName1, sName2 );
+				sqlDatabase.execute( sQuery2 );
 				id++;
 			}
 		}
@@ -308,15 +316,15 @@ public class IndividualsExtractor extends Extractor {
 	public void initIndividualsTable() throws SQLException {
 		HashMap<String,String> hmURI2Name = new HashMap<String,String>();
 		// read classes from database
-		String sQuery1 = m_sqlFactory.selectClassesQuery();
-		ResultSet results = database.query( sQuery1 );
+		String sQuery1 = sqlFactory.selectClassesQuery();
+		ResultSet results = sqlDatabase.query( sQuery1 );
 		while( results.next() )
 		{
 			String sClass = results.getString( "uri" );
 			int iClassID = results.getInt( "id" );
-			String sQuery3 = m_sparqlFactory.classExtensionQuery( sClass );
+			String sQuery3 = sparqlFactory.classExtensionQuery( sClass );
 			System.out.println( "\n"+ sClass +" ("+ iClassID +")" );
-			ResultsIterator iter = m_engine.query( sQuery3, this.filter.getIndividualsFilter() );
+			ResultsIterator iter = sparqlEngine.query( sQuery3, this.filter.getIndividualsFilter() );
 			int iClassInd = 0;
 			while( iter.hasNext() ) 
 			{
@@ -330,9 +338,9 @@ public class IndividualsExtractor extends Extractor {
 		for( String sInd: hmURI2Name.keySet() )
 		{
 			String sName = hmURI2Name.get( sInd );
-			String sQuery2 = m_sqlFactory.insertIndividualQuery( id, sInd, sName );
+			String sQuery2 = sqlFactory.insertIndividualQuery( id, sInd, sName );
 			System.out.println( "\nQUERY: "+ sQuery2 );
-			database.execute( sQuery2 );
+			sqlDatabase.execute( sQuery2 );
 			id++;
 		}
 		System.out.println( "done: "+ id );
@@ -340,8 +348,8 @@ public class IndividualsExtractor extends Extractor {
 	
 	public int getIndividualID( String sURI ) throws Exception {
 		sURI = checkURISyntax( sURI );
-		String sQuery = m_sqlFactory.selectIndividualIDQuery( sURI );
-		ResultSet results = database.query( sQuery );
+		String sQuery = sqlFactory.selectIndividualIDQuery( sURI );
+		ResultSet results = sqlDatabase.query( sQuery );
 		if( results.next() ){
 			return results.getInt( "id" );
 		}

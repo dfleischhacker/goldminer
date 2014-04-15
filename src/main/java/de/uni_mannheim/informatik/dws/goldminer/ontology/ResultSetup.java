@@ -1,7 +1,7 @@
 
 package de.uni_mannheim.informatik.dws.goldminer.ontology;
 
-import de.uni_mannheim.informatik.dws.goldminer.database.Database;
+import de.uni_mannheim.informatik.dws.goldminer.database.SQLDatabase;
 import de.uni_mannheim.informatik.dws.goldminer.database.SQLFactory;
 import org.semanticweb.owlapi.model.OWLAxiom;
 
@@ -14,25 +14,25 @@ public class ResultSetup {
 	
 	private Ontology m_ontology;
 	
-	private Database m_database;
+	private SQLDatabase sqlDatabase;
 	
 	private SQLFactory m_sqlFactory;
 	
 	
 	
 	
-	public ResultSetup(Database d) throws Exception {
+	public ResultSetup(SQLDatabase d) throws Exception {
 		m_ontology = new Ontology();
 		m_ontology.load( new File( "ontology_nosupp.owl" ));
 		m_sqlFactory = new SQLFactory();
-		m_database = d;
+		sqlDatabase = d;
 	}
 	
 	private HashMap<Integer,String> readClasses() throws Exception {
 		// read class URIs from database
 		HashMap<Integer,String> classes = new HashMap<Integer,String>();
 		String sQuery = m_sqlFactory.selectClassesQuery();
-		ResultSet results = m_database.query( sQuery );
+		ResultSet results = sqlDatabase.query( sQuery );
 		while( results.next() )
 		{
 			Integer id = results.getInt( "id" );
@@ -46,7 +46,7 @@ public class ResultSetup {
 		// read property URIs from database
 		HashMap<Integer,String> props = new HashMap<Integer,String>();
 		String sQuery = m_sqlFactory.selectPropertiesQuery();
-		ResultSet results = m_database.query( sQuery );
+		ResultSet results = sqlDatabase.query( sQuery );
 		while( results.next() )
 		{
 			Integer id = results.getInt( "id" );
@@ -70,21 +70,21 @@ public class ResultSetup {
 				OWLAxiom axiom2 = m_ontology.createRangeAxiom( sProp, sClass );
 				if( m_ontology.entails( axiom1 ) ){
 					// TODO: 1 (exists_p_top_sub_c)
-					m_database.execute( m_sqlFactory.insertResultPropDomainQuery( p, c, 1 ) );
+					sqlDatabase.execute( m_sqlFactory.insertResultPropDomainQuery( p, c, 1 ) );
 					System.out.println( "domain: "+ axiom1.toString() );
 				}
 				else {
 					// TODO: 0 (exists_p_top_sub_c)
-					m_database.execute( m_sqlFactory.insertResultPropDomainQuery( p, c, 0 ) );
+					sqlDatabase.execute( m_sqlFactory.insertResultPropDomainQuery( p, c, 0 ) );
 				}
 				if( m_ontology.entails( axiom2 ) ){
 					// TODO: 1 (exists_pi_top_sub_c)
-					m_database.execute( m_sqlFactory.insertResultPropRangeQuery( p, c, 1 ) );
+					sqlDatabase.execute( m_sqlFactory.insertResultPropRangeQuery( p, c, 1 ) );
 					System.out.println( "range: "+ axiom2.toString() );
 				}
 				else {
 					// TODO: 0 (exists_pi_top_sub_c)
-					m_database.execute( m_sqlFactory.insertResultPropRangeQuery( p, c, 0 ) );
+					sqlDatabase.execute( m_sqlFactory.insertResultPropRangeQuery( p, c, 0 ) );
 				}
 			}
 		}
@@ -103,7 +103,7 @@ public class ResultSetup {
 			int iDomain = getClassID( sDomain );
 			int iRange = getClassID( sRange );
 			String sUpdate = m_sqlFactory.insertResultPropAxiomQuery( p, iDomain, iRange );
-			m_database.execute( sUpdate );
+			sqlDatabase.execute( sUpdate );
 		}
 		System.out.println( "GoldSetup.initGoldPropTable: done" );
 	}
@@ -123,7 +123,7 @@ public class ResultSetup {
 				int iSub = m_ontology.subsumedBy( s1, s2 ) ? 1 : 0;
 				// ante (column 2) subclassof cons (column 1)
 				String sUpdate = m_sqlFactory.insertResultSubAxiomQuery( c2, c1, iSub );
-				m_database.execute( sUpdate );
+				sqlDatabase.execute( sUpdate );
 				if( iSub == 1 ){
 					System.out.println( s1 +" subclassof "+ s2 );
 				}
@@ -134,7 +134,7 @@ public class ResultSetup {
 	
 	public int getClassID( String sURI ) throws Exception {
 		String sQuery = m_sqlFactory.selectClassIDQuery( sURI );
-		ResultSet results = m_database.query( sQuery );
+		ResultSet results = sqlDatabase.query( sQuery );
 		if( results.next() ){
 			return results.getInt( "id" );
 		}

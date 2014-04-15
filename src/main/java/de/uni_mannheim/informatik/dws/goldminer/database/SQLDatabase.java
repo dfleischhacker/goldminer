@@ -6,21 +6,21 @@ import de.uni_mannheim.informatik.dws.goldminer.util.Settings;
 import java.sql.*;
 
 
-public class Database {
+public class SQLDatabase {
 	
 	private Connection connection;
 
-	private static Database instance;
+	private static SQLDatabase instance;
 	
 
-	public static Database instance() throws SQLException {
+	public static SQLDatabase instance() throws SQLException {
 		if( instance == null ){
-			instance = new Database();
+			instance = new SQLDatabase();
 		}
 		return instance;
 	}
 	
-	private Database(String url, String username, String password) throws SQLException {
+	private SQLDatabase(String url, String username, String password) throws SQLException {
 		try {
 			DriverManager.registerDriver( new com.mysql.jdbc.Driver() );
 			System.out.println( "connection: "+ username +"@"+ url );
@@ -35,7 +35,7 @@ public class Database {
 		}
 	}
 
-	private Database() throws SQLException {
+	private SQLDatabase() throws SQLException {
 		try {
 			String database = Settings.getString(Parameter.DATABASE);
 			String user = Settings.getString( Parameter.USER );
@@ -54,9 +54,9 @@ public class Database {
 	}
 
 	
-	public static Database instance(String url, String username, String password) throws SQLException {
+	public static SQLDatabase instance(String url, String username, String password) throws SQLException {
 		if( instance == null ){
-			instance = new Database(url, username, password);
+			instance = new SQLDatabase(url, username, password);
 		}
 		return instance;
 	}
@@ -84,7 +84,7 @@ public class Database {
     }
 	
 	public ResultSet query( String query ){
-		System.out.println("Database.query: " + query);
+		System.out.println("SQLDatabase.query: " + query);
         Statement stmt = null;
         ResultSet results = null;
         try {
@@ -183,7 +183,9 @@ public class Database {
     }
 
     public static void main(String[] args) throws SQLException {
-        Database d = Database.instance("jdbc:mysql://ede.informatik.uni-mannheim.de:3306/gold_minerEswc2012", "gold", "gold");
+        SQLDatabase
+                d = SQLDatabase.instance("jdbc:mysql://ede.informatik.uni-mannheim.de:3306/gold_minerEswc2012", "gold",
+                "gold");
         for (int i = 0; i < 1000; i++) {
             ResultSet res = d.query("SELECT uri FROM property_chains_trans WHERE id='176999' UNION SELECT uri FROM properties WHERE " +
                                             "id='176999'");

@@ -1,6 +1,6 @@
 package de.uni_mannheim.informatik.dws.goldminer.ontology;
 
-import de.uni_mannheim.informatik.dws.goldminer.database.Database;
+import de.uni_mannheim.informatik.dws.goldminer.database.SQLDatabase;
 import de.uni_mannheim.informatik.dws.goldminer.database.SQLFactory;
 import de.uni_mannheim.informatik.dws.goldminer.util.RandomAxiomChooser;
 import de.uni_mannheim.informatik.dws.goldminer.util.Settings;
@@ -26,7 +26,7 @@ public class OntologyWriter {
 
     private Ontology m_ontology;
 
-    private Database m_database;
+    private SQLDatabase sqlDatabase;
 
     private SQLFactory m_sqlFactory;
     private HashMap<Integer, String> classURICache;
@@ -40,14 +40,14 @@ public class OntologyWriter {
     private boolean writeAnnotations;
     private final HashMap<String,BufferedWriter> writers = new HashMap<String, BufferedWriter>();
 
-    public OntologyWriter(Database d, Ontology o) throws SQLException {
+    public OntologyWriter(SQLDatabase d, Ontology o) throws SQLException {
         this(d, o, true);
     }
 
-    public OntologyWriter(Database d, Ontology o, boolean writeAnnotations) throws SQLException {
+    public OntologyWriter(SQLDatabase d, Ontology o, boolean writeAnnotations) throws SQLException {
         m_ontology = o;
         m_sqlFactory = new SQLFactory();
-        m_database = d;
+        sqlDatabase = d;
         this.writeAnnotations = writeAnnotations;
 
         // cache ID to URI maps
@@ -59,7 +59,7 @@ public class OntologyWriter {
         classURIFromExistsCache = new HashMap<Integer, String>();
         propertyURIFromExistsPropertyTopCache = new HashMap<Integer, String>();
 
-        Connection conn = m_database.getConnection();
+        Connection conn = sqlDatabase.getConnection();
         Statement stmt = conn.createStatement();
         ResultSet res = stmt.executeQuery(m_sqlFactory.selectClassURIQuery());
 
@@ -70,7 +70,7 @@ public class OntologyWriter {
         res.close();
 
 //        if ()
-//        res = stmt.executeQuery(m_sqlFactory.selectPropertiesQuery());
+//        res = stmt.executeQuery(sqlFactory.selectPropertiesQuery());
 //
 //        while (res.next()) {
 //            String uri = res.getString("uri");
@@ -84,7 +84,7 @@ public class OntologyWriter {
 //        }
 //        res.close();
 //
-//        res = stmt.executeQuery(m_sqlFactory.selectURIsFromExistsQuery());
+//        res = stmt.executeQuery(sqlFactory.selectURIsFromExistsQuery());
 //
 //        while (res.next()) {
 //            int id = res.getInt("id");
@@ -96,7 +96,7 @@ public class OntologyWriter {
 //        }
 //        res.close();
 //
-//        res = stmt.executeQuery(m_sqlFactory.selectURIsFromExistsTopQuery());
+//        res = stmt.executeQuery(sqlFactory.selectURIsFromExistsTopQuery());
 //
 //        while (res.next()) {
 //            int id = res.getInt("id");
@@ -311,7 +311,7 @@ public class OntologyWriter {
         System.out.println(sQuery);
         System.out.flush();
 
-        Statement stmt = Database.instance().getConnection().createStatement();
+        Statement stmt = SQLDatabase.instance().getConnection().createStatement();
         ResultSet countRes = stmt.executeQuery("SELECT COUNT(*) FROM (" + m_sqlFactory.selectURIFromPropertyChainsTrans(iAnte) +") as T;");
         if (!countRes.next()) {
             countRes.close();
@@ -342,7 +342,7 @@ public class OntologyWriter {
     public OWLAxiom get_p_chain_q_sub_r_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
         String sQuery = m_sqlFactory.selectURIsFromPropertyChains(iAnte);
         System.out.println(sQuery);
-        ResultSet results = m_database.query(sQuery);
+        ResultSet results = sqlDatabase.query(sQuery);
         String uri1;
         String uri2;
         List<String> uris = null;
@@ -420,14 +420,14 @@ public class OntologyWriter {
 
     public Ontology writeClassesAndPropertiesToOntology() throws SQLException, OWLOntologyStorageException {
         String query = m_sqlFactory.selectClassURIsQuery();
-        ResultSet results = m_database.query(query);
+        ResultSet results = sqlDatabase.query(query);
         while (results.next()) {
             IRI iri = IRI.create(Settings.getString("ontology_logical") + "#" + results.getString("name"));
             this.m_ontology.addClass(iri);
         }
         results.getStatement().close();
         String query2 = m_sqlFactory.selectPropertyURIsQuery();
-        ResultSet results2 = m_database.query(query2);
+        ResultSet results2 = sqlDatabase.query(query2);
         while (results2.next()) {
             IRI iri = IRI.create(Settings.getString("ontology_logical") + "#" + results2.getString("name"));
             this.m_ontology.addProperty(iri);

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class SPARQLResultsIterator implements Iterator<String>,ResultsIterator {
 
-	private SPARQLQueryEngine m_engine;
+	private SPARQLHTTPQueryEngine m_engine;
 	
 	private String m_sQuery;
 	
@@ -26,7 +26,7 @@ public class SPARQLResultsIterator implements Iterator<String>,ResultsIterator {
 	private boolean failed;
 	
 	
-	protected SPARQLResultsIterator(SPARQLQueryEngine engine, String sQuery, String filter){
+	protected SPARQLResultsIterator(SPARQLHTTPQueryEngine engine, String sQuery, String filter){
 		m_sQuery = sQuery;
 		m_engine = engine;
 		m_nextChunk = new ArrayList<String>();

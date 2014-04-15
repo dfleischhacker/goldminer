@@ -9,7 +9,7 @@ public class VirtuosoResultsIterator implements ResultsIterator {
     private List<String> results;
     private Iterator<String> iterator;
 
-	protected VirtuosoResultsIterator(VirtuosoQueryEngine engine, String query, String filter){
+	protected VirtuosoResultsIterator(SPARQLVirtuosoQueryEngine engine, String query, String filter){
         try {
             results = engine.execute(query, "x", filter);
         }

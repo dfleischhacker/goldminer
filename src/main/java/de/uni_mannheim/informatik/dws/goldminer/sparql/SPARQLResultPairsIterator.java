@@ -6,7 +6,7 @@ import java.util.List;
 
 public class SPARQLResultPairsIterator implements ResultPairsIterator {
 
-	private SPARQLQueryEngine m_engine;
+	private SPARQLHTTPQueryEngine m_engine;
 	
 	private String m_sQuery;
 	
@@ -21,7 +21,7 @@ public class SPARQLResultPairsIterator implements ResultPairsIterator {
 	private String filter;
 	
 	
-	protected SPARQLResultPairsIterator(SPARQLQueryEngine engine, String sQuery, String filter){
+	protected SPARQLResultPairsIterator(SPARQLHTTPQueryEngine engine, String sQuery, String filter){
 		m_sQuery = sQuery;
 		m_engine = engine;
 		m_nextChunk = new ArrayList<String[]>();

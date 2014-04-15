@@ -42,7 +42,7 @@ public class GoldMiner {
             Settings.load();
         }
         this.selectAxioms();
-        this.database = Database.instance();
+        this.sqlDatabase = SQLDatabase.instance();
         this.setup = new Setup();
         this.tablePrinter = new TablePrinter();
         this.terminologyExtractor = new TerminologyExtractor();
@@ -61,7 +61,7 @@ public class GoldMiner {
             Settings.load();
         }
         this.selectAxioms();
-        this.database = Database.instance();
+        this.sqlDatabase = SQLDatabase.instance();
         this.setup = new Setup();
         this.tablePrinter = new TablePrinter();
         this.terminologyExtractor = new TerminologyExtractor();
@@ -73,7 +73,7 @@ public class GoldMiner {
         this.chk = new CheckpointUtil(Settings.getString("transaction_tables") + "/checkpoints");
     }
 
-    private Database database;
+    private SQLDatabase sqlDatabase;
     private Setup setup;
     private TerminologyExtractor terminologyExtractor;
     private IndividualsExtractor individualsExtractor;
@@ -99,7 +99,7 @@ public class GoldMiner {
 
     public boolean disconnect() {
         try {
-            this.database.close();
+            this.sqlDatabase.close();
             return true;
         }
         catch (SQLException e) {
@@ -258,7 +258,7 @@ public class GoldMiner {
 
     public boolean connect(String url, String user, String password) {
         try {
-            this.database = Database.instance(url, user, password);
+            this.sqlDatabase = SQLDatabase.instance(url, user, password);
             return true;
         }
         catch (SQLException e) {
@@ -290,11 +290,11 @@ public class GoldMiner {
     public boolean sparqlSetup(String endpoint, Filter filter, String graph,
             int chunk) {
         if (!chk.reached("terminologyextract")) {
-            this.terminologyExtractor = new TerminologyExtractor(this.database, endpoint, graph, chunk, filter);
+            this.terminologyExtractor = new TerminologyExtractor(this.sqlDatabase, endpoint, graph, chunk, filter);
             chk.reach("terminologyextract");
         }
         if (!chk.reached("individualextract")) {
-            this.individualsExtractor = new IndividualsExtractor(this.database, endpoint, graph, chunk, filter);
+            this.individualsExtractor = new IndividualsExtractor(this.sqlDatabase, endpoint, graph, chunk, filter);
             chk.reach("individualextract");
         }
         return false;
@@ -553,7 +553,7 @@ public class GoldMiner {
 
     public HashMap<OWLAxiom, SupportConfidenceTuple> parseAssociationRules()
             throws IOException, SQLException {
-        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
+        this.writer = new OntologyWriter(this.sqlDatabase, this.ontology, writeAnnotations);
 
         // inititalize module config
         MinerModuleConfiguration moduleConfig = new MinerModuleConfiguration();
@@ -561,7 +561,7 @@ public class GoldMiner {
         moduleConfig.setDataFactory(ontology.getOntology().getOWLOntologyManager().getOWLDataFactory());
         moduleConfig.setConfidenceAnnotationUri(IRI.create(Settings.getString("annotation_iri") + "#confidence"));
         moduleConfig.setSupportAnnotationUri(IRI.create(Settings.getString("annotation_iri") + "#support"));
-        moduleConfig.setDbConnection(database.getConnection());
+        moduleConfig.setDbConnection(sqlDatabase.getConnection());
         moduleConfig.setParser(parser);
 
         HashMap<OWLAxiom, SupportConfidenceTuple> hmAxioms =
@@ -1077,7 +1077,7 @@ public class GoldMiner {
     }
 
     private void initializeOntology() throws SQLException, OWLOntologyStorageException {
-        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
+        this.writer = new OntologyWriter(this.sqlDatabase, this.ontology, writeAnnotations);
         this.ontology = this.writer.writeClassesAndPropertiesToOntology();
         this.ontology.save();
     }
@@ -1086,7 +1086,7 @@ public class GoldMiner {
             double supportThreshold, double confidenceThreshold)
             throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();
-        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
+        this.writer = new OntologyWriter(this.sqlDatabase, this.ontology, writeAnnotations);
         Ontology o = this.writer.write(axioms, supportThreshold, confidenceThreshold);
         //o.save();
         this.ontology = o;

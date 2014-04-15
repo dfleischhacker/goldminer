@@ -3,7 +3,6 @@ package de.uni_mannheim.informatik.dws.goldminer.database;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.Filter;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultPairsIterator;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.ResultsIterator;
-import de.uni_mannheim.informatik.dws.goldminer.sparql.SPARQLResultsIterator;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,20 +20,20 @@ public class TerminologyExtractor extends Extractor {
 		this.id = 1;
 	}
 	
-	public TerminologyExtractor(Database database, String endpoint, String graph, int chunk, Filter filter) {
-		super(database, endpoint, graph, chunk, filter);
+	public TerminologyExtractor(SQLDatabase sqlDatabase, String endpoint, String graph, int chunk, Filter filter) {
+		super(sqlDatabase, endpoint, graph, chunk, filter);
 	}
 
 	public void initDisjointnessTable() throws Exception {
-		ResultSet results = database.query( m_sqlFactory.selectDisjointnessQuery() );
+		ResultSet results = sqlDatabase.query( sqlFactory.selectDisjointnessQuery() );
 		while( results.next() )
 		{
 			int i1 = results.getInt( "cons" );
 			int i2 = results.getInt( "ante" );
 			String s1 = getClassURI( i1 );
 			String s2 = getClassURI( i2 );
-			String sCount = m_sparqlFactory.classExtensionQuery( s1, s2 );
-			ResultsIterator iter = m_engine.query( sCount, this.filter.getIndividualsFilter() );
+			String sCount = sparqlFactory.classExtensionQuery( s1, s2 );
+			ResultsIterator iter = sparqlEngine.query( sCount, this.filter.getIndividualsFilter() );
 			int iCount = -1;
 			if( iter.hasNext() ){
 				iCount = 1;
@@ -42,44 +41,44 @@ public class TerminologyExtractor extends Extractor {
 			else {
 				iCount = 0;
 			}
-			String sUpdate = m_sqlFactory.updateDisjointnessQuery( i1, i2, iCount );
-			database.execute( sUpdate );
+			String sUpdate = sqlFactory.updateDisjointnessQuery( i1, i2, iCount );
+			sqlDatabase.execute( sUpdate );
 		}
 		System.out.println( "done" );
 	}
 	
 	public void initPropertyChainsTransTable() throws SQLException {
-		ResultSet results = database.query( m_sqlFactory.selectPropertiesQuery() );
-        database.setAutoCommit(false);
+		ResultSet results = sqlDatabase.query( sqlFactory.selectPropertiesQuery() );
+        sqlDatabase.setAutoCommit(false);
 		while( results.next() )
 		{
 			String sProp = results.getString( "uri" );
 			String sName = results.getString( "name" );
 			int iID = results.getInt( "id" );
-			String sInsert = m_sqlFactory.insertPropertyChainTransQuery( this.id++, sProp, sName );
-			database.execute( sInsert );
+			String sInsert = sqlFactory.insertPropertyChainTransQuery( this.id++, sProp, sName );
+			sqlDatabase.execute( sInsert );
             if (this.id % 1001 == 0) {
-                database.commit();
+                sqlDatabase.commit();
             }
         }
-        database.setAutoCommit(true);
+        sqlDatabase.setAutoCommit(true);
 		System.out.println( "done" );
 	}
 	
 	public void initClassesExistsPropertyTable() throws SQLException  {
 		String properties[] = getProperties();
 		// read classes from database
-		String sQuery1 = m_sqlFactory.selectClassesQuery();
-		ResultSet results1 = database.query( sQuery1 );
+		String sQuery1 = sqlFactory.selectClassesQuery();
+		ResultSet results1 = sqlDatabase.query( sQuery1 );
 		int id = 1000;
-        database.setAutoCommit(false);
+        sqlDatabase.setAutoCommit(false);
 		while( results1.next() )
 		{
 			String sClass = results1.getString( "uri" );
 			for( String sProp: properties )
 			{
-				String sizeQuery = m_sparqlFactory.existsPropertyExtensionSizeQuery( sProp, sClass );
-				/* int iSize = m_engine.count( sizeQuery );
+				String sizeQuery = sparqlFactory.existsPropertyExtensionSizeQuery( sProp, sClass );
+				/* int iSize = sparqlEngine.count( sizeQuery );
 				if( iSize == 0 ){
 					continue;
 				} */
@@ -87,46 +86,46 @@ public class TerminologyExtractor extends Extractor {
 				// update table
 				String sClassName = getLocalName( sClass );
 				String sPropName = getLocalName( sProp );
-				String sQuery3 = m_sqlFactory.insertClassExistsPropertyQuery( this.id++, sProp, sClass, sPropName, sClassName );
-				database.execute( sQuery3 );
+				String sQuery3 = sqlFactory.insertClassExistsPropertyQuery( this.id++, sProp, sClass, sPropName, sClassName );
+				sqlDatabase.execute( sQuery3 );
 				id++;
                 if (id % 10000 == 0) {
-                    database.commit();
+                    sqlDatabase.commit();
                 }
             }
 		}
-        database.setAutoCommit(true);
+        sqlDatabase.setAutoCommit(true);
 		System.out.println( "Done: "+ id );
 	}
 	
 	public void initPropertiesTable() {
-		String sQuery1 = m_sparqlFactory.propertiesQuery();
-		ResultsIterator iter = m_engine.query( sQuery1, this.filter.getClassesFilter() );
-        database.setAutoCommit(false);
+		String sQuery1 = sparqlFactory.propertiesQuery();
+		ResultsIterator iter = sparqlEngine.query( sQuery1, this.filter.getClassesFilter() );
+        sqlDatabase.setAutoCommit(false);
 		while( iter.hasNext() )
 		{
 			String sProp = iter.next();
 			String sName = getLocalName( sProp );
-			String sQuery2 = m_sqlFactory.insertPropertyQuery( this.id++, sProp, sName );
+			String sQuery2 = sqlFactory.insertPropertyQuery( this.id++, sProp, sName );
 			this.id = this.id + 2;
-			database.execute( sQuery2 );
+			sqlDatabase.execute( sQuery2 );
             if (this.id % 1001 == 0 || this.id % 1000 == 500) {
-                database.commit();
+                sqlDatabase.commit();
             }
         }
-        database.setAutoCommit(true);
+        sqlDatabase.setAutoCommit(true);
 		System.out.println( "done: "+ this.id );
 	}
 	
 	public void initDatatypePropertiesTable() {
-		String query = this.m_sparqlFactory.datatypePropertiesQuery();
-		ResultsIterator iter = m_engine.query( query, this.filter.getClassesFilter() );
+		String query = this.sparqlFactory.datatypePropertiesQuery();
+		ResultsIterator iter = sparqlEngine.query( query, this.filter.getClassesFilter() );
 		while( iter.hasNext() ) {
 			String sProp = iter.next();
 			String sName = getLocalName( sProp );
-			String query2 = this.m_sqlFactory.insertDatatypePropertyQuery( this.id++, sProp, sName );
+			String query2 = this.sqlFactory.insertDatatypePropertyQuery( this.id++, sProp, sName );
 			System.out.println(query2);
-			this.database.execute( query2 );
+			this.sqlDatabase.execute( query2 );
 		}
 		System.out.println( "done: " + this.id );
 	}
@@ -142,7 +141,7 @@ public class TerminologyExtractor extends Extractor {
 			System.out.println( "initPropertyChainsTable: "+ sProp );
 			hmRanges[i] = new HashMap<String,Boolean>();
 			hmDomains[i] = new HashMap<String,Boolean>();
-			ResultPairsIterator iter = m_engine.queryPairs( m_sparqlFactory.propertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
+			ResultPairsIterator iter = sparqlEngine.queryPairs( sparqlFactory.propertyExtensionQuery( sProp ), this.filter.getIndividualsFilter() );
 			while( iter.hasNext() ) 
 			{
 				String sPair[] = iter.next();
@@ -151,7 +150,7 @@ public class TerminologyExtractor extends Extractor {
 			}
 		}
 		int id = 1000;
-        database.setAutoCommit(false);
+        sqlDatabase.setAutoCommit(false);
 		for( int i=0; i<properties.length; i++ ){
 			for( int j=0; j<properties.length; j++ )
 			{
@@ -164,22 +163,22 @@ public class TerminologyExtractor extends Extractor {
 						String sURI2 = properties[j];
 						String sName1 = getLocalName( sURI1 );
 						String sName2 = getLocalName( sURI2 );
-						String sInsertQuery = m_sqlFactory.insertPropertyChainQuery( this.id++, sURI1, sURI2, sName1, sName2 );
-						database.execute( sInsertQuery );
+						String sInsertQuery = sqlFactory.insertPropertyChainQuery( this.id++, sURI1, sURI2, sName1, sName2 );
+						sqlDatabase.execute( sInsertQuery );
                         if ( this.id % 1001 == 0 || this.id % 1000 == 500)
 						break;
 					}
 				}
 			}
 		}
-        database.setAutoCommit(true);
+        sqlDatabase.setAutoCommit(true);
 		System.out.println( "done: "+ id );
 	}
 	
 	public void initPropertyTopTable() throws SQLException {
-		String sQuery = m_sqlFactory.selectPropertiesQuery();
-		ResultSet results = database.query( sQuery );
-        database.setAutoCommit(false);
+		String sQuery = sqlFactory.selectPropertiesQuery();
+		ResultSet results = sqlDatabase.query( sQuery );
+        sqlDatabase.setAutoCommit(false);
 		while( results.next() )
 		{
 			String sPropURI = results.getString( "uri" );
@@ -187,45 +186,45 @@ public class TerminologyExtractor extends Extractor {
 			int iPropID = results.getInt( "id" );
 			int iTopID = iPropID + 1000;
 			int iInvTopID = iPropID + 2000;
-			String sInsert1 = m_sqlFactory.insertPropertyTopQuery( this.id++, 0, sPropURI, sPropName );
-			String sInsert2 = m_sqlFactory.insertPropertyTopQuery( this.id++, 1, sPropURI, sPropName );
-			database.execute( sInsert1 );
-			database.execute( sInsert2 );
+			String sInsert1 = sqlFactory.insertPropertyTopQuery( this.id++, 0, sPropURI, sPropName );
+			String sInsert2 = sqlFactory.insertPropertyTopQuery( this.id++, 1, sPropURI, sPropName );
+			sqlDatabase.execute( sInsert1 );
+			sqlDatabase.execute( sInsert2 );
             if (iPropID % 1001 == 0) {
-                database.commit();
+                sqlDatabase.commit();
             }
         }
-        database.commit();
-        database.setAutoCommit(true);
+        sqlDatabase.commit();
+        sqlDatabase.setAutoCommit(true);
 		System.out.println( "Setup.initPropertyTopTable: done" );
 	}
 	
 	public void initClassesTable() {
-		String query = m_sparqlFactory.classesQuery();
+		String query = sparqlFactory.classesQuery();
 		// System.out.println( query );
-		ResultsIterator iter = m_engine.query( query, this.filter.getClassesFilter() );
+		ResultsIterator iter = sparqlEngine.query( query, this.filter.getClassesFilter() );
 		int id = 0;
-        database.setAutoCommit(false);
+        sqlDatabase.setAutoCommit(false);
 		while( iter.hasNext() && !iter.isFailed() )
 		{
 			String sClass = iter.next();
 			String sName = getLocalName( sClass );
-			String sCountClassIndQuery = m_sparqlFactory.classExtensionSizeQuery( sClass );
-			// int iSize = m_engine.count( sCountClassIndQuery );
+			String sCountClassIndQuery = sparqlFactory.classExtensionSizeQuery( sClass );
+			// int iSize = sparqlEngine.count( sCountClassIndQuery );
 			System.out.println( sClass +" ... " );
-			String sQuery = m_sqlFactory.insertClassQuery( this.id++, sClass, sName );
-			database.execute( sQuery );
+			String sQuery = sqlFactory.insertClassQuery( this.id++, sClass, sName );
+			sqlDatabase.execute( sQuery );
             if (id % 1000 == 0) {
-                database.commit();
+                sqlDatabase.commit();
             }
         }
-        database.setAutoCommit(true);
+        sqlDatabase.setAutoCommit(true);
 		System.out.println( "done: "+ id );
 	}
 	
 	public String getClassURI( int iID ) throws Exception {
-		String sQuery = m_sqlFactory.selectClassURIQuery( iID );
-		ResultSet results = database.query( sQuery );
+		String sQuery = sqlFactory.selectClassURIQuery( iID );
+		ResultSet results = sqlDatabase.query( sQuery );
 		if( results.next() ){
 			return results.getString( "uri" );
 		}
@@ -234,8 +233,8 @@ public class TerminologyExtractor extends Extractor {
 	
 	public String getClassID( String sURI ) throws Exception {
 		sURI = checkURISyntax( sURI );
-		String sQuery = m_sqlFactory.selectClassIDQuery( sURI );
-		ResultSet results = database.query( sQuery );
+		String sQuery = sqlFactory.selectClassIDQuery( sURI );
+		ResultSet results = sqlDatabase.query( sQuery );
 		if( results.next() ){
 			return results.getString( "id" );
 		}

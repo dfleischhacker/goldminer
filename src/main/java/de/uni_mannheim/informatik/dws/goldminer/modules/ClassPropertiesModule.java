@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class ClassPropertiesModule extends MinerModule {
 	
-	private Database _database;
+	private SQLDatabase sqlDatabase;
 	private SQLFactory _sqlFactory;
 	private TerminologyExtractor _terminologyExtractor;
 	private IndividualsExtractor _individualsExtractor;
@@ -20,7 +20,7 @@ public class ClassPropertiesModule extends MinerModule {
 	
 	public ClassPropertiesModule() throws MinerModuleException {
 		try {
-			this._database = Database.instance();
+			this.sqlDatabase = SQLDatabase.instance();
 			this._tablePrinter = new TablePrinter();
 			this._sqlFactory = new SQLFactory();
 			this._terminologyExtractor = new TerminologyExtractor();
@@ -56,11 +56,11 @@ public class ClassPropertiesModule extends MinerModule {
 
 	@Override
 	public void setupSchema() throws MinerModuleException {
-		this._database.execute(this._sqlFactory.dropTables());
-		this._database.execute(this._sqlFactory.createClassesTable());
-		this._database.execute(this._sqlFactory.createIndividualsTable());
-		this._database.execute(this._sqlFactory.createPropertiesTable());
-		this._database.execute(this._sqlFactory.createDatatypePropertiesTable());
+		this.sqlDatabase.execute(this._sqlFactory.dropTables());
+		this.sqlDatabase.execute(this._sqlFactory.createClassesTable());
+		this.sqlDatabase.execute(this._sqlFactory.createIndividualsTable());
+		this.sqlDatabase.execute(this._sqlFactory.createPropertiesTable());
+		this.sqlDatabase.execute(this._sqlFactory.createDatatypePropertiesTable());
 	}
 
 	@Override
