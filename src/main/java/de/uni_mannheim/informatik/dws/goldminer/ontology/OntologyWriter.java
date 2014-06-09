@@ -139,6 +139,32 @@ public class OntologyWriter {
 
         //List<OWLAxiom> axioms = getAxioms();
         //System.out.println( "axioms: "+ axioms.size() );
+        // we got a negative support threshold, thus it should be absolute ==> find out the corresponding relative one
+        if (supportThreshold < 0) {
+            log.info("Got absolute support threshold of {}, trying to determine relative threshold for it",
+                    supportThreshold);
+            ResultSet res = sqlDatabase.query("SELECT COUNT(*) FROM `individuals`");
+
+            try {
+                if (!res.next()) {
+                    log.error("No result returned by database! Unable to continue operation");
+                    throw new RuntimeException(
+                            "Unable to retrieve total number of instances for converting absolute threshold into " +
+                                    "relative one. No result returned by DB system");
+                }
+                int numberOfInstances = res.getInt(1);
+                log.debug("Total number of instances: {}", numberOfInstances);
+                // convert to relative value, we add 0.5 to circumvent any problems with precision
+                supportThreshold = (-supportThreshold + 0.5) / ((double) numberOfInstances);
+                log.info("Determined relative support threshold of {}", supportThreshold);
+                System.out.println("Determined relative support threshold of: " + supportThreshold);
+            }
+            catch (SQLException e) {
+                log.error("Error when querying database! Unable to continue operation", e);
+                throw new RuntimeException("Error when querying database for total number of instances", e);
+            }
+
+        }
         int i = 0;
         for (Map.Entry<OWLAxiom, SupportConfidenceTuple> entry : axioms.entrySet()) {
             if (entry.getValue().getSupport() > supportThreshold &&
