@@ -99,26 +99,6 @@ public class SQLDatabase {
 			System.out.println( "SQLState: " + ex.getSQLState() );
 			System.out.println( "VendorError: " + ex.getErrorCode() );
 		}		
-		/* finally {
-			if ( results != null ) {
-				try {
-					results.close();
-				} 
-				catch ( SQLException sqlEx ) {
-					sqlEx.printStackTrace();
-				}
-				results = null;
-			}
-			if ( stmt != null ) {
-				try {
-					stmt.close();
-				} 
-				catch ( SQLException sqlEx ) {
-					sqlEx.printStackTrace();
-				}
-				stmt = null;
-			}
-		} */
 		return null;
 	}
 		

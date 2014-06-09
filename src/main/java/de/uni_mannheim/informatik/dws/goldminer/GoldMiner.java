@@ -136,7 +136,8 @@ public class GoldMiner {
                 this.p_inverse_functional) {
             classes = true;
             individuals = true;
-        } else {
+        }
+        else {
             classes = false;
             individuals = false;
         }
@@ -155,17 +156,20 @@ public class GoldMiner {
                 this.exists_p_T_sub_c ||
                 this.exists_pi_T_sub_c) {
             properties = true;
-        } else {
+        }
+        else {
             properties = false;
         }
         if (this.c_sub_exists_p_c || this.exists_p_c_sub_c) {
             classes_ex_property = true;
-        } else {
+        }
+        else {
             classes_ex_property = false;
         }
         if (this.exists_p_T_sub_c || this.exists_pi_T_sub_c) {
             classes_ex_property_top = true;
-        } else {
+        }
+        else {
             classes_ex_property_top = false;
         }
         if (this.p_sub_p ||
@@ -175,7 +179,8 @@ public class GoldMiner {
                 this.p_inverse_q ||
                 this.p_asymmetric) {
             individual_pairs = true;
-        } else {
+        }
+        else {
             individual_pairs = false;
         }
         if (this.p_chain_q_sub_r ||
@@ -183,7 +188,8 @@ public class GoldMiner {
             individual_pairs_trans = true;
             property_chains = true;
             property_chains_trans = true;
-        } else {
+        }
+        else {
             individual_pairs_trans = false;
             property_chains = false;
             property_chains_trans = false;
@@ -288,7 +294,7 @@ public class GoldMiner {
     }
 
     public boolean sparqlSetup(String endpoint, Filter filter, String graph,
-            int chunk) {
+                               int chunk) {
         if (!chk.reached("terminologyextract")) {
             this.terminologyExtractor = new TerminologyExtractor(this.sqlDatabase, endpoint, graph, chunk, filter);
             chk.reach("terminologyextract");
@@ -398,9 +404,10 @@ public class GoldMiner {
                     "-tr", "-s-1", "-c0", "-m2", "-n2", "-v (%20s, %30c)",
                     f.getPath(),
                     new File(Settings.getString("association_rules")).getAbsolutePath() + File.separator + f.getName()
-                                                                                           .substring(0,
-                                                                                                   index) +
-                            associationRulesSuffix + ".txt");
+                            .substring(0,
+                                    index) +
+                            associationRulesSuffix + ".txt"
+            );
             p.redirectOutput(ProcessBuilder.Redirect.PIPE);
             Process process = p.start();
             String line;
@@ -573,7 +580,8 @@ public class GoldMiner {
                 Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
         if (!f.exists()) {
             log.warn("Unable to read: {}! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C sub C");
@@ -598,10 +606,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[0] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, true);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C and C sub C");
@@ -627,10 +637,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[1] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C sub exists P.C");
@@ -656,10 +668,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[1] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P.C sub C");
@@ -685,10 +699,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[2] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P.T sub C");
@@ -714,10 +730,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[3] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P^i.T");
@@ -743,10 +761,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[4] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P sub P");
@@ -771,10 +791,12 @@ public class GoldMiner {
             log.debug("p_chain_q_sub_r");
             f = new File(
                     Settings.getString(
-                            "association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
+                            "association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt"
+            );
             if (!f.exists()) {
                 log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-            } else {
+            }
+            else {
                 List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
                 ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
@@ -801,10 +823,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[5] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Transitivity");
@@ -830,10 +854,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[6] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Concept Disjointness");
@@ -850,7 +876,8 @@ public class GoldMiner {
 
                 if (cons >= 1000 && ante1 < 1000) {
                     cons -= 1000;
-                } else {
+                }
+                else {
                     continue;
                 }
 
@@ -861,7 +888,8 @@ public class GoldMiner {
                     SupportConfidenceTuple supportConfidenceTuple = firstOccurence.get(pair);
                     if (pa.getConf() < supportConfidenceTuple.getConfidence()) {
                         a = this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
-                    } else {
+                    }
+                    else {
                         a = this.writer.get_c_dis_c_Axioms(ante1, cons, supportConfidenceTuple.getSupport(),
                                 supportConfidenceTuple.getConfidence());
                     }
@@ -869,7 +897,8 @@ public class GoldMiner {
                     if (pa.getSupp() != 0.0) {
                         rac.add(a, pa.getConf());
                     }
-                } else {
+                }
+                else {
                     firstOccurence.put(pair, pa.getSuppConfTuple());
                 }
             }
@@ -882,10 +911,12 @@ public class GoldMiner {
             PropertyDisjointnessModule propertyDisjointnessModule = new PropertyDisjointnessModule(moduleConfig);
             f = new File(
                     Settings.getString(
-                            "association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+                            "association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt"
+            );
             if (!f.exists()) {
                 log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-            } else {
+            }
+            else {
                 // TODO: adjust to actual method signature
                 propertyDisjointnessModule.readAssociationRules(f, hmAxioms);
             }
@@ -901,10 +932,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[7] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             log.debug("Parsed axioms: {}", axioms.size());
 
@@ -930,10 +963,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[7] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             log.debug("Parsed axioms: {}", axioms.size());
 
@@ -959,10 +994,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[8] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Inverse Property");
@@ -987,10 +1024,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[8] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Asymmetry");
@@ -1015,10 +1054,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[9] + associationRulesSuffix + "" +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Functionality");
@@ -1043,10 +1084,12 @@ public class GoldMiner {
         f = new File(
                 Settings.getString(
                         "association_rules") + File.separator + transactionTableNames[10] + associationRulesSuffix +
-                        ".txt");
+                        ".txt"
+        );
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory
@@ -1083,7 +1126,7 @@ public class GoldMiner {
     }
 
     public Ontology createOntology(HashMap<OWLAxiom, SupportConfidenceTuple> axioms,
-            double supportThreshold, double confidenceThreshold)
+                                   double supportThreshold, double confidenceThreshold)
             throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();
         this.writer = new OntologyWriter(this.sqlDatabase, this.ontology, writeAnnotations);

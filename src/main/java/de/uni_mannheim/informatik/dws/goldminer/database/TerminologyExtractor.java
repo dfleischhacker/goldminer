@@ -89,7 +89,7 @@ public class TerminologyExtractor extends Extractor {
 				String sQuery3 = sqlFactory.insertClassExistsPropertyQuery( this.id++, sProp, sClass, sPropName, sClassName );
 				sqlDatabase.execute( sQuery3 );
 				id++;
-                if (id % 10000 == 0) {
+                if (id % 1000 == 0) {
                     sqlDatabase.commit();
                 }
             }
