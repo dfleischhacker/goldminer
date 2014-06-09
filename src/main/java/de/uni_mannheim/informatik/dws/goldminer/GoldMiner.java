@@ -258,6 +258,9 @@ public class GoldMiner {
             this.individualsExtractor.initIndividualPairsTransTable();
             chk.reach("initpropertychainstable");
         }
+
+        //TODO: we do not actually create indexes in this method yet
+        this.terminologyExtractor.createIndexes();
         return true;
     }
 

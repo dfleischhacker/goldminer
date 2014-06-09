@@ -240,4 +240,8 @@ public class TerminologyExtractor extends Extractor {
 		}
 		return null;
 	}
+
+    public void createIndexes() {
+        //TODO: we should think about creating the correct indexes for all tables
+    }
 }
