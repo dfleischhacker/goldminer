@@ -797,7 +797,10 @@ public class TablePrinter {
         String sQuery = sqlFactory.selectPropertiesQuery();
         ResultSet results = sqlDatabase.query(sQuery);
         while (results.next()) {
-            properties.add(results.getString("uri"));
+            String propertyUri = results.getString("uri");
+            if (!PropertyBlacklist.isBlackListed(propertyUri)) {
+                properties.add(propertyUri);
+            }
         }
         results.getStatement().close();
         cachedProperties = properties.toArray(new String[properties.size()]);
