@@ -194,8 +194,7 @@ public class GoldMiner {
             property_chains = false;
             property_chains_trans = false;
         }
-        if (this.setup.setupSchema(classes, individuals, properties, classes_ex_property, classes_ex_property_top,
-                individual_pairs, individual_pairs_trans, property_chains, property_chains_trans)) {
+        if (this.setup.setupSchema()) {
             chk.reach("setupdatabase");
             return true;
         }
