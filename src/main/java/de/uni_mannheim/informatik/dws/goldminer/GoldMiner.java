@@ -552,7 +552,7 @@ public class GoldMiner {
                 public boolean run() {
                     deleteFile(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL);
                     try {
-                        tablePrinter.printPropertyInverseMembers(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL.getAbsoluteFileName());
+                        tablePrinter.printPropertyInverseFunctionalMembers(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL.getAbsoluteFileName());
                     }
                     catch (SQLException e) {
                         log.error("Error creating property restrictions 1 transaction table", e);

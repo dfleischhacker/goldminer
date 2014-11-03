@@ -560,22 +560,22 @@ public class TablePrinter {
     public void printPropertyInverseFunctionalMembers(String sOutFile) throws SQLException, IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String properties[] = this.getProperties();
-        HashMap<String, List<String>>[] hm = new HashMap[properties.length];
+        HashMap<String, HashSet<String>>[] objectToSubjectsMaps = new HashMap[properties.length];
         for (int i = 0; i < properties.length; i++) {
             String sProp = properties[i];
-            HashMap<String, List<String>> individualsInDomain = new HashMap<String, List<String>>();
+            HashMap<String, HashSet<String>> individualsInRange = new HashMap<String, HashSet<String>>();
             ResultPairsIterator iter =
                     queryEngine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
                 String sPair[] = iter.next();
-                List<String> inds = individualsInDomain.get(sPair[0]);
+                HashSet<String> inds = individualsInRange.get(sPair[1]);
                 if (inds == null) {
-                    inds = new ArrayList<String>();
-                    individualsInDomain.put(sPair[0], inds);
+                    inds = new HashSet<String>();
+                    individualsInRange.put(sPair[1], inds);
                 }
-                inds.add(sPair[1]);
+                inds.add(sPair[0]);
             }
-            hm[i] = individualsInDomain;
+            objectToSubjectsMaps[i] = individualsInRange;
         }
         String sQuery = sqlFactory.selectIndividualsQuery();
         ResultSet results = sqlDatabase.query(sQuery);
@@ -584,17 +584,10 @@ public class TablePrinter {
             String sInd = results.getString("uri");
             StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
-                HashMap<String, List<String>> all = hm[i];
-                Collection<List<String>> values = all.values();
+                HashMap<String, HashSet<String>> all = objectToSubjectsMaps[i];
+                Collection<HashSet<String>> values = all.values();
                 if (values != null) {
-                    int count = 0;
-                    for (List<String> value : values) {
-                        for (String s : value) {
-                            if (s.equals(sInd)) {
-                                count++;
-                            }
-                        }
-                    }
+                    int count = all.get(sInd).size();
                     if (count > 0) {
                         String sPropID = getPropertyID(properties[i]);
                         sbLine.append(sPropID).append("\t");
@@ -621,17 +614,17 @@ public class TablePrinter {
     public void printPropertyInverseMembers(String sOutFile) throws SQLException, IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(sOutFile));
         String properties[] = this.getProperties();
-        HashMap<String, List<String>>[] hmProp2Ext = new HashMap[properties.length];
+        HashMap<String, HashSet<String>>[] hmProp2Ext = new HashMap[properties.length];
         for (int i = 0; i < properties.length; i++) {
             String sProp = properties[i];
-            HashMap<String, List<String>> hmInd2Inds = new HashMap<String, List<String>>();
+            HashMap<String, HashSet<String>> hmInd2Inds = new HashMap<String, HashSet<String>>();
             ResultPairsIterator iter =
                     queryEngine.queryPairs(m_sparqlFactory.propertyExtensionQuery(sProp), this.individualsFilter);
             while (iter.hasNext()) {
                 String sPair[] = iter.next();
-                List<String> inds = hmInd2Inds.get(sPair[0]);
+                HashSet<String> inds = hmInd2Inds.get(sPair[0]);
                 if (inds == null) {
-                    inds = new ArrayList<String>();
+                    inds = new HashSet<String>();
                     hmInd2Inds.put(sPair[0], inds);
                 }
                 inds.add(sPair[1]);
@@ -646,12 +639,12 @@ public class TablePrinter {
             String sInd2 = results.getString("uri2");
             StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
-                List<String> hmInd2Inds = hmProp2Ext[i].get(sInd1);
+                HashSet<String> hmInd2Inds = hmProp2Ext[i].get(sInd1);
                 if (hmInd2Inds != null) {
                     if (hmInd2Inds.contains(sInd2)) {
                         String sPropID = getPropertyID(properties[i]);
                         sbLine.append(sPropID).append("\t");
-                        List<String> hmInd2Inds2 = hmProp2Ext[i].get(sInd2);
+                        HashSet<String> hmInd2Inds2 = hmProp2Ext[i].get(sInd2);
                         if (hmInd2Inds2 != null) {
                             if (!hmInd2Inds2.contains(sInd1)) {
                                 String sPropID2 = this.getPropertySymmetryID(properties[i]);
@@ -664,7 +657,7 @@ public class TablePrinter {
                         }
                     }
                 }
-                List<String> hmInd2Inds2 = hmProp2Ext[i].get(sInd2);
+                HashSet<String> hmInd2Inds2 = hmProp2Ext[i].get(sInd2);
                 if (hmInd2Inds2 != null) {
                     if (hmInd2Inds2.contains(sInd1)) {
                         String sPropID = this.getPropertyDisjointID(properties[i]);
