@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="GoldMiner : Generate Expressive Ontologies from Linked Data">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>GoldMiner</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/dfleischhacker/goldminer">View on GitHub</a>
+
+          <h1 id="project_title">GoldMiner</h1>
+          <h2 id="project_tagline">Generate Expressive Ontologies from Linked Data</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/dfleischhacker/goldminer/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/dfleischhacker/goldminer/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="gold-miner" class="anchor" href="#gold-miner"><span class="octicon octicon-link"></span></a>GOLD Miner</h1>
+
+<p>GOLD Miner is a tool for Statistical Schema Induction as proposed by Völker and Niepert [1] and extended by
+Fleischhacker and Völker [2][3].</p>
+
+<p>[1] Johanna Völker and Mathias Niepert. Statistical Schema Induction. The Semantic Web: Research and Applications : 8th Extended Semantic Web Conference, ESWC 2011, Heraklion, Crete, Greece, Proceedings, Part I, 2011.</p>
+
+<p>[2] Daniel Fleischhacker and Johanna Völker. Inductive Learning of Disjointness Axioms. On the Move to Meaningful Internet Systems: OTM 2011 : Confederated International Conferences: CoopIS, DOA-SVI, and ODBASE 2011, Hersonissos, Crete, Greece, Proceedings, Part II, 2011.</p>
+
+<p>[3] Daniel Fleischhacker, Johanna Völker and Heiner Stuckenschmidt. Mining RDF Data for Property Axioms. On the Move to Meaningful Internet Systems: OTM 2012 : Confederated International Conferences: CoopIS, DOA-SVI, and ODBASE 2012. Proceedings, Part II, 2012.</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<h3>
+<a name="building" class="anchor" href="#building"><span class="octicon octicon-link"></span></a>Building</h3>
+
+<p>If you downloaded the source source of Gold Miner, you have to build the binary distribution first. The build process
+is based on Apache Maven (<a href="http://maven.apache.org">http://maven.apache.org</a>). After having installed Maven, change into the Gold Miner source
+directory and use "mvn package" to start the build process. Have a look at the target/ folder which contains the
+gold-miner-VERSION-jar-with-dependencies.jar which is the one you would like to use most probably.</p>
+
+<h3>
+<a name="remark" class="anchor" href="#remark"><span class="octicon octicon-link"></span></a>Remark</h3>
+
+<p>In the following we use
+        goldminer.jar
+to refer to the name of the Gold Miner JAR. For calling Gold Miner, you have to replace goldminer.jar by the correct
+file name or rename your jar file to goldminer.jar.</p>
+
+<h3>
+<a name="configuring-gold-miner" class="anchor" href="#configuring-gold-miner"><span class="octicon octicon-link"></span></a>Configuring Gold Miner</h3>
+
+<p>Call gold miner using the genconfig command
+    java -jar goldminer.jar genconfig
+which generates the config files miner.properties and axioms.properties in the current directory.
+Adapt miner.properties to your environment and choose the axiom types you want to generate by setting them to true
+in axioms.properties. The axioms types not to generate have to be set to false.</p>
+
+<h3>
+<a name="running-gold-miner" class="anchor" href="#running-gold-miner"><span class="octicon octicon-link"></span></a>Running Gold Miner</h3>
+
+<p>Running Gold Miner includes three phases. In the first phase, Gold Miner inspects the ontology for concepts and
+properties, the SPARQL endpoint for instances and generates the transaction tables required for the currently
+configured axiom types. This phase might take longer depending on the performance of your SPARQL endpoint. You can
+start the generation phase using
+    java -jar goldminer.jar generate</p>
+
+<p>The next step uses the Borgelt apriori miner to generate association rules and is started by
+    java -jar goldminer.jar mine</p>
+
+<p>In the final step, the association rules are parsed and the ontology is enriched with the resulting axioms. Use
+    java -jar goldminer.jar parse
+to start this phase.</p>
+
+<h3>
+<a name="re-running-gold-miner" class="anchor" href="#re-running-gold-miner"><span class="octicon octicon-link"></span></a>Re-running Gold Miner</h3>
+
+<p>If you want to re-run Gold Miner completely you either have to empty all directories which contain results from previous
+runs or empty the checkpoints/ directory in your transaction_tables directory (as defined in the miner.properties config
+file) since Gold Miner uses this directory to store its progress.</p>
+
+<h1>
+<a name="contributors" class="anchor" href="#contributors"><span class="octicon octicon-link"></span></a>Contributors</h1>
+
+<ul>
+<li>Daniel Fleischhacker (email: <a href="mailto:daniel@dwslab.de">daniel@dwslab.de</a>)</li>
+<li>Johanna Völker</li>
+<li>Mathias Niepert</li>
+<li>Jakob Frankenbach</li>
+</ul>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Copyright (C) 2011-2014 Johanna Völker, Mathias Niepert, Daniel Fleischhacker</p>
+
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License
+along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">GoldMiner maintained by <a href="https://github.com/dfleischhacker">dfleischhacker</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
