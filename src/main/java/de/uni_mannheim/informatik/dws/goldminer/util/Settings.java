@@ -6,79 +6,170 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.Properties;
 
-
+/**
+ * Provides access to the configuration data. This class is a singleton implementation.
+ */
 public class Settings implements Parameter {
     private final static Logger log = LoggerFactory.getLogger(Settings.class);
 
-    private static String m_file;
+    private static String generalConfigurationFile;
 
-    private static String a_file;
+    private static String axiomsConfigurationFile;
 
-    private static Properties m_properties;
+    private static Properties generalConfiguration;
 
-    private static Properties a_properties;
+    private static Properties axiomConfiguration;
 
     static {
-        m_properties = new Properties();
-        a_properties = new Properties();
+        generalConfiguration = new Properties();
+        axiomConfiguration = new Properties();
     }
 
     public final static String MINER_PROP = System.getProperty("user.dir") + "/res/miner.properties";
 
     public final static String AXIOMS_PROP = System.getProperty("user.dir") + "/res/axioms.properties";
 
-
+    /**
+     * Triggers loading the configuration files from their default locations.
+     *
+     * @throws IOException
+     */
     public static void load() throws IOException {
         load(MINER_PROP, AXIOMS_PROP);
     }
 
-    public static void load(String mFile, String aFile) throws IOException {
+    /**
+     * Triggers loading the configuration files from the given locations.
+     *
+     * @param generalConfigurationFile location to load the general configuration from
+     * @param axiomConfigurationFile   location to load the axiom configuration from
+     * @throws IOException
+     */
+    public static void load(String generalConfigurationFile, String axiomConfigurationFile) throws IOException {
         if (!loaded()) {
-            m_file = mFile;
-            a_file = aFile;
-            System.out.println("Settings: loading configuration from file " + m_file);
-            FileInputStream propStream = new FileInputStream(new File(m_file));
-            m_properties.load(propStream);
+            Settings.generalConfigurationFile = generalConfigurationFile;
+            Settings.axiomsConfigurationFile = axiomConfigurationFile;
+            log.info("Loading general configuration from " + Settings.generalConfigurationFile);
+            FileInputStream propStream = new FileInputStream(new File(Settings.generalConfigurationFile));
+            generalConfiguration.load(propStream);
             propStream.close();
-            propStream = new FileInputStream(new File(a_file));
-            a_properties.load(propStream);
+            log.info("General configuration loaded: " + generalConfiguration);
+            log.info("Loading axioms configuration from" + Settings.axiomsConfigurationFile);
+            propStream = new FileInputStream(new File(axiomsConfigurationFile));
+            axiomConfiguration.load(propStream);
             propStream.close();
-            System.out.println("\nSettings: " + m_properties);
+            log.info("Axioms configuration loaded: " + axiomConfiguration);
         }
     }
 
-    public static String getString(String sKey) {
-        return m_properties.getProperty(sKey);
+    /**
+     * Returns the string value of the given key in the general configuration file.
+     *
+     * @param key name of key to return value for
+     * @return value for given key or null if no such key specified
+     */
+    public static String getString(String key) {
+        String value = generalConfiguration.getProperty(key);
+        if (value == null) {
+            log.warn("No general configuration value for key '" + key + "'");
+        }
+        return value;
     }
 
-    public static boolean getBoolean(String sKey) {
-        return Boolean.parseBoolean(m_properties.getProperty(sKey));
+    /**
+     * Returns the boolean value for the given key in the general configuration file.
+     *
+     * @param key key to get value for
+     * @return boolean value for the given key or null if no such key specified
+     */
+    public static Boolean getBoolean(String key) {
+        String value = generalConfiguration.getProperty(key);
+        if (value == null) {
+            log.warn("No general configuration value for key '" + key + "'");
+            return null;
+        }
+        return Boolean.parseBoolean(value);
     }
 
-    public static int getInteger(String sKey) {
-        return Integer.parseInt(m_properties.getProperty(sKey));
+    /**
+     * Returns the integer value for the given key in the general configuration file.
+     *
+     * @param key key key to get value for
+     * @return integer value for the given key or null of no such key specified
+     */
+    public static Integer getInteger(String key) {
+        String value = generalConfiguration.getProperty(key);
+        if (value == null) {
+            log.warn("No general configuration value for key '" + key + "'");
+            return null;
+        }
+        return Integer.parseInt(value);
     }
 
-    public static boolean getAxiom(String sKey) {
-        return Boolean.parseBoolean(a_properties.getProperty(sKey));
+    /**
+     * Returns whether the axiom with the given key is activated in the axiom configuration file.
+     * This method does not return null but false if the given key is not used in the configuration file.
+     *
+     * @param key axiom key to check
+     * @return true if axiom is activated, otherwise false
+     */
+    public static boolean isAxiomActivated(String key) {
+        String value = axiomConfiguration.getProperty(key);
+        if (value == null) {
+            log.warn("No axiom configuration value for key '" + key + "'. Returning false as default");
+            return false;
+        }
+        return Boolean.parseBoolean(value);
     }
 
-    public static void set(String sKey, String sValue) {
-        m_properties.setProperty(sKey, sValue);
+    /**
+     * Sets the given key to the specified value.
+     *
+     * @param key
+     * @param value
+     * @deprecated Modifying the configuration from within the code is no longer recommended.
+     */
+    @Deprecated
+    public static void set(String key, String value) {
+        generalConfiguration.setProperty(key, value);
     }
 
-    public static void save(String sFile) throws FileNotFoundException, IOException {
-        FileOutputStream fos = new FileOutputStream(sFile);
-        m_properties.store(fos, "");
+    /**
+     * Stores the general configuration into a file with the given filename.
+     * @param fileName name of file to save general configuration to
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @deprecated Modifying the configuration from within the code is no longer recommended.
+     */
+    @Deprecated
+    public static void save(String fileName) throws FileNotFoundException, IOException {
+        FileOutputStream fos = new FileOutputStream(fileName);
+        generalConfiguration.store(fos, "");
         fos.close();
     }
 
-    public static String getFile() {
-        return m_file;
+    /**
+     * Returns the name of the file where the general configuration was loaded from.
+     * @return name of the file where the general configuration was loaded from
+     */
+    public static String getGeneralConfigurationFileName() {
+        return generalConfigurationFile;
     }
 
+    /**
+     * Returns the name of the file where the axiom configuration was loaded from.
+     * @return name of the file where the axiom configuration was loaded from
+     */
+    public static String getAxiomsConfigurationFileName() {
+        return axiomsConfigurationFile;
+    }
+
+    /**
+     * Checks whether the configurations are already loaded.
+     * @return true if the configuration data is already loaded otherwise false.
+     */
     public static boolean loaded() {
-        return (m_properties.keySet().size() > 0);
+        return !generalConfiguration.isEmpty();
     }
 
     public static void main(String[] args) throws IOException {
