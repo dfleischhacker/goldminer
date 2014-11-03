@@ -573,7 +573,7 @@ public class GoldMiner {
                 public boolean run() {
                     deleteFile(TransactionTable.CLASS_DISJOINTNESS);
                     try {
-                        tablePrinter.printPropertyInverseMembers(TransactionTable.CLASS_DISJOINTNESS.getAbsoluteFileName());
+                        tablePrinter.printDisjointClassMembers(TransactionTable.CLASS_DISJOINTNESS.getAbsoluteFileName());
                     }
                     catch (SQLException e) {
                         log.error("Error creating property restrictions 1 transaction table", e);
