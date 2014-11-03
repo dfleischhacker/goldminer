@@ -594,7 +594,7 @@ public class GoldMiner {
      * @param table table whose file representation should be deleted
      */
     private void deleteFile(TransactionTable table) {
-        File f = new File(Settings.getString("transaction_tables") + table.getAbsoluteFileName());
+        File f = new File(table.getAbsoluteFileName());
         f.delete();
         try {
             f.createNewFile();
