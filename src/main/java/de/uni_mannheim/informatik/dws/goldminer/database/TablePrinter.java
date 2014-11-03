@@ -585,8 +585,7 @@ public class TablePrinter {
             StringBuilder sbLine = new StringBuilder();
             for (int i = 0; i < properties.length; i++) {
                 HashMap<String, HashSet<String>> all = objectToSubjectsMaps[i];
-                Collection<HashSet<String>> values = all.values();
-                if (values != null) {
+                if (all.containsKey(sInd)) {
                     int count = all.get(sInd).size();
                     if (count > 0) {
                         String sPropID = getPropertyID(properties[i]);
