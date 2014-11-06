@@ -237,7 +237,7 @@ public class PropertyDisjointnessModule extends MinerModule {
 
         OWLAnnotationProperty confidenceAnnotationProperty = dFactory
                 .getOWLAnnotationProperty(config.getConfidenceAnnotationUri());
-        OWLAnnotation confidenceAnnotation = dFactory.getOWLAnnotation(supportAnnotationProperty,
+        OWLAnnotation confidenceAnnotation = dFactory.getOWLAnnotation(confidenceAnnotationProperty,
                                                                        dFactory.getOWLLiteral(
                                                                                confidence));
         Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
