@@ -718,38 +718,41 @@ public class GoldMiner {
         HashMap<OWLAxiom, SupportConfidenceTuple> hmAxioms =
                 new HashMap<OWLAxiom, SupportConfidenceTuple>();
 
-        for (AxiomType axiomType : activeAxiomTypes) {
-            TransactionTable mainTransactionTable = requirementsResolver.getRequiredTransactionTable(axiomType);
-
-            File ruleFile = new File(mainTransactionTable.getAbsoluteAssociationRuleFileName());
-            if (!ruleFile.exists()) {
-                log.warn("Unable to read: {}! Skipping...", ruleFile.getAbsolutePath());
-                continue;
-            }
-
-            List<ParsedAxiom> axioms = this.parser.parse(ruleFile, axiomType.hasSecondAntecedent());
-
-            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance(axiomType.toString());
-            normalizer.reportValues(axioms);
-            normalizer.normalize(axioms);
-
-            //axiomType.getOWLAxioms(axioms, hmAxioms);
-            for (ParsedAxiom pa : axioms) {
-                OWLAxiom a =
-                        this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
-                if (a != null) {
-                    if (pa.getSupp() != 0.0) {
-                        rac.add(a, pa.getConf());
-                    }
-                    hmAxioms.put(a, pa.getSuppConfTuple());
-                }
-            }
-        }
+//        for (AxiomType axiomType : activeAxiomTypes) {
+//            TransactionTable mainTransactionTable = requirementsResolver.getRequiredTransactionTable(axiomType);
+//
+//            File ruleFile = new File(mainTransactionTable.getAbsoluteAssociationRuleFileName());
+//            if (!ruleFile.exists()) {
+//                log.warn("Unable to read: {}! Skipping...", ruleFile.getAbsolutePath());
+//                continue;
+//            }
+//
+//            List<ParsedAxiom> axioms = this.parser.parse(ruleFile, axiomType.hasSecondAntecedent());
+//
+//            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance(axiomType.toString());
+//            normalizer.reportValues(axioms);
+//            normalizer.normalize(axioms);
+//
+//            //axiomType.getOWLAxioms(axioms, hmAxioms);
+//            for (ParsedAxiom pa : axioms) {
+//                OWLAxiom a =
+//                        this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
+//                if (a != null) {
+//                    if (pa.getSupp() != 0.0) {
+//                        rac.add(a, pa.getConf());
+//                    }
+//                    hmAxioms.put(a, pa.getSuppConfTuple());
+//                }
+//            }
+//        }
 
         /* Concept Subsumption: c sub c */
         File f = new File(TransactionTable.CLASS_MEMBERS.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: {}! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.CLASS_SUBSUMPTION_SIMPLE)) {
+            log.info("Skipped simple class subsumption because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -776,6 +779,9 @@ public class GoldMiner {
         f = new File(TransactionTable.CLASS_MEMBERS.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.CLASS_SUBSUMPTION_COMPLEX)) {
+            log.info("Skipped complex class subsumption because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, true);
@@ -804,6 +810,9 @@ public class GoldMiner {
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_REQUIRED_FOR_CLASS)) {
+            log.info("Skipped property required for class because not activated");
+        }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -830,6 +839,9 @@ public class GoldMiner {
         f = new File(TransactionTable.EXISTS_PROPERTY_MEMBERS.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_DOMAIN_FOR_RANGE)) {
+            log.info("Skipped property domain for range for class because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -858,6 +870,9 @@ public class GoldMiner {
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_DOMAIN)) {
+            log.info("Skipped property domain because not activated");
+        }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -884,6 +899,9 @@ public class GoldMiner {
         f = new File(TransactionTable.PROPERTY_RESTRICTIONS2.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_RANGE)) {
+            log.info("Skipped property required for class because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -912,6 +930,9 @@ public class GoldMiner {
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_SUBSUMPTION)) {
+            log.info("Skipped property subsumption because not activated");
+        }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -933,39 +954,43 @@ public class GoldMiner {
         log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Chaining: P o Q sub R */
-        if (requirementsResolver.getActiveAxiomTypes().contains(AxiomType.PROPERTY_CHAINS)) {
-            log.debug("p_chain_q_sub_r");
-            f = new File(TransactionTable.PROPERTY_CHAIN_MEMBERS.getAbsoluteAssociationRuleFileName());
-            if (!f.exists()) {
-                log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-            }
-            else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
+        log.debug("p_chain_q_sub_r");
+        f = new File(TransactionTable.PROPERTY_CHAIN_MEMBERS.getAbsoluteAssociationRuleFileName());
+        if (!f.exists()) {
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_CHAINS)) {
+            log.info("Skipped property chains because not activated");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-                ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
-                normalizer.reportValues(axioms);
-                normalizer.normalize(axioms);
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
 
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                            this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
-                                    pa.getConf());
-                    if (a != null) {
-                        if (pa.getSupp() != 0.0) {
-                            rac.add(a, pa.getConf());
-                        }
-                        hmAxioms.put(a, pa.getSuppConfTuple());
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                        this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
+                                pa.getConf());
+                if (a != null) {
+                    if (pa.getSupp() != 0.0) {
+                        rac.add(a, pa.getConf());
                     }
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
-            log.debug("Number of Axioms: {}", hmAxioms.size());
         }
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Transitivity: P o P sub P*/
         log.debug("p_chain_p_sub_p");
         f = new File(TransactionTable.PROPERTY_CHAIN_MEMBERS.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_TRANSITIVITY)) {
+            log.info("Skipped property transitivity because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -993,6 +1018,9 @@ public class GoldMiner {
         f = new File(TransactionTable.CLASS_DISJOINTNESS.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.CLASS_DISJOINTNESS)) {
+            log.info("Skipped class disjointness because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -1048,6 +1076,9 @@ public class GoldMiner {
             if (!f.exists()) {
                 log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
             }
+            else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_DISJOINTNESS)) {
+                log.info("Skipped property disjointness because not activated");
+            }
             else {
                 // TODO: adjust to actual method signature
                 propertyDisjointnessModule.readAssociationRules(f, hmAxioms);
@@ -1064,6 +1095,9 @@ public class GoldMiner {
         f = new File(TransactionTable.PROPERTY_REFLEXIVITY.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.REFLEXIVE_PROPERTY)) {
+            log.info("Skipped property reflexivity because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -1092,6 +1126,9 @@ public class GoldMiner {
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
+        else if (!activeAxiomTypes.contains(AxiomType.IRREFLEXIVE_PROPERTY)) {
+            log.info("Skipped irreflexive property because not activated");
+        }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             log.debug("Parsed axioms: {}", axioms.size());
@@ -1119,6 +1156,9 @@ public class GoldMiner {
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_REQUIRED_FOR_CLASS)) {
+            log.info("Skipped inverse property because not activated");
+        }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -1144,6 +1184,9 @@ public class GoldMiner {
         f = new File(TransactionTable.PROPERTY_INVERSE_MEMBERS.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_ASYMMETRY)) {
+            log.info("Asymmetric property because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -1171,6 +1214,9 @@ public class GoldMiner {
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
+        else if (!activeAxiomTypes.contains(AxiomType.FUNCTIONAL_PROPERTY)) {
+            log.info("Skipped functional property because not activated");
+        }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
@@ -1196,6 +1242,9 @@ public class GoldMiner {
         f = new File(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL.getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.INVERSE_FUNCTIONAL_PROPERTY)) {
+            log.info("Skipped inverse functional property because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);

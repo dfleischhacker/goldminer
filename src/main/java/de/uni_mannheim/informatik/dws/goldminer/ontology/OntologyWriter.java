@@ -169,7 +169,6 @@ public class OntologyWriter {
         for (Map.Entry<OWLAxiom, SupportConfidenceTuple> entry : axioms.entrySet()) {
             if (entry.getValue().getSupport() >= supportThreshold &&
                     entry.getValue().getConfidence() >= confidenceThreshold) {
-
                 //System.out.println("add (" + i + "): " + entry);
                 m_ontology.addAxiom(entry.getKey());
             }
