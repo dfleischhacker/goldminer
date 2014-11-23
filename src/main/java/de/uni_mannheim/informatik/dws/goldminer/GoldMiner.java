@@ -333,6 +333,10 @@ public class GoldMiner {
             activeTypes.add(AxiomType.INVERSE_FUNCTIONAL_PROPERTY);
         }
 
+        for (AxiomType v : activeTypes) {
+            System.out.println("Enabled: " + v);
+        }
+
         return activeTypes;
     }
 
@@ -747,7 +751,8 @@ public class GoldMiner {
 //        }
 
         /* Concept Subsumption: c sub c */
-        File f = new File(TransactionTable.CLASS_MEMBERS.getAbsoluteAssociationRuleFileName());
+        File f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.CLASS_SUBSUMPTION_SIMPLE)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: {}! Skipping...", f.getAbsolutePath());
         }
@@ -776,7 +781,7 @@ public class GoldMiner {
 
         /* Concept Subsumption: c and c sub c */
         log.debug("Subsumption");
-        f = new File(TransactionTable.CLASS_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.CLASS_SUBSUMPTION_COMPLEX).getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -806,7 +811,8 @@ public class GoldMiner {
 
         /* c sub exists p.c */
         log.debug("c sub exists p c");
-        f = new File(TransactionTable.EXISTS_PROPERTY_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_REQUIRED_FOR_CLASS)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -836,7 +842,8 @@ public class GoldMiner {
 
         /* exists p.c sub c */
         log.debug("exists_p_c_sub_c");
-        f = new File(TransactionTable.EXISTS_PROPERTY_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_DOMAIN_FOR_RANGE)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -866,7 +873,8 @@ public class GoldMiner {
 
         /* Object Property Domain: exists p.T sub c */
         log.debug("Object Property Domain: exists_p_T_sub_c");
-        f = new File(TransactionTable.PROPERTY_RESTRICTIONS1.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_DOMAIN)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -896,7 +904,8 @@ public class GoldMiner {
 
         /* Object Property Range: exists p^i.T sub c */
         log.debug("Object Property Range: exists_pi_T_sub_c");
-        f = new File(TransactionTable.PROPERTY_RESTRICTIONS2.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_RANGE)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -926,7 +935,8 @@ public class GoldMiner {
 
         /* P sub P */
         log.debug("p_sub_p");
-        f = new File(TransactionTable.PROPERTY_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_SUBSUMPTION)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -955,7 +965,8 @@ public class GoldMiner {
 
         /* Property Chaining: P o Q sub R */
         log.debug("p_chain_q_sub_r");
-        f = new File(TransactionTable.PROPERTY_CHAIN_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_CHAINS)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -985,7 +996,8 @@ public class GoldMiner {
 
         /* Property Transitivity: P o P sub P*/
         log.debug("p_chain_p_sub_p");
-        f = new File(TransactionTable.PROPERTY_CHAIN_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_TRANSITIVITY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -1015,7 +1027,8 @@ public class GoldMiner {
 
         /* Concept Disjointness */
         log.debug("c_dis_c");
-        f = new File(TransactionTable.CLASS_DISJOINTNESS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.CLASS_DISJOINTNESS)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -1072,7 +1085,8 @@ public class GoldMiner {
         try {
             log.debug("p_dis_p");
             PropertyDisjointnessModule propertyDisjointnessModule = new PropertyDisjointnessModule(moduleConfig);
-            f = new File(TransactionTable.PROPERTY_MEMBERS.getAbsoluteAssociationRuleFileName());
+            f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_DISJOINTNESS)
+                    .getAbsoluteAssociationRuleFileName());
             if (!f.exists()) {
                 log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
             }
@@ -1092,7 +1106,8 @@ public class GoldMiner {
 
         /* Property Reflexivity */
         log.debug("p_reflexive");
-        f = new File(TransactionTable.PROPERTY_REFLEXIVITY.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.REFLEXIVE_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -1122,7 +1137,8 @@ public class GoldMiner {
 
         /* Property Irreflexivity */
         log.debug("p_irreflexive");
-        f = new File(TransactionTable.PROPERTY_REFLEXIVITY.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.IRREFLEXIVE_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -1152,11 +1168,12 @@ public class GoldMiner {
 
         /* Inverse Property */
         log.debug("p_inverse_q");
-        f = new File(TransactionTable.PROPERTY_INVERSE_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.INVERSE_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
-        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_REQUIRED_FOR_CLASS)) {
+        else if (!activeAxiomTypes.contains(AxiomType.INVERSE_PROPERTY)) {
             log.info("Skipped inverse property because not activated");
         }
         else {
@@ -1181,12 +1198,13 @@ public class GoldMiner {
 
         /* Asymmetric property */
         log.debug("p_asymmetric");
-        f = new File(TransactionTable.PROPERTY_INVERSE_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_ASYMMETRY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
         else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_ASYMMETRY)) {
-            log.info("Asymmetric property because not activated");
+            log.info("Skipped asymmetric property because not activated");
         }
         else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
@@ -1210,7 +1228,8 @@ public class GoldMiner {
 
         /* Functional Property */
         log.debug("p_functional");
-        f = new File(TransactionTable.PROPERTY_FUNCTIONAL_MEMBERS.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.FUNCTIONAL_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
@@ -1239,7 +1258,8 @@ public class GoldMiner {
 
         /* Property Inverse Functionality */
         log.debug("p_inverse_functional");
-        f = new File(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL.getAbsoluteAssociationRuleFileName());
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.INVERSE_FUNCTIONAL_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
         }
