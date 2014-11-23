@@ -252,10 +252,6 @@ public class OntologyWriter {
     }
 
     public OWLAxiom get_p_irreflexive_Axioms(int iAnte, int iCons, double supp, double conf) throws SQLException {
-        System.out.println("Ante: " + iAnte);
-        System.out.println("Cons: " + iCons);
-        System.out.println("Supp: " + supp);
-        System.out.println("Conf: " + conf);
         OWLAxiom axiom = m_ontology.getPropertyIrreflexivityAxiom(iAnte + "", getDisjointPropertyURI(iCons), supp,
                                                                   conf);
         return axiom;
