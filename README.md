@@ -2,7 +2,7 @@
 
 
 ## About
-GOLD Miner is a tool for Statistical Schema Induction as proposed by Völker and Niepert [1] and extended by
+GoldMiner is a tool for Statistical Schema Induction as proposed by Völker and Niepert [1] and extended by
 Fleischhacker and Völker [2][3].
 
 [1] Johanna Völker and Mathias Niepert. Statistical Schema Induction. The Semantic Web: Research and Applications : 8th Extended Semantic Web Conference, ESWC 2011, Heraklion, Crete, Greece, Proceedings, Part I, 2011.
@@ -14,26 +14,26 @@ Fleischhacker and Völker [2][3].
 ## Usage
 
 ### Building
-If you downloaded the source source of Gold Miner, you have to build the binary distribution first. The build process
-is based on Apache Maven (http://maven.apache.org). After having installed Maven, change into the Gold Miner source
+If you downloaded the source source of GoldMiner, you have to build the binary distribution first. The build process
+is based on Apache Maven (http://maven.apache.org). After having installed Maven, change into the GoldMiner source
 directory and use "mvn package" to start the build process. Have a look at the target/ folder which contains the
 gold-miner-VERSION-jar-with-dependencies.jar which is the one you would like to use most probably.
 
 ### Remark
 In the following we use
         goldminer.jar
-to refer to the name of the Gold Miner JAR. For calling Gold Miner, you have to replace goldminer.jar by the correct
+to refer to the name of the GoldMiner JAR. For calling GoldMiner, you have to replace goldminer.jar by the correct
 file name or rename your jar file to goldminer.jar.
 
-### Configuring Gold Miner
+### Configuring GoldMiner
 Call gold miner using the genconfig command
     java -jar goldminer.jar genconfig
 which generates the config files miner.properties and axioms.properties in the current directory.
 Adapt miner.properties to your environment and choose the axiom types you want to generate by setting them to true
 in axioms.properties. The axioms types not to generate have to be set to false.
 
-### Running Gold Miner
-Running Gold Miner includes three phases. In the first phase, Gold Miner inspects the ontology for concepts and
+### Running GoldMiner
+Running GoldMiner includes three phases. In the first phase, GoldMiner inspects the ontology for concepts and
 properties, the SPARQL endpoint for instances and generates the transaction tables required for the currently
 configured axiom types. This phase might take longer depending on the performance of your SPARQL endpoint. You can
 start the generation phase using
@@ -46,13 +46,13 @@ In the final step, the association rules are parsed and the ontology is enriched
     java -jar goldminer.jar parse
 to start this phase.
 
-### Re-running Gold Miner
-If you want to re-run Gold Miner completely you either have to empty all directories which contain results from previous
+### Re-running GoldMiner
+If you want to re-run GoldMiner completely you either have to empty all directories which contain results from previous
 runs or empty the checkpoints/ directory in your transaction_tables directory (as defined in the miner.properties config
-file) since Gold Miner uses this directory to store its progress.
+file) since GoldMiner uses this directory to store its progress.
 
 ## License
-Copyright (C) 2011-2012 Johanna Völker, Mathias Niepert, Daniel Fleischhacker
+Copyright (C) 2011-2014 Johanna Völker, Mathias Niepert, Daniel Fleischhacker
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
