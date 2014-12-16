@@ -1,4 +1,4 @@
-# GOLD Miner
+# GoldMiner
 
 
 ## About
