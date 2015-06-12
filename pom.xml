@@ -4,7 +4,7 @@
 
     <groupId>de.uni-mannheim.informatik.dws.goldminer</groupId>
     <artifactId>gold-miner</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>GOLD Miner</name>
@@ -12,6 +12,14 @@
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -36,39 +44,39 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <excludeTransitive>false</excludeTransitive>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>de.uni_mannheim.informatik.dws.goldminer.main.Starter</mainClass>
-                            <classpathPrefix>lib/</classpathPrefix>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
+            <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-dependency-plugin</artifactId>-->
+            <!--<version>2.4</version>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<id>copy-dependencies</id>-->
+            <!--<phase>package</phase>-->
+            <!--<goals>-->
+            <!--<goal>copy-dependencies</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+            <!--<outputDirectory>${project.build.directory}/lib</outputDirectory>-->
+            <!--<overWriteReleases>false</overWriteReleases>-->
+            <!--<overWriteSnapshots>true</overWriteSnapshots>-->
+            <!--<excludeTransitive>false</excludeTransitive>-->
+            <!--</configuration>-->
+            <!--</execution>-->
+            <!--</executions>-->
+            <!--</plugin>-->
+            <!--<plugin>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-jar-plugin</artifactId>-->
+            <!--<configuration>-->
+            <!--<archive>-->
+            <!--<manifest>-->
+            <!--<addClasspath>true</addClasspath>-->
+            <!--<mainClass>de.uni_mannheim.informatik.dws.goldminer.main.Starter</mainClass>-->
+            <!--<classpathPrefix>lib/</classpathPrefix>-->
+            <!--</manifest>-->
+            <!--</archive>-->
+            <!--</configuration>-->
+            <!--</plugin>-->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
@@ -101,6 +109,11 @@
     </repositories>
 
     <distributionManagement>
+        <repository>
+            <name>LSKI Releases Repository</name>
+            <id>lski-releases</id>
+            <url>https://breda.informatik.uni-mannheim.de/nexus/content/repositories/releases</url>
+        </repository>
         <snapshotRepository>
             <name>LSKI Snapshot Repository</name>
             <id>lski-snapshots</id>
@@ -113,6 +126,22 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>de.uni_mannheim.informatik.dws</groupId>
+            <artifactId>dwslib</artifactId>
+            <version>1.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>virtjdbc4</artifactId>
+                    <groupId>com.openlinksw.virtuoso</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.openlinksw.virtuoso</groupId>
+            <artifactId>virtjdbc4</artifactId>
+            <version>7.0</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

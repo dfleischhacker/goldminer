@@ -70,4 +70,36 @@ public class CheckpointUtil {
             f.delete();
         }
     }
+
+    /**
+     * Performs the given operation if the checkpoint is not yet reached.
+     *
+     * If the given checkpoint exists, this method does nothing.
+     * Otherwise, it performs the given operation <code>op</code> and creates the corresponding
+     * checkpoint if the run method returns true.
+     *
+     * @param checkpoint name name of checkpoint to check if already reached
+     * @param op operation to perform if checkpoint not yet reached
+     * @return return value of performed operation or true if checkpoint already reached
+     */
+    public boolean performCheckpointedOperation(String checkpoint, CheckpointedOperation op) {
+        if (reached(checkpoint)) {
+            return true;
+        }
+
+        boolean res = op.run();
+
+        if (res) {
+            reach(checkpoint);
+        }
+        return res;
+    }
+
+    public static interface CheckpointedOperation {
+        /**
+         * Performs the actual operation
+         * @return true if operation succeeded and checkpoint should be created, otherwise false.
+         */
+        public boolean run();
+    }
 }

@@ -5,8 +5,8 @@ public class SQLFactory {
     public String createClassesTable() {
         return "CREATE TABLE classes (" +
                 "id bigInt(20) primary key, " +
-                "uri varchar(255), " +
-                "name varchar(255), " +
+                "uri varchar(1200), " +
+                "name varchar(1000), " +
                 "size bigInt(20)" +
                 ");";
     }
@@ -28,10 +28,10 @@ public class SQLFactory {
     public String createClassesExPropertyTable() {
         return "CREATE TABLE classes_ex_property (" +
                 "id bigint(20) PRIMARY KEY, " +
-                "prop_uri varchar(255) NOT NULL, " +
-                "class_uri varchar(255) NOT NULL, " +
-                "prop_name varchar(255) NOT NULL, " +
-                "class_name varchar(255) NOT NULL" +
+                "prop_uri varchar(1200) NOT NULL, " +
+                "class_uri varchar(1200) NOT NULL, " +
+                "prop_name varchar(1000) NOT NULL, " +
+                "class_name varchar(1000) NOT NULL" +
                 ");";
     }
 
@@ -39,52 +39,52 @@ public class SQLFactory {
         return "CREATE TABLE classes_ex_property_top (" +
                 "id bigint(20) PRIMARY KEY, " +
                 "inverse varchar(255) NOT NULL, " +
-                "uri varchar(255) NOT NULL, " +
-                "name varchar(255) NOT NULL" +
+                "uri varchar(1200) NOT NULL, " +
+                "name varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createIndividualsTable() {
         return "CREATE TABLE individuals (" +
                 "id bigint(20) PRIMARY KEY, " +
-                "uri varchar(255) NOT NULL, " +
-                "name varchar(255) NOT NULL" +
+                "uri varchar(1200) NOT NULL, " +
+                "name varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createIndividualsExtTable() {
         return "CREATE TABLE individuals_ext (" +
                 "id bigint(20) PRIMARY KEY, " +
-                "uri varchar(255) NOT NULL, " +
-                "name varchar(255) NOT NULL" +
+                "uri varchar(1200) NOT NULL, " +
+                "name varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createIndividualsExtExtTable() {
         return "CREATE TABLE individuals_ext_ext(" +
                 "id bigint(20) PRIMARY KEY, " +
-                "uri varchar(255) NOT NULL, " +
-                "name varchar(255) NOT NULL" +
+                "uri varchar(1200) NOT NULL, " +
+                "name varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createIndividualPairsTable() {
         return "CREATE TABLE individual_pairs (" +
                 "id bigint(20)," +
-                "uri1 varchar(255) NOT NULL, " +
-                "uri2 varchar(255) NOT NULL, " +
-                "name1 varchar(255) NOT NULL, " +
-                "name2 varchar(255) NOT NULL" +
+                "uri1 varchar(1200) NOT NULL, " +
+                "uri2 varchar(1200) NOT NULL, " +
+                "name1 varchar(1000) NOT NULL, " +
+                "name2 varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createIndividualPairsExtTable() {
         return "CREATE TABLE individual_pairs_ext (" +
                 "id bigint(20)," +
-                "uri1 varchar(255) NOT NULL, " +
-                "uri2 varchar(255) NOT NULL, " +
-                "name1 varchar(255) NOT NULL, " +
-                "name2 varchar(255) NOT NULL" +
+                "uri1 varchar(1200) NOT NULL, " +
+                "uri2 varchar(1200) NOT NULL, " +
+                "name1 varchar(1000) NOT NULL, " +
+                "name2 varchar(1000) NOT NULL" +
                 ");";
     }
 
@@ -93,44 +93,44 @@ public class SQLFactory {
                 "id bigint(20) PRIMARY KEY, " +
                 "disjointID bigint(20), " +
                 "symmetryID bigint(20), " +
-                "uri varchar(255) NOT NULL, " +
-                "name varchar(255) NOT NULL" +
+                "uri varchar(1200) NOT NULL, " +
+                "name varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createDatatypePropertiesTable() {
         return "CREATE TABLE datatypeProperties (" +
                 "id bigint(20) PRIMARY KEY, " +
-                "uri varchar(255) NOT NULL, " +
-                "name varchar(255) NOT NULL" +
+                "uri varchar(1200) NOT NULL, " +
+                "name varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createPropertyChainsTable() {
         return "CREATE TABLE property_chains (" +
                 "id bigint(20) PRIMARY KEY, " +
-                "uri1 varchar(255) NOT NULL, " +
-                "uri2 varchar(255) NOT NULL, " +
-                "name1 varchar(255) NOT NULL, " +
-                "name2 varchar(255) NOT NULL" +
+                "uri1 varchar(1200) NOT NULL, " +
+                "uri2 varchar(1200) NOT NULL, " +
+                "name1 varchar(1000) NOT NULL, " +
+                "name2 varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createIndividualPairsTransTable() {
         return "CREATE TABLE individual_pairs_trans (" +
                 "id bigint(20) PRIMARY KEY, " +
-                "uri1 varchar(255) NOT NULL, " +
-                "uri2 varchar(255) NOT NULL, " +
-                "name1 varchar(255) NOT NULL, " +
-                "name2 varchar(255) NOT NULL" +
+                "uri1 varchar(1200) NOT NULL, " +
+                "uri2 varchar(1200) NOT NULL, " +
+                "name1 varchar(1000) NOT NULL, " +
+                "name2 varchar(1000) NOT NULL" +
                 ");";
     }
 
     public String createPropertyChainsTransTable() {
         return "CREATE TABLE property_chains_trans (" +
                 "id bigint(20) PRIMARY KEY, " +
-                "uri varchar(255) NOT NULL, " +
-                "name varchar(255) NOT NULL" +
+                "uri varchar(1200) NOT NULL, " +
+                "name varchar(1000) NOT NULL" +
                 ");";
     }
 

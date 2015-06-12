@@ -15,9 +15,9 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class QueryEngine {
+public class SPARQLHTTPQueryEngine extends SPARQLQueryEngine {
 
-    private final static Logger logger = LoggerFactory.getLogger(QueryEngine.class);
+    private final static Logger logger = LoggerFactory.getLogger(SPARQLHTTPQueryEngine.class);
 
 	protected String m_sEndpoint;
 
@@ -25,7 +25,7 @@ public class QueryEngine {
 
 	protected int m_iChunk;
 
-	public QueryEngine(){
+	public SPARQLHTTPQueryEngine(){
 		m_sEndpoint = Settings.getString(Parameter.ENDPOINT);
         m_sGraph = Settings.getString( Parameter.GRAPH );
         m_iChunk = Settings.getInteger( Parameter.SPARQL_CHUNK );
@@ -33,22 +33,22 @@ public class QueryEngine {
     }
 
 
-	public QueryEngine(String endpoint, String graph, int chunk){
+	public SPARQLHTTPQueryEngine(String endpoint, String graph, int chunk){
 		m_sEndpoint = endpoint;
 		m_sGraph = graph;
 		m_iChunk = chunk;
 	}
 
-	public QueryEngine( String sEndpoint, int iChunk ){
+	public SPARQLHTTPQueryEngine(String sEndpoint, int iChunk){
 		m_sEndpoint = sEndpoint;
 		m_iChunk = iChunk;
 	}
 
-	public int getChunkSize(){
+    public int getChunkSize(){
 		return m_iChunk;
 	}
 
-	public List<String> getAll( Iterator<String> iter ){
+    public List<String> getAll(Iterator<String> iter){
 		List<String> all = new ArrayList<String>();
 		while( iter.hasNext() ){
 			all.add(iter.next());
@@ -56,12 +56,14 @@ public class QueryEngine {
 		return all;
 	}
 
-	public ResultsIterator query( String query, String filter ) {
-		return new ResultsIterator( this, query, filter );
+	@Override
+    public ResultsIterator query(String query, String filter) {
+		return new SPARQLResultsIterator( this, query, filter );
 	}
 
-	public ResultPairsIterator queryPairs( String query, String filter ) {
-		return new ResultPairsIterator( this, query, filter );
+	@Override
+    public ResultPairsIterator queryPairs(String query, String filter) {
+		return new SPARQLResultPairsIterator( this, query, filter );
 	}
 
 	protected List<String> execute( String queryString, String sVar, String filter ) throws UnsupportedEncodingException, IOException {
@@ -133,7 +135,8 @@ public class QueryEngine {
 		return set;
 	}
 
-	public int count( String queryString ) throws Exception {
+	@Override
+    public int count(String queryString) throws Exception {
 		// System.out.println( "QueryEngine.count: "+ queryString +"\n" );
 		List<String> set = new ArrayList<String>();
 		Query query = QueryFactory.create( queryString, Syntax.syntaxARQ );

@@ -1,9 +1,11 @@
 package de.uni_mannheim.informatik.dws.goldminer;
 
 import de.uni_mannheim.informatik.dws.goldminer.database.*;
+import de.uni_mannheim.informatik.dws.goldminer.main.*;
 import de.uni_mannheim.informatik.dws.goldminer.modules.MinerModuleConfiguration;
 import de.uni_mannheim.informatik.dws.goldminer.modules.MinerModuleException;
 import de.uni_mannheim.informatik.dws.goldminer.modules.PropertyDisjointnessModule;
+import de.uni_mannheim.informatik.dws.goldminer.modules.axiomgenerator.AxiomGenerator;
 import de.uni_mannheim.informatik.dws.goldminer.ontology.*;
 import de.uni_mannheim.informatik.dws.goldminer.sparql.Filter;
 import de.uni_mannheim.informatik.dws.goldminer.util.*;
@@ -16,90 +18,83 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
+/**
+ * Main class of GoldMiner. Provides the entry points into all functionality and manages connections to
+ * database and SPARQL endpoint via its helper classes
+ *
+ * @author Johanna Völker
+ * @author Jakob Frankenbach
+ * @author Daniel Fleischhacker (daniel@informatik.uni-mannheim.de)
+ */
+ /* TODO: This class needs to be refactored urgently. It contains to much functionality and all its activation
+ * logic.
+ */
 public class GoldMiner {
-
     public static Logger log = LoggerFactory.getLogger(GoldMiner.class);
-
-    private static final String[] transactionTableNames =
-            {"classmembers", "existspropertymembers", "propertyrestrictions1", "propertyrestrictions2",
-                    "propertymembers",
-                    "propertychainmembers", "classdisjointness", "propertyreflexivity", "propertyinversemembers",
-                    "propertyfunctionalmembers", "propertyinversefunctional"};
-    private static final String associationRulesSuffix = "AR";
     private AssociationRulesParser parser;
     private OntologyWriter writer;
     private Ontology ontology;
     private CheckpointUtil chk;
     private RandomAxiomChooser rac = new RandomAxiomChooser();
+    private SQLDatabase sqlDatabase;
+    private Setup setup;
+    private TerminologyExtractor terminologyExtractor;
+    private IndividualsExtractor individualsExtractor;
+    private TablePrinter tablePrinter;
+    private Set<AxiomType> activeAxiomTypes;
+    private RequirementsResolver requirementsResolver;
+    private AxiomGenerator axiomGenerator;
 
+    private boolean writeAnnotations = Settings.getBoolean("write_annotations");
+
+    /**
+     * Initialize GoldMiner to write the created ontology to the file specified in the configuration file.
+     *
+     * @throws IOException
+     * @throws SQLException
+     * @throws OWLOntologyCreationException
+     * @throws OWLOntologyStorageException
+     */
     public GoldMiner() throws IOException, SQLException, OWLOntologyCreationException,
             OWLOntologyStorageException {
-        if (!Settings.loaded()) {
-            Settings.load();
-        }
-        this.selectAxioms();
-        this.database = Database.instance();
-        this.setup = new Setup();
-        this.tablePrinter = new TablePrinter();
-        this.terminologyExtractor = new TerminologyExtractor();
-        this.individualsExtractor = new IndividualsExtractor();
-        this.parser = new AssociationRulesParser();
-        this.ontology = new Ontology();
-        this.ontology.create(new File(Settings.getString("ontology")));
-        this.ontology.save();
-        this.chk = new CheckpointUtil(Settings.getString("transaction_tables") + "/checkpoints");
+        this(Settings.getString("ontology"));
     }
 
+    /**
+     * Initialize GoldMiner to write created ontology to the given <code>ontologyFile</code>.
+     *
+     * @param ontologyFile name of file to write generated ontology to
+     * @throws IOException
+     * @throws SQLException
+     * @throws OWLOntologyCreationException
+     * @throws OWLOntologyStorageException
+     */
     public GoldMiner(String ontologyFile)
             throws IOException, SQLException, OWLOntologyCreationException,
             OWLOntologyStorageException {
         if (!Settings.loaded()) {
             Settings.load();
         }
-        this.selectAxioms();
-        this.database = Database.instance();
+        this.activeAxiomTypes = getSelectedAxiomTypes();
+        this.sqlDatabase = SQLDatabase.instance();
         this.setup = new Setup();
         this.tablePrinter = new TablePrinter();
         this.terminologyExtractor = new TerminologyExtractor();
         this.individualsExtractor = new IndividualsExtractor();
         this.parser = new AssociationRulesParser();
+//        this.axiomGenerator = new AxiomGenerator();
         this.ontology = new Ontology();
         this.ontology.create(new File(ontologyFile));
         this.ontology.save();
         this.chk = new CheckpointUtil(Settings.getString("transaction_tables") + "/checkpoints");
+        this.requirementsResolver = new RequirementsResolver(activeAxiomTypes);
     }
-
-    private Database database;
-    private Setup setup;
-    private TerminologyExtractor terminologyExtractor;
-    private IndividualsExtractor individualsExtractor;
-    private TablePrinter tablePrinter;
-    private boolean c_sub_c;
-    private boolean c_and_c_sub_c;
-    private boolean c_sub_exists_p_c;
-    private boolean exists_p_c_sub_c;
-    private boolean exists_p_T_sub_c;
-    private boolean exists_pi_T_sub_c;
-    private boolean p_sub_p;
-    private boolean p_dis_p;
-    private boolean p_chain_p_sub_p;
-    private boolean p_chain_q_sub_r;
-    private boolean c_dis_c;
-    private boolean p_reflexive;
-    private boolean p_irreflexive;
-    private boolean p_inverse_q;
-    private boolean p_asymmetric;
-    private boolean p_functional;
-    private boolean p_inverse_functional;
-    private boolean writeAnnotations;
 
     public boolean disconnect() {
         try {
-            this.database.close();
+            this.sqlDatabase.close();
             return true;
         }
         catch (SQLException e) {
@@ -108,155 +103,150 @@ public class GoldMiner {
     }
 
     public boolean setupDatabase() throws SQLException {
-        if (chk.reached("setupdatabase")) {
-            return true;
-        }
-
-        boolean classes;
-        boolean individuals;
-        boolean properties;
-        boolean classes_ex_property;
-        boolean classes_ex_property_top;
-        boolean individual_pairs;
-        boolean individual_pairs_trans;
-        boolean property_chains;
-        boolean property_chains_trans;
-        if (this.c_sub_c ||
-                this.c_and_c_sub_c ||
-                this.c_sub_exists_p_c ||
-                this.exists_p_c_sub_c ||
-                this.exists_p_T_sub_c ||
-                this.exists_pi_T_sub_c ||
-                this.c_dis_c ||
-                this.p_reflexive ||
-                this.p_irreflexive ||
-                this.p_inverse_q ||
-                this.p_asymmetric ||
-                this.p_functional ||
-                this.p_inverse_functional) {
-            classes = true;
-            individuals = true;
-        } else {
-            classes = false;
-            individuals = false;
-        }
-        if (this.p_sub_p ||
-                this.p_chain_q_sub_r ||
-                this.p_chain_p_sub_p ||
-                this.c_sub_exists_p_c ||
-                this.exists_p_c_sub_c ||
-                this.p_dis_p ||
-                this.p_reflexive ||
-                this.p_irreflexive ||
-                this.p_inverse_q ||
-                this.p_asymmetric ||
-                this.p_functional ||
-                this.p_inverse_functional) {
-            properties = true;
-        } else {
-            properties = false;
-        }
-        if (this.c_sub_exists_p_c || this.exists_p_c_sub_c) {
-            classes_ex_property = true;
-        } else {
-            classes_ex_property = false;
-        }
-        if (this.exists_p_T_sub_c || this.exists_pi_T_sub_c) {
-            classes_ex_property_top = true;
-        } else {
-            classes_ex_property_top = false;
-        }
-        if (this.p_sub_p ||
-                this.p_chain_q_sub_r ||
-                this.p_chain_p_sub_p ||
-                this.p_dis_p ||
-                this.p_inverse_q ||
-                this.p_asymmetric) {
-            individual_pairs = true;
-        } else {
-            individual_pairs = false;
-        }
-        if (this.p_chain_q_sub_r ||
-                this.p_chain_p_sub_p) {
-            individual_pairs_trans = true;
-            property_chains = true;
-            property_chains_trans = true;
-        } else {
-            individual_pairs_trans = false;
-            property_chains = false;
-            property_chains_trans = false;
-        }
-        if (this.setup.setupSchema(classes, individuals, properties, classes_ex_property, classes_ex_property_top,
-                individual_pairs, individual_pairs_trans, property_chains, property_chains_trans)) {
-            chk.reach("setupdatabase");
-            return true;
-        }
-//        else {
-//            this.setup.removeSchema();
-//            return false;
-//        }
-        return false;
-
+        return chk.performCheckpointedOperation("setupdatabase", new CheckpointUtil.CheckpointedOperation() {
+            @Override
+            public boolean run() {
+                return setup.setupSchema();
+            }
+        });
     }
 
     public boolean terminologyAcquisition() throws SQLException {
-        if ((this.c_sub_c ||
-                this.c_and_c_sub_c ||
-                this.c_sub_exists_p_c ||
-                this.exists_p_c_sub_c ||
-                this.exists_p_T_sub_c ||
-                this.exists_pi_T_sub_c ||
-                this.c_dis_c ||
-                this.p_reflexive ||
-                this.p_irreflexive ||
-                this.p_inverse_q ||
-                this.p_asymmetric ||
-                this.p_inverse_functional) &&
-                !chk.reached("initclassestable")) {
-            this.terminologyExtractor.initClassesTable();
-            this.individualsExtractor.initIndividualsTable();
-            chk.reach("initclassestable");
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.CLASSES_TABLE)) {
+            chk.performCheckpointedOperation("initclassestable", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    terminologyExtractor.initClassesTable();
+                    return true;
+                }
+            });
         }
-        if ((this.p_sub_p ||
-                this.p_chain_q_sub_r ||
-                this.p_chain_p_sub_p ||
-                this.c_sub_exists_p_c ||
-                this.exists_p_c_sub_c ||
-                this.p_dis_p ||
-                this.p_reflexive ||
-                this.p_irreflexive ||
-                this.p_inverse_q ||
-                this.p_asymmetric ||
-                this.p_inverse_functional) &&
-                !chk.reached("initpropertiestable")) {
-            this.terminologyExtractor.initPropertiesTable();
-            chk.reach("initpropertiestable");
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.INDIVIDUALS_TABLE)) {
+            chk.performCheckpointedOperation("initindividualstable", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    try {
+                        individualsExtractor.initIndividualsTable();
+                    }
+                    catch (SQLException e) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
-        if ((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && !chk.reached("initclassesexistspropertytable")) {
-            this.terminologyExtractor.initClassesExistsPropertyTable();
-            chk.reach("initclassesexistspropertytable");
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.INDIVIDUAL_PAIRS_TABLE)) {
+            chk.performCheckpointedOperation("initindividualpairstable", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    try {
+                        individualsExtractor.initIndividualPairsTable();
+                    }
+                    catch (SQLException e) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
-        if ((this.exists_p_T_sub_c || this.exists_pi_T_sub_c) && !chk.reached("initpropertytoptable")) {
-            this.terminologyExtractor.initPropertyTopTable();
-            chk.reach("initpropertytoptable");
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.PROPERTIES_TABLE)) {
+            chk.performCheckpointedOperation("initpropertiestable",
+                    new CheckpointUtil.CheckpointedOperation() {
+                        @Override
+                        public boolean run() {
+                            terminologyExtractor.initPropertiesTable();
+                            return true;
+                        }
+                    });
         }
-        if ((this.p_sub_p || this.p_chain_q_sub_r || this.p_chain_p_sub_p || this.p_dis_p || this.p_inverse_q ||
-                this.p_asymmetric) && !chk.reached("initindividualpairstable")) {
-            this.individualsExtractor.initIndividualPairsTable();
-            chk.reach("initindividualpairstable");
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.CLASSES_EXISTS_PROPERTY_TABLE)) {
+            chk.performCheckpointedOperation("initclassesexistspropertytable",
+                    new CheckpointUtil.CheckpointedOperation() {
+                        @Override
+                        public boolean run() {
+                            try {
+                                terminologyExtractor.initClassesExistsPropertyTable();
+                            }
+                            catch (SQLException e) {
+                                return false;
+                            }
+                            return true;
+                        }
+                    });
         }
-        if ((this.p_chain_q_sub_r || this.p_chain_p_sub_p) && !chk.reached("initpropertychainstable")) {
-            this.terminologyExtractor.initPropertyChainsTable();
-            this.terminologyExtractor.initPropertyChainsTransTable();
-            this.individualsExtractor.initIndividualPairsTransTable();
-            chk.reach("initpropertychainstable");
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.PROPERTY_TOP_TABLE)) {
+            chk.performCheckpointedOperation("initpropertytoptable", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    try {
+                        terminologyExtractor.initPropertyTopTable();
+                    }
+                    catch (SQLException e) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.PROPERTY_CHAINS_TABLE)) {
+            chk.performCheckpointedOperation("initpropertychainstable", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    try {
+                        terminologyExtractor.initPropertyChainsTable();
+                    }
+                    catch (SQLException e) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.PROPERTY_CHAINS_TRANS_TABLE)) {
+            chk.performCheckpointedOperation("initpropertychainstranstable", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    try {
+                        terminologyExtractor.initPropertyChainsTransTable();
+                    }
+                    catch (SQLException e) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isDatabaseTableRequired(DatabaseTable.INDIVIDUAL_PAIRS_TRANS_TABLE)) {
+            chk.performCheckpointedOperation("initindividualpairstransstable", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    try {
+                        individualsExtractor.initIndividualPairsTransTable();
+                    }
+                    catch (SQLException e) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        //TODO: we do not actually create indexes in this method yet
+        this.terminologyExtractor.createIndexes();
         return true;
     }
 
     public boolean connect(String url, String user, String password) {
         try {
-            this.database = Database.instance(url, user, password);
+            this.sqlDatabase = SQLDatabase.instance(url, user, password);
             return true;
         }
         catch (SQLException e) {
@@ -264,35 +254,100 @@ public class GoldMiner {
         }
     }
 
-    public void selectAxioms() {
-        this.c_sub_c = Settings.getAxiom("c_sub_c");
-        this.c_and_c_sub_c = Settings.getAxiom("c_and_c_sub_c");
-        this.c_sub_exists_p_c = Settings.getAxiom("c_sub_exists_p_c");
-        this.exists_p_c_sub_c = Settings.getAxiom("exists_p_c_sub_c");
-        this.exists_p_T_sub_c = Settings.getAxiom("exists_p_T_sub_c");
-        this.exists_pi_T_sub_c = Settings.getAxiom("exists_pi_T_sub_c");
-        this.p_sub_p = Settings.getAxiom("p_sub_p");
-        this.p_chain_q_sub_r = Settings.getAxiom("p_chain_q_sub_r");
-        this.p_chain_p_sub_p = Settings.getAxiom("p_chain_p_sub_p");
-        this.c_dis_c = Settings.getAxiom("c_dis_c");
-        this.p_dis_p = Settings.getAxiom("p_dis_p");
-        this.p_reflexive = Settings.getAxiom("p_reflexive");
-        this.p_irreflexive = Settings.getAxiom("p_irreflexive");
-        this.p_inverse_q = Settings.getAxiom("p_inverse_q");
-        this.p_asymmetric = Settings.getAxiom("p_asymmetric");
-        this.p_functional = Settings.getAxiom("p_functional");
-        this.p_inverse_functional = Settings.getAxiom("p_inverse_functional");
-        this.writeAnnotations = Settings.getAxiom("write_annotations");
+    /**
+     * Returns the set of all axiom types activated in the configuration.
+     *
+     * @return set of activated axiom types
+     */
+    public Set<AxiomType> getSelectedAxiomTypes() {
+        HashSet<AxiomType> activeTypes = new HashSet<AxiomType>();
+        if (Settings.isAxiomActivated("c_sub_c")) {
+            activeTypes.add(AxiomType.CLASS_SUBSUMPTION_SIMPLE);
+        }
+
+        if (Settings.isAxiomActivated("c_and_c_sub_c")) {
+            activeTypes.add(AxiomType.CLASS_SUBSUMPTION_COMPLEX);
+        }
+
+        if (Settings.isAxiomActivated("c_sub_exists_p_c")) {
+            activeTypes.add(AxiomType.PROPERTY_REQUIRED_FOR_CLASS);
+        }
+
+        if (Settings.isAxiomActivated("exists_p_c_sub_c")) {
+            activeTypes.add(AxiomType.PROPERTY_DOMAIN_FOR_RANGE);
+        }
+
+        if (Settings.isAxiomActivated("exists_p_T_sub_c")) {
+            activeTypes.add(AxiomType.PROPERTY_DOMAIN);
+        }
+
+        if (Settings.isAxiomActivated("exists_pi_T_sub_c")) {
+            activeTypes.add(AxiomType.PROPERTY_RANGE);
+        }
+
+        if (Settings.isAxiomActivated("p_sub_p")) {
+            activeTypes.add(AxiomType.PROPERTY_SUBSUMPTION);
+        }
+
+        if (Settings.isAxiomActivated("p_chain_q_sub_r")) {
+            activeTypes.add(AxiomType.PROPERTY_CHAINS);
+        }
+
+        if (Settings.isAxiomActivated("c_dis_c")) {
+            activeTypes.add(AxiomType.CLASS_DISJOINTNESS);
+        }
+
+        if (Settings.isAxiomActivated("p_dis_p")) {
+            activeTypes.add(AxiomType.PROPERTY_DISJOINTNESS);
+        }
+
+        if (Settings.isAxiomActivated("p_reflexive")) {
+            activeTypes.add(AxiomType.REFLEXIVE_PROPERTY);
+        }
+
+        if (Settings.isAxiomActivated("p_irreflexive")) {
+            activeTypes.add(AxiomType.IRREFLEXIVE_PROPERTY);
+        }
+
+        if (Settings.isAxiomActivated("p_inverse_q")) {
+            activeTypes.add(AxiomType.INVERSE_PROPERTY);
+        }
+
+        if (Settings.isAxiomActivated("p_inverse_q")) {
+            activeTypes.add(AxiomType.INVERSE_PROPERTY);
+        }
+
+        if (Settings.isAxiomActivated("p_inverse_q")) {
+            activeTypes.add(AxiomType.INVERSE_PROPERTY);
+        }
+
+        if (Settings.isAxiomActivated("p_asymmetric")) {
+            activeTypes.add(AxiomType.PROPERTY_ASYMMETRY);
+        }
+
+        if (Settings.isAxiomActivated("p_functional")) {
+            activeTypes.add(AxiomType.FUNCTIONAL_PROPERTY);
+        }
+
+        if (Settings.isAxiomActivated("p_inverse_functional")) {
+            activeTypes.add(AxiomType.INVERSE_FUNCTIONAL_PROPERTY);
+        }
+
+        for (AxiomType v : activeTypes) {
+            System.out.println("Enabled: " + v);
+        }
+
+        return activeTypes;
     }
 
     public boolean sparqlSetup(String endpoint, Filter filter, String graph,
-            int chunk) {
+                               int chunk) {
         if (!chk.reached("terminologyextract")) {
-            this.terminologyExtractor = new TerminologyExtractor(this.database, endpoint, graph, chunk, filter);
+            this.terminologyExtractor = new TerminologyExtractor(this.sqlDatabase, endpoint, graph, chunk, filter);
             chk.reach("terminologyextract");
         }
         if (!chk.reached("individualextract")) {
-            this.individualsExtractor = new IndividualsExtractor(this.database, endpoint, graph, chunk, filter);
+            this.individualsExtractor = new IndividualsExtractor(this.sqlDatabase, endpoint, graph, chunk, filter);
             chk.reach("individualextract");
         }
         return false;
@@ -300,102 +355,277 @@ public class GoldMiner {
 
     public void createTransactionTables() throws IOException,
             SQLException {
-        if ((this.c_sub_c || this.c_and_c_sub_c) && !chk.reached("classmembers")) {
-            this.deleteFile(0);
-            this.tablePrinter
-                    .printClassMembers(Settings.getString("transaction_tables") + transactionTableNames[0] + ".txt");
-            chk.reach("classmembers");
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.CLASS_MEMBERS)) {
+            chk.performCheckpointedOperation("classmembers", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.CLASS_MEMBERS);
+                    try {
+                        tablePrinter.printClassMembers(TransactionTable.CLASS_MEMBERS.getAbsoluteFileName());
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating class members transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating class members transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
-        if ((this.c_sub_exists_p_c || this.exists_p_c_sub_c) && !chk.reached("existspropertymembers")) {
-            this.deleteFile(1);
-            this.tablePrinter.printExistsPropertyMembers(
-                    Settings.getString("transaction_tables") + transactionTableNames[1] + ".txt", 0);
-            chk.reach("existspropertymembers");
-        }
-        if (this.exists_p_T_sub_c && !chk.reached("propertyrestrictions1")) {
-            this.deleteFile(2);
-            this.tablePrinter
-                    .printPropertyRestrictions(
-                            Settings.getString("transaction_tables") + transactionTableNames[2] + ".txt",
-                            0);
-            chk.reach("propertyrestrictions1");
-        }
-        if (this.exists_pi_T_sub_c && !chk.reached("propertyrestrictions2")) {
-            this.deleteFile(3);
-            this.tablePrinter
-                    .printPropertyRestrictions(
-                            Settings.getString("transaction_tables") + transactionTableNames[3] + ".txt",
-                            1);
-            chk.reach("propertyrestrictions2");
-        }
-        if ((this.p_sub_p || this.p_dis_p) && !chk.reached("propertymembers")) {
-            this.deleteFile(4);
-            this.tablePrinter
-                    .printPropertyMembers(Settings.getString("transaction_tables") + transactionTableNames[4] + "" +
-                            ".txt");
-            chk.reach("propertymembers");
-        }
-        if ((this.p_chain_q_sub_r || this.p_chain_p_sub_p) && !chk.reached("propertychainmembers")) {
-            this.deleteFile(5);
-            this.tablePrinter.printPropertyChainMembersTrans_new(
-                    Settings.getString("transaction_tables") + transactionTableNames[5] + ".txt");
-            chk.reach("propertychainmembers");
-        }
-        if ((this.p_reflexive || this.p_irreflexive) && !chk.reached("propertyreflexivity")) {
-            this.deleteFile(7);
-            this.tablePrinter
-                    .printPropertyReflexivity(
-                            Settings.getString("transaction_tables") + transactionTableNames[7] + ".txt");
-            chk.reach("propertyreflexivity");
-        }
-        if ((this.p_inverse_q || this.p_asymmetric) && !chk.reached("propertyinversemembers")) {
-            this.deleteFile(8);
-            this.tablePrinter.printPropertyInverseMembers(
-                    Settings.getString("transaction_tables") + transactionTableNames[8] + ".txt");
-            chk.reach("propertyinversemembers");
-        }
-        if (this.p_functional && !chk.reached("propertyfunctionalmembers")) {
-            this.deleteFile(9);
-            this.tablePrinter.printPropertyFunctionalMembers(
-                    Settings.getString("transaction_tables") + transactionTableNames[9] + ".txt");
-            chk.reach("propertyfunctionalmembers");
 
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.EXISTS_PROPERTY_MEMBERS)) {
+            chk.performCheckpointedOperation("existspropertymembers", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.EXISTS_PROPERTY_MEMBERS);
+                    try {
+                        tablePrinter.printExistsPropertyMembers(
+                                TransactionTable.EXISTS_PROPERTY_MEMBERS.getAbsoluteFileName(),
+                                0);
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating exists property members transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating exists property members transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
-        if (this.p_inverse_functional && !chk.reached("propertyinversefunctional")) {
-            this.deleteFile(10);
-            this.tablePrinter.printPropertyInverseFunctionalMembers(
-                    Settings.getString("transaction_tables") + transactionTableNames[10] + ".txt");
-            chk.reach("propertyinversefunctional");
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_RESTRICTIONS1)) {
+            chk.performCheckpointedOperation("propertyrestrictions1", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_RESTRICTIONS1);
+                    try {
+                        tablePrinter.printPropertyRestrictions(TransactionTable.PROPERTY_RESTRICTIONS1.getAbsoluteFileName(),
+                                0);
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
-        if (this.c_dis_c && !chk.reached("classdisjointness")) {
-            this.deleteFile(6);
-            this.tablePrinter.printDisjointClassMembers(
-                    Settings.getString("transaction_tables") + transactionTableNames[6] + ".txt");
-            chk.reach("classdisjointness");
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_RESTRICTIONS2)) {
+            chk.performCheckpointedOperation("propertyrestrictions2", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_RESTRICTIONS2);
+                    try {
+                        tablePrinter.printPropertyRestrictions(TransactionTable.PROPERTY_RESTRICTIONS2.getAbsoluteFileName(),
+                                1);
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 2 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 2 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_MEMBERS)) {
+            chk.performCheckpointedOperation("propertymembers", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_MEMBERS);
+                    try {
+                        tablePrinter.printExistsPropertyMembers(TransactionTable.PROPERTY_MEMBERS.getAbsoluteFileName(),
+                                0);
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_CHAIN_MEMBERS)) {
+            chk.performCheckpointedOperation("propertychainmembers", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_CHAIN_MEMBERS);
+                    try {
+                        tablePrinter.printPropertyChainMembersTrans_new(
+                                TransactionTable.PROPERTY_CHAIN_MEMBERS.getAbsoluteFileName());
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_REFLEXIVITY)) {
+            chk.performCheckpointedOperation("propertyreflexivity", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_REFLEXIVITY);
+                    try {
+                        tablePrinter.printPropertyReflexivity(TransactionTable.PROPERTY_REFLEXIVITY.getAbsoluteFileName());
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_REFLEXIVITY)) {
+            chk.performCheckpointedOperation("propertyinversemembers", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_REFLEXIVITY);
+                    try {
+                        tablePrinter.printPropertyInverseMembers(TransactionTable.PROPERTY_INVERSE_MEMBERS.getAbsoluteFileName());
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_FUNCTIONAL_MEMBERS)) {
+            chk.performCheckpointedOperation("propertyfunctionalmembers", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_FUNCTIONAL_MEMBERS);
+                    try {
+                        tablePrinter.printPropertyInverseMembers(TransactionTable.PROPERTY_FUNCTIONAL_MEMBERS.getAbsoluteFileName());
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL)) {
+            chk.performCheckpointedOperation("propertyinversefunctional", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL);
+                    try {
+                        tablePrinter.printPropertyInverseFunctionalMembers(TransactionTable.PROPERTY_INVERSE_FUNCTIONAL.getAbsoluteFileName());
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
+        }
+
+        if (requirementsResolver.isTransactionTableRequired(TransactionTable.CLASS_DISJOINTNESS)) {
+            chk.performCheckpointedOperation("classdisjointness", new CheckpointUtil.CheckpointedOperation() {
+                @Override
+                public boolean run() {
+                    deleteFile(TransactionTable.CLASS_DISJOINTNESS);
+                    try {
+                        tablePrinter.printDisjointClassMembers(TransactionTable.CLASS_DISJOINTNESS.getAbsoluteFileName());
+                    }
+                    catch (SQLException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    catch (IOException e) {
+                        log.error("Error creating property restrictions 1 transaction table", e);
+                        return false;
+                    }
+                    return true;
+                }
+            });
         }
     }
 
-    private void deleteFile(int index) throws IOException {
-        File f = new File(Settings.getString("transaction_tables") + transactionTableNames[index] + ".txt");
+    /**
+     * Deletes the transaction table file for the given table. Errors and exceptions are silently ignored!
+     * @param table table whose file representation should be deleted
+     */
+    private void deleteFile(TransactionTable table) {
+        File f = new File(table.getAbsoluteFileName());
         f.delete();
-        f.createNewFile();
+        try {
+            f.createNewFile();
+        }
+        catch (IOException e) {
+            log.warn("Unable to create transaction table file '{}'", f.getAbsolutePath());
+        }
     }
 
+    /**
+     * Starts the external mining process on all relevant transaction table files.
+     *
+     * @throws IOException
+     */
     public void mineAssociationRules() throws IOException {
-        File file = new File(Settings.getString("transaction_tables"));
-        File[] files = this.removeFiles(file.listFiles(new TextFileFilter()));
+        TransactionTable[] relevantTransactionTables = this.getRelevantExistingTransactionTables();
         File ruleFile = new File(Settings.getString("association_rules"));
-        File[] ruleFiles = ruleFile.listFiles(new TextFileFilter());
-        this.deleteFiles(ruleFiles);
-        for (File f : files) {
-            int index = f.getName().lastIndexOf(".");
+        if (!ruleFile.exists()) {
+            ruleFile.mkdirs();
+        }
+        this.deleteAssociationRuleFiles();
+        for (TransactionTable table : relevantTransactionTables) {
             ProcessBuilder p = new ProcessBuilder(Settings.getString("apriori"),
                     "-tr", "-s-1", "-c0", "-m2", "-n2", "-v (%20s, %30c)",
-                    f.getPath(),
-                    new File(Settings.getString("association_rules")).getAbsolutePath() + f.getName()
-                                                                                           .substring(0,
-                                                                                                   index) +
-                            associationRulesSuffix + ".txt");
+                    table.getAbsoluteFileName(),
+                    table.getAbsoluteAssociationRuleFileName()
+            );
             p.redirectOutput(ProcessBuilder.Redirect.PIPE);
             Process process = p.start();
             String line;
@@ -407,120 +637,50 @@ public class GoldMiner {
         }
     }
 
-    private File[] removeFiles(File[] files) {
-        File[] result;
-        List<Integer> indexes = new ArrayList<Integer>();
-        if (!this.c_sub_c && !this.c_and_c_sub_c) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[0] + ".txt")) {
-                    indexes.add(i);
-                }
+    /**
+     * Returns an array of all relevant existing transaction table files in the transaction
+     * table directory.
+     *
+     * @return all transaction table files contained the the transaction tables directory and relevant for the
+     * current run configuration
+     */
+    private TransactionTable[] getRelevantExistingTransactionTables() {
+        File file = new File(Settings.getString("transaction_tables"));
+
+        HashMap<String, TransactionTable> relevantTables = new HashMap<String, TransactionTable>();
+        HashSet<TransactionTable> relevantExistingTables = new HashSet<TransactionTable>();
+        for (TransactionTable table : requirementsResolver.getRequiredTransactionTables()) {
+            relevantTables.put(table.getFileName(), table);
+        }
+
+        for (File tableFile : file.listFiles(new FileExtensionFilter(".txt"))) {
+            if (relevantTables.containsKey(tableFile.getName())) {
+                relevantExistingTables.add(relevantTables.get(tableFile.getName()));
             }
         }
-        if (!this.c_sub_exists_p_c && !this.exists_p_c_sub_c) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[1] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.exists_p_T_sub_c) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[2] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.exists_pi_T_sub_c) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[3] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.p_sub_p && !this.p_dis_p) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[4] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.p_chain_q_sub_r && !this.p_chain_p_sub_p) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[5] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.c_dis_c) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[6] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.p_reflexive && !this.p_irreflexive) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[7] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.p_inverse_q && !this.p_asymmetric) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[8] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.p_functional) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[9] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        if (!this.p_inverse_functional) {
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(transactionTableNames[10] + ".txt")) {
-                    indexes.add(i);
-                }
-            }
-        }
-        result = new File[files.length - indexes.size()];
-        int x = 0;
-        for (int i = 0; i < files.length; i++) {
-            if (!indexes.contains(i)) {
-                result[x] = files[i];
-                x++;
-            }
-        }
-        return result;
+
+        return relevantExistingTables.toArray(new TransactionTable[relevantExistingTables.size()]);
     }
 
-    private void deleteFiles(File[] files) {
-        for (File f : files) {
-            int index = f.getName().lastIndexOf(".");
-            String fileName = f.getName().substring(0, index);
-            if (((this.c_sub_c || this.c_and_c_sub_c) &&
-                    fileName.equals(transactionTableNames[0] + associationRulesSuffix)) ||
-                    ((this.c_sub_exists_p_c || this.exists_p_c_sub_c) &&
-                            fileName.equals(transactionTableNames[1] + associationRulesSuffix)) ||
-                    (this.exists_p_T_sub_c && fileName.equals(transactionTableNames[2] + associationRulesSuffix)) ||
-                    (this.exists_pi_T_sub_c && fileName.equals(transactionTableNames[3] + associationRulesSuffix)) ||
-                    ((this.p_sub_p || this.p_dis_p) &&
-                            fileName.equals(transactionTableNames[4] + associationRulesSuffix)) ||
-                    ((this.p_chain_q_sub_r || this.p_chain_p_sub_p) &&
-                            fileName.equals(transactionTableNames[5] + associationRulesSuffix)) ||
-                    (this.c_dis_c && fileName.equals(transactionTableNames[6] + associationRulesSuffix)) ||
-                    ((this.p_reflexive || this.p_irreflexive) &&
-                            fileName.equals(transactionTableNames[7] + associationRulesSuffix)) ||
-                    ((this.p_inverse_q || this.p_asymmetric) &&
-                            fileName.equals(transactionTableNames[8] + associationRulesSuffix)) ||
-                    (this.p_functional && fileName.equals(transactionTableNames[9] + associationRulesSuffix)) ||
-                    (this.p_inverse_functional && fileName
-                            .equals(transactionTableNames[10] + associationRulesSuffix))) {
-                f.delete();
+    /**
+     * Deletes all association rule files which are generated by the current run configuration.
+     * This method is used to ensure that no old files interfere with the overall process.
+     * Files which would not be generated by the current run configuration are left untouched.
+     */
+    private void deleteAssociationRuleFiles() {
+        File ruleFileDirectory = new File(Settings.getString("association_rules"));
+
+        HashSet<String> relevantRuleFileNames = new HashSet<String>();
+
+        for (TransactionTable table : requirementsResolver.getRequiredTransactionTables()) {
+            relevantRuleFileNames.add(table.getAssociationRuleFileName());
+        }
+
+        for (File ruleFile : ruleFileDirectory.listFiles(new FileExtensionFilter(".txt"))) {
+            if (relevantRuleFileNames.contains(ruleFile.getName())) {
+                if (!ruleFile.delete()) {
+                    log.warn("Unable to delete existing rule file: {}", ruleFile.getAbsolutePath());
+                }
             }
         }
     }
@@ -531,10 +691,10 @@ public class GoldMiner {
 
     public List<String> getAssociationRules() throws IOException {
         List<String> rules = new ArrayList<String>();
-        File file = new File(Settings.getString("association_rules"));
-        File[] files = file.listFiles(new TextFileFilter());
-        for (File f : files) {
-            BufferedReader in = new BufferedReader(new FileReader(f));
+        File associationRuleDirectory = new File(Settings.getString("association_rules"));
+        File[] associationRuleFiles = associationRuleDirectory.listFiles(new FileExtensionFilter(".txt"));
+        for (File associationRuleFile : associationRuleFiles) {
+            BufferedReader in = new BufferedReader(new FileReader(associationRuleFile));
             String line;
             StringBuilder fileText = new StringBuilder();
             while ((line = in.readLine()) != null) {
@@ -548,7 +708,7 @@ public class GoldMiner {
 
     public HashMap<OWLAxiom, SupportConfidenceTuple> parseAssociationRules()
             throws IOException, SQLException {
-        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
+        this.writer = new OntologyWriter(this.sqlDatabase, this.ontology, writeAnnotations);
 
         // inititalize module config
         MinerModuleConfiguration moduleConfig = new MinerModuleConfiguration();
@@ -556,19 +716,50 @@ public class GoldMiner {
         moduleConfig.setDataFactory(ontology.getOntology().getOWLOntologyManager().getOWLDataFactory());
         moduleConfig.setConfidenceAnnotationUri(IRI.create(Settings.getString("annotation_iri") + "#confidence"));
         moduleConfig.setSupportAnnotationUri(IRI.create(Settings.getString("annotation_iri") + "#support"));
-        moduleConfig.setDbConnection(database.getConnection());
+        moduleConfig.setDbConnection(sqlDatabase.getConnection());
         moduleConfig.setParser(parser);
 
         HashMap<OWLAxiom, SupportConfidenceTuple> hmAxioms =
                 new HashMap<OWLAxiom, SupportConfidenceTuple>();
 
-        /* Concept Subsumption: c sub c */
+//        for (AxiomType axiomType : activeAxiomTypes) {
+//            TransactionTable mainTransactionTable = requirementsResolver.getRequiredTransactionTable(axiomType);
+//
+//            File ruleFile = new File(mainTransactionTable.getAbsoluteAssociationRuleFileName());
+//            if (!ruleFile.exists()) {
+//                log.warn("Unable to read: {}! Skipping...", ruleFile.getAbsolutePath());
+//                continue;
+//            }
+//
+//            List<ParsedAxiom> axioms = this.parser.parse(ruleFile, axiomType.hasSecondAntecedent());
+//
+//            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance(axiomType.toString());
+//            normalizer.reportValues(axioms);
+//            normalizer.normalize(axioms);
+//
+//            //axiomType.getOWLAxioms(axioms, hmAxioms);
+//            for (ParsedAxiom pa : axioms) {
+//                OWLAxiom a =
+//                        this.writer.get_c_sub_c_Axioms(pa.getCons(), pa.getAnte1(), pa.getSupp(), pa.getConf());
+//                if (a != null) {
+//                    if (pa.getSupp() != 0.0) {
+//                        rac.add(a, pa.getConf());
+//                    }
+//                    hmAxioms.put(a, pa.getSuppConfTuple());
+//                }
+//            }
+//        }
 
-        File f = new File(
-                Settings.getString("association_rules") + transactionTableNames[0] + associationRulesSuffix + ".txt");
+        /* Concept Subsumption: c sub c */
+        File f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.CLASS_SUBSUMPTION_SIMPLE)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: {}! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.CLASS_SUBSUMPTION_SIMPLE)) {
+            log.info("Skipped simple class subsumption because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C sub C");
@@ -590,13 +781,14 @@ public class GoldMiner {
 
         /* Concept Subsumption: c and c sub c */
         log.debug("Subsumption");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[0] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.CLASS_SUBSUMPTION_COMPLEX).getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.CLASS_SUBSUMPTION_COMPLEX)) {
+            log.info("Skipped complex class subsumption because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, true);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C and C sub C");
@@ -619,13 +811,15 @@ public class GoldMiner {
 
         /* c sub exists p.c */
         log.debug("c sub exists p c");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[1] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_REQUIRED_FOR_CLASS)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_REQUIRED_FOR_CLASS)) {
+            log.info("Skipped property required for class because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("C sub exists P.C");
@@ -648,13 +842,15 @@ public class GoldMiner {
 
         /* exists p.c sub c */
         log.debug("exists_p_c_sub_c");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[1] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_DOMAIN_FOR_RANGE)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_DOMAIN_FOR_RANGE)) {
+            log.info("Skipped property domain for range for class because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P.C sub C");
@@ -677,13 +873,15 @@ public class GoldMiner {
 
         /* Object Property Domain: exists p.T sub c */
         log.debug("Object Property Domain: exists_p_T_sub_c");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[2] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_DOMAIN)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_DOMAIN)) {
+            log.info("Skipped property domain because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P.T sub C");
@@ -706,13 +904,15 @@ public class GoldMiner {
 
         /* Object Property Range: exists p^i.T sub c */
         log.debug("Object Property Range: exists_pi_T_sub_c");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[3] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_RANGE)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_RANGE)) {
+            log.info("Skipped property required for class because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("exists P^i.T");
@@ -735,13 +935,15 @@ public class GoldMiner {
 
         /* P sub P */
         log.debug("p_sub_p");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[4] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_SUBSUMPTION)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_SUBSUMPTION)) {
+            log.info("Skipped property subsumption because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P sub P");
@@ -762,44 +964,47 @@ public class GoldMiner {
         log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Chaining: P o Q sub R */
-        if (p_chain_q_sub_r) {
-            log.debug("p_chain_q_sub_r");
-            f = new File(
-                    Settings.getString(
-                            "association_rules") + transactionTableNames[5] + associationRulesSuffix + ".txt");
-            if (!f.exists()) {
-                log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-            } else {
-                List<ParsedAxiom> axioms = this.parser.parse(f, false);
+        log.debug("p_chain_q_sub_r");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_CHAINS)
+                .getAbsoluteAssociationRuleFileName());
+        if (!f.exists()) {
+            log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_CHAINS)) {
+            log.info("Skipped property chains because not activated");
+        }
+        else {
+            List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
-                ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
-                normalizer.reportValues(axioms);
-                normalizer.normalize(axioms);
+            ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("P o Q sub R");
+            normalizer.reportValues(axioms);
+            normalizer.normalize(axioms);
 
-                for (ParsedAxiom pa : axioms) {
-                    OWLAxiom a =
-                            this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
-                                    pa.getConf());
-                    if (a != null) {
-                        if (pa.getSupp() != 0.0) {
-                            rac.add(a, pa.getConf());
-                        }
-                        hmAxioms.put(a, pa.getSuppConfTuple());
+            for (ParsedAxiom pa : axioms) {
+                OWLAxiom a =
+                        this.writer.get_p_chain_q_sub_r_Axioms(pa.getAnte1(), pa.getCons(), pa.getSupp(),
+                                pa.getConf());
+                if (a != null) {
+                    if (pa.getSupp() != 0.0) {
+                        rac.add(a, pa.getConf());
                     }
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                 }
             }
-            log.debug("Number of Axioms: {}", hmAxioms.size());
         }
+        log.debug("Number of Axioms: {}", hmAxioms.size());
 
         /* Property Transitivity: P o P sub P*/
         log.debug("p_chain_p_sub_p");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[5] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_TRANSITIVITY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_TRANSITIVITY)) {
+            log.info("Skipped property transitivity because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Transitivity");
@@ -822,13 +1027,15 @@ public class GoldMiner {
 
         /* Concept Disjointness */
         log.debug("c_dis_c");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[6] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.CLASS_DISJOINTNESS)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.CLASS_DISJOINTNESS)) {
+            log.info("Skipped class disjointness because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Concept Disjointness");
@@ -845,7 +1052,8 @@ public class GoldMiner {
 
                 if (cons >= 1000 && ante1 < 1000) {
                     cons -= 1000;
-                } else {
+                }
+                else {
                     continue;
                 }
 
@@ -856,15 +1064,17 @@ public class GoldMiner {
                     SupportConfidenceTuple supportConfidenceTuple = firstOccurence.get(pair);
                     if (pa.getConf() < supportConfidenceTuple.getConfidence()) {
                         a = this.writer.get_c_dis_c_Axioms(ante1, cons, pa.getSupp(), pa.getConf());
-                    } else {
+                    }
+                    else {
                         a = this.writer.get_c_dis_c_Axioms(ante1, cons, supportConfidenceTuple.getSupport(),
                                 supportConfidenceTuple.getConfidence());
                     }
-                    hmAxioms.put(a.getAxiomWithoutAnnotations(), pa.getSuppConfTuple());
+                    hmAxioms.put(a, pa.getSuppConfTuple());
                     if (pa.getSupp() != 0.0) {
                         rac.add(a, pa.getConf());
                     }
-                } else {
+                }
+                else {
                     firstOccurence.put(pair, pa.getSuppConfTuple());
                 }
             }
@@ -875,12 +1085,15 @@ public class GoldMiner {
         try {
             log.debug("p_dis_p");
             PropertyDisjointnessModule propertyDisjointnessModule = new PropertyDisjointnessModule(moduleConfig);
-            f = new File(
-                    Settings.getString(
-                            "association_rules") + transactionTableNames[4] + associationRulesSuffix + ".txt");
+            f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_DISJOINTNESS)
+                    .getAbsoluteAssociationRuleFileName());
             if (!f.exists()) {
                 log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-            } else {
+            }
+            else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_DISJOINTNESS)) {
+                log.info("Skipped property disjointness because not activated");
+            }
+            else {
                 // TODO: adjust to actual method signature
                 propertyDisjointnessModule.readAssociationRules(f, hmAxioms);
             }
@@ -893,13 +1106,15 @@ public class GoldMiner {
 
         /* Property Reflexivity */
         log.debug("p_reflexive");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[7] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.REFLEXIVE_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.REFLEXIVE_PROPERTY)) {
+            log.info("Skipped property reflexivity because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             log.debug("Parsed axioms: {}", axioms.size());
 
@@ -922,13 +1137,15 @@ public class GoldMiner {
 
         /* Property Irreflexivity */
         log.debug("p_irreflexive");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[7] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.IRREFLEXIVE_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.IRREFLEXIVE_PROPERTY)) {
+            log.info("Skipped irreflexive property because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
             log.debug("Parsed axioms: {}", axioms.size());
 
@@ -951,13 +1168,15 @@ public class GoldMiner {
 
         /* Inverse Property */
         log.debug("p_inverse_q");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[8] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.INVERSE_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.INVERSE_PROPERTY)) {
+            log.info("Skipped inverse property because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Inverse Property");
@@ -979,13 +1198,15 @@ public class GoldMiner {
 
         /* Asymmetric property */
         log.debug("p_asymmetric");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[8] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.PROPERTY_ASYMMETRY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.PROPERTY_ASYMMETRY)) {
+            log.info("Skipped asymmetric property because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Asymmetry");
@@ -1007,13 +1228,15 @@ public class GoldMiner {
 
         /* Functional Property */
         log.debug("p_functional");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[9] + associationRulesSuffix + "" +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.FUNCTIONAL_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.FUNCTIONAL_PROPERTY)) {
+            log.info("Skipped functional property because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory.getDefaultNormalizerInstance("Property Functionality");
@@ -1035,13 +1258,15 @@ public class GoldMiner {
 
         /* Property Inverse Functionality */
         log.debug("p_inverse_functional");
-        f = new File(
-                Settings.getString(
-                        "association_rules") + File.separator + transactionTableNames[10] + associationRulesSuffix +
-                        ".txt");
+        f = new File(requirementsResolver.getRequiredTransactionTable(AxiomType.INVERSE_FUNCTIONAL_PROPERTY)
+                .getAbsoluteAssociationRuleFileName());
         if (!f.exists()) {
             log.warn("Unable to read: '{}'! Skipping...", f.getAbsolutePath());
-        } else {
+        }
+        else if (!activeAxiomTypes.contains(AxiomType.INVERSE_FUNCTIONAL_PROPERTY)) {
+            log.info("Skipped inverse functional property because not activated");
+        }
+        else {
             List<ParsedAxiom> axioms = this.parser.parse(f, false);
 
             ValueNormalizer normalizer = ValueNormalizerFactory
@@ -1063,21 +1288,25 @@ public class GoldMiner {
         log.debug("Number of Axioms: {}", hmAxioms.size());
 
         log.info("Writing axiom lists into directory '{}'", Settings.getString("axiom_list_dir"));
-        writer.writeLists(hmAxioms, new File(Settings.getString("axiom_list_dir")));
+        File axiomListDir = new File(Settings.getString("axiom_list_dir"));
+        if (!axiomListDir.exists()) {
+            axiomListDir.mkdirs();
+        }
+        writer.writeLists(hmAxioms, axiomListDir.getAbsoluteFile());
         return hmAxioms;
     }
 
     private void initializeOntology() throws SQLException, OWLOntologyStorageException {
-        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
+        this.writer = new OntologyWriter(this.sqlDatabase, this.ontology, writeAnnotations);
         this.ontology = this.writer.writeClassesAndPropertiesToOntology();
         this.ontology.save();
     }
 
     public Ontology createOntology(HashMap<OWLAxiom, SupportConfidenceTuple> axioms,
-            double supportThreshold, double confidenceThreshold)
+                                   double supportThreshold, double confidenceThreshold)
             throws OWLOntologyStorageException, SQLException {
         //this.initializeOntology();
-        this.writer = new OntologyWriter(this.database, this.ontology, writeAnnotations);
+        this.writer = new OntologyWriter(this.sqlDatabase, this.ontology, writeAnnotations);
         Ontology o = this.writer.write(axioms, supportThreshold, confidenceThreshold);
         //o.save();
         this.ontology = o;
@@ -1086,5 +1315,9 @@ public class GoldMiner {
 
     public Ontology greedyDebug(Ontology ontology) throws OWLOntologyStorageException {
         return OntologyDebugger.greedyWrite(ontology);
+    }
+
+    public void saveYagoClasses() throws IOException, SQLException {
+        this.tablePrinter.saveYagoAssignments();
     }
 }
